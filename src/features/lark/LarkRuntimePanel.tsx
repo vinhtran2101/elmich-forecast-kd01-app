@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Card, Descriptions, Tag, Typography } from 'antd';
+import { Button, Card, Descriptions, Tag, Typography } from 'antd';
 
 const { Text } = Typography;
 
 const LARK_H5SDK_SCRIPT_ID = 'lark-h5sdk-script';
+const LARK_APP_ID =
+  typeof import.meta.env.VITE_LARK_APP_ID === 'string'
+    ? import.meta.env.VITE_LARK_APP_ID.trim()
+    : '';
 
 type SdkReadyStatus = 'unknown' | 'ready' | 'error';
+type AuthCodeStatus = 'idle' | 'loading' | 'success' | 'error';
 
 type RuntimeStatus = {
   h5sdkLoaded: boolean;
   ttLoaded: boolean;
   sdkReadyStatus: SdkReadyStatus;
+};
+
+type AuthCodeState = {
+  status: AuthCodeStatus;
+  code?: string;
+  errorMessage?: string;
 };
 
 function BooleanTag({ value }: { value: boolean }) {
@@ -27,6 +38,17 @@ function SdkReadyStatusTag({ value }: { value: SdkReadyStatus }) {
   return <Tag color={colorByStatus[value]}>{value}</Tag>;
 }
 
+function AuthCodeStatusTag({ value }: { value: AuthCodeStatus }) {
+  const colorByStatus: Record<AuthCodeStatus, string> = {
+    idle: 'default',
+    loading: 'processing',
+    success: 'success',
+    error: 'error',
+  };
+
+  return <Tag color={colorByStatus[value]}>{value}</Tag>;
+}
+
 function readRuntimeStatus(
   sdkReadyStatus: SdkReadyStatus = 'unknown',
 ): RuntimeStatus {
@@ -37,10 +59,44 @@ function readRuntimeStatus(
   };
 }
 
+function getAuthCodeErrorMessage(error: unknown) {
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeError = error as {
+      errMsg?: unknown;
+      message?: unknown;
+      errorMessage?: unknown;
+    };
+
+    if (typeof maybeError.errMsg === 'string' && maybeError.errMsg.trim()) {
+      return maybeError.errMsg;
+    }
+
+    if (typeof maybeError.message === 'string' && maybeError.message.trim()) {
+      return maybeError.message;
+    }
+
+    if (
+      typeof maybeError.errorMessage === 'string' &&
+      maybeError.errorMessage.trim()
+    ) {
+      return maybeError.errorMessage;
+    }
+  }
+
+  return 'Không lấy được auth code.';
+}
+
 export function LarkRuntimePanel() {
   const [runtimeStatus, setRuntimeStatus] = useState(() =>
     readRuntimeStatus(),
   );
+  const [authCodeState, setAuthCodeState] = useState<AuthCodeState>({
+    status: 'idle',
+  });
 
   const currentUrl = window.location.href;
   const userAgent = navigator.userAgent;
@@ -118,6 +174,64 @@ export function LarkRuntimePanel() {
     };
   }, []);
 
+  const canRequestAuthCode =
+    runtimeStatus.h5sdkLoaded &&
+    runtimeStatus.ttLoaded &&
+    runtimeStatus.sdkReadyStatus === 'ready';
+
+  const handleRequestAuthCode = () => {
+    if (!canRequestAuthCode) {
+      setAuthCodeState({
+        status: 'error',
+        errorMessage: 'SDK chưa sẵn sàng.',
+      });
+      return;
+    }
+
+    if (typeof window.tt?.requestAuthCode !== 'function') {
+      setAuthCodeState({
+        status: 'error',
+        errorMessage: 'requestAuthCode chưa sẵn sàng.',
+      });
+      return;
+    }
+
+    setAuthCodeState({ status: 'loading' });
+
+    try {
+      window.tt.requestAuthCode({
+        ...(LARK_APP_ID ? { appId: LARK_APP_ID } : {}),
+        success: (result) => {
+          const code = result.code?.trim();
+
+          if (!code) {
+            setAuthCodeState({
+              status: 'error',
+              errorMessage: 'Không nhận được auth code.',
+            });
+            return;
+          }
+
+          setAuthCodeState({
+            status: 'success',
+            code,
+          });
+        },
+        fail: (error) => {
+          setAuthCodeState({
+            status: 'error',
+            errorMessage: getAuthCodeErrorMessage(error),
+          });
+        },
+      });
+    } catch (error) {
+      setAuthCodeState({
+        status: 'error',
+        errorMessage: getAuthCodeErrorMessage(error),
+      });
+    }
+  };
+
   return (
     <Card
       className="lark-runtime-card"
@@ -143,6 +257,31 @@ export function LarkRuntimePanel() {
         <Descriptions.Item label="SDK ready status">
           <SdkReadyStatusTag value={runtimeStatus.sdkReadyStatus} />
         </Descriptions.Item>
+        <Descriptions.Item label="Auth code action">
+          <Button
+            type="primary"
+            onClick={handleRequestAuthCode}
+            disabled={!canRequestAuthCode}
+            loading={authCodeState.status === 'loading'}
+          >
+            Lấy Lark auth code
+          </Button>
+        </Descriptions.Item>
+        <Descriptions.Item label="Auth code status">
+          <AuthCodeStatusTag value={authCodeState.status} />
+        </Descriptions.Item>
+        {authCodeState.status === 'success' && authCodeState.code ? (
+          <Descriptions.Item label="Auth code">
+            <Text className="lark-runtime-value" copyable>
+              {authCodeState.code}
+            </Text>
+          </Descriptions.Item>
+        ) : null}
+        {authCodeState.status === 'error' && authCodeState.errorMessage ? (
+          <Descriptions.Item label="Auth code error">
+            <Text type="danger">{authCodeState.errorMessage}</Text>
+          </Descriptions.Item>
+        ) : null}
       </Descriptions>
     </Card>
   );
