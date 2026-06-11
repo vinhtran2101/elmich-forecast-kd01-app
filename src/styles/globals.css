@@ -40,6 +40,16 @@ body {
   border-radius: 16px;
 }
 
+.lark-runtime-card {
+  max-width: 1280px;
+  margin: 16px auto 0;
+  border-radius: 16px;
+}
+
+.lark-runtime-value {
+  word-break: break-word;
+}
+
 .page-heading {
   display: flex;
   align-items: flex-start;
