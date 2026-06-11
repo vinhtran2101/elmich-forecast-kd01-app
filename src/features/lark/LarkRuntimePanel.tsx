@@ -10,18 +10,21 @@ const LARK_APP_ID =
     : '';
 
 type SdkReadyStatus = 'unknown' | 'ready' | 'error';
-type AuthCodeStatus = 'idle' | 'loading' | 'success' | 'error';
+type CredentialStatus = 'idle' | 'loading' | 'success' | 'error';
+type CredentialMethod = 'requestAccess' | 'requestAuthCode';
 
 type RuntimeStatus = {
   h5sdkLoaded: boolean;
   ttLoaded: boolean;
   sdkReadyStatus: SdkReadyStatus;
+  requestAccessAvailable: boolean;
+  requestAuthCodeAvailable: boolean;
 };
 
-type AuthCodeState = {
-  status: AuthCodeStatus;
-  code?: string;
-  errorMessage?: string;
+type CredentialState = {
+  status: CredentialStatus;
+  method?: CredentialMethod;
+  rawJson?: string;
 };
 
 function BooleanTag({ value }: { value: boolean }) {
@@ -38,8 +41,8 @@ function SdkReadyStatusTag({ value }: { value: SdkReadyStatus }) {
   return <Tag color={colorByStatus[value]}>{value}</Tag>;
 }
 
-function AuthCodeStatusTag({ value }: { value: AuthCodeStatus }) {
-  const colorByStatus: Record<AuthCodeStatus, string> = {
+function CredentialStatusTag({ value }: { value: CredentialStatus }) {
+  const colorByStatus: Record<CredentialStatus, string> = {
     idle: 'default',
     loading: 'processing',
     success: 'success',
@@ -56,45 +59,75 @@ function readRuntimeStatus(
     h5sdkLoaded: Boolean(window.h5sdk),
     ttLoaded: Boolean(window.tt),
     sdkReadyStatus,
+    requestAccessAvailable: typeof window.tt?.requestAccess === 'function',
+    requestAuthCodeAvailable:
+      typeof window.tt?.requestAuthCode === 'function',
   };
 }
 
-function getAuthCodeErrorMessage(error: unknown) {
-  if (typeof error === 'string' && error.trim()) {
-    return error;
+function getCredentialMethod(
+  runtimeStatus: RuntimeStatus,
+): CredentialMethod | undefined {
+  if (runtimeStatus.requestAccessAvailable) {
+    return 'requestAccess';
   }
 
-  if (error && typeof error === 'object') {
-    const maybeError = error as {
-      errMsg?: unknown;
-      message?: unknown;
-      errorMessage?: unknown;
+  if (runtimeStatus.requestAuthCodeAvailable) {
+    return 'requestAuthCode';
+  }
+
+  return undefined;
+}
+
+function getAuthRedirectUri() {
+  return window.location.href.split('?')[0].split('#')[0];
+}
+
+function normalizeRawJsonValue(value: unknown): unknown {
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: value.message,
+      stack: value.stack,
     };
-
-    if (typeof maybeError.errMsg === 'string' && maybeError.errMsg.trim()) {
-      return maybeError.errMsg;
-    }
-
-    if (typeof maybeError.message === 'string' && maybeError.message.trim()) {
-      return maybeError.message;
-    }
-
-    if (
-      typeof maybeError.errorMessage === 'string' &&
-      maybeError.errorMessage.trim()
-    ) {
-      return maybeError.errorMessage;
-    }
   }
 
-  return 'Không lấy được auth code.';
+  if (value === undefined) {
+    return null;
+  }
+
+  return value;
+}
+
+function toRawJson(value: unknown) {
+  const seenObjects = new WeakSet<object>();
+
+  return JSON.stringify(
+    normalizeRawJsonValue(value),
+    (_key, nestedValue) => {
+      if (typeof nestedValue === 'function') {
+        return `[Function ${nestedValue.name || 'anonymous'}]`;
+      }
+
+      if (nestedValue && typeof nestedValue === 'object') {
+        if (seenObjects.has(nestedValue)) {
+          return '[Circular]';
+        }
+
+        seenObjects.add(nestedValue);
+      }
+
+      return nestedValue;
+    },
+    2,
+  );
 }
 
 export function LarkRuntimePanel() {
   const [runtimeStatus, setRuntimeStatus] = useState(() =>
     readRuntimeStatus(),
   );
-  const [authCodeState, setAuthCodeState] = useState<AuthCodeState>({
+  const [credentialState, setCredentialState] = useState<CredentialState>({
     status: 'idle',
   });
 
@@ -174,60 +207,91 @@ export function LarkRuntimePanel() {
     };
   }, []);
 
-  const canRequestAuthCode =
+  const credentialMethod = getCredentialMethod(runtimeStatus);
+  const authRedirectUri = getAuthRedirectUri();
+  const canRequestCredential =
     runtimeStatus.h5sdkLoaded &&
     runtimeStatus.ttLoaded &&
-    runtimeStatus.sdkReadyStatus === 'ready';
+    runtimeStatus.sdkReadyStatus === 'ready' &&
+    Boolean(credentialMethod);
 
   const handleRequestAuthCode = () => {
-    if (!canRequestAuthCode) {
-      setAuthCodeState({
+    const latestRuntimeStatus = readRuntimeStatus(runtimeStatus.sdkReadyStatus);
+    const latestCredentialMethod = getCredentialMethod(latestRuntimeStatus);
+
+    setRuntimeStatus(latestRuntimeStatus);
+
+    if (
+      !latestRuntimeStatus.h5sdkLoaded ||
+      !latestRuntimeStatus.ttLoaded ||
+      latestRuntimeStatus.sdkReadyStatus !== 'ready'
+    ) {
+      setCredentialState({
         status: 'error',
-        errorMessage: 'SDK chưa sẵn sàng.',
+        method: latestCredentialMethod,
+        rawJson: toRawJson({
+          errMsg: 'SDK chưa sẵn sàng.',
+          runtimeStatus: latestRuntimeStatus,
+        }),
       });
       return;
     }
 
-    if (typeof window.tt?.requestAuthCode !== 'function') {
-      setAuthCodeState({
+    if (!latestCredentialMethod) {
+      setCredentialState({
         status: 'error',
-        errorMessage: 'requestAuthCode chưa sẵn sàng.',
+        rawJson: toRawJson({
+          errMsg: 'Không tìm thấy requestAccess hoặc requestAuthCode.',
+          runtimeStatus: latestRuntimeStatus,
+        }),
       });
       return;
     }
 
-    setAuthCodeState({ status: 'loading' });
+    setCredentialState({
+      status: 'loading',
+      method: latestCredentialMethod,
+    });
+
+    const handleSuccess = (result: unknown) => {
+      setCredentialState({
+        status: 'success',
+        method: latestCredentialMethod,
+        rawJson: toRawJson(result),
+      });
+    };
+
+    const handleFail = (error: unknown) => {
+      setCredentialState({
+        status: 'error',
+        method: latestCredentialMethod,
+        rawJson: toRawJson(error),
+      });
+    };
 
     try {
-      window.tt.requestAuthCode({
+      if (latestCredentialMethod === 'requestAccess') {
+        window.tt?.requestAccess?.({
+          ...(LARK_APP_ID ? { appId: LARK_APP_ID } : {}),
+          redirectUri: authRedirectUri,
+          scopeList: [],
+          success: handleSuccess,
+          fail: handleFail,
+        });
+        return;
+      }
+
+      window.tt?.requestAuthCode?.({
         ...(LARK_APP_ID ? { appId: LARK_APP_ID } : {}),
-        success: (result) => {
-          const code = result.code?.trim();
-
-          if (!code) {
-            setAuthCodeState({
-              status: 'error',
-              errorMessage: 'Không nhận được auth code.',
-            });
-            return;
-          }
-
-          setAuthCodeState({
-            status: 'success',
-            code,
-          });
-        },
-        fail: (error) => {
-          setAuthCodeState({
-            status: 'error',
-            errorMessage: getAuthCodeErrorMessage(error),
-          });
-        },
+        redirectUri: authRedirectUri,
+        success: handleSuccess,
+        fail: handleFail,
       });
     } catch (error) {
-      setAuthCodeState({
+      setCredentialState({
         status: 'error',
-        errorMessage: getAuthCodeErrorMessage(error),
+        method: latestCredentialMethod,
+        rawJson: toRawJson(error),
       });
     }
   };
@@ -257,29 +321,44 @@ export function LarkRuntimePanel() {
         <Descriptions.Item label="SDK ready status">
           <SdkReadyStatusTag value={runtimeStatus.sdkReadyStatus} />
         </Descriptions.Item>
+        <Descriptions.Item label="Auth method">
+          <Text>{credentialState.method ?? credentialMethod ?? 'unavailable'}</Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Auth redirect URI">
+          <Text className="lark-runtime-value">{authRedirectUri}</Text>
+        </Descriptions.Item>
         <Descriptions.Item label="Auth code action">
           <Button
             type="primary"
             onClick={handleRequestAuthCode}
-            disabled={!canRequestAuthCode}
-            loading={authCodeState.status === 'loading'}
+            disabled={!canRequestCredential}
+            loading={credentialState.status === 'loading'}
           >
             Lấy Lark auth code
           </Button>
         </Descriptions.Item>
         <Descriptions.Item label="Auth code status">
-          <AuthCodeStatusTag value={authCodeState.status} />
+          <CredentialStatusTag value={credentialState.status} />
         </Descriptions.Item>
-        {authCodeState.status === 'success' && authCodeState.code ? (
-          <Descriptions.Item label="Auth code">
-            <Text className="lark-runtime-value" copyable>
-              {authCodeState.code}
-            </Text>
+        {credentialState.status === 'success' && credentialState.rawJson ? (
+          <Descriptions.Item label="Auth success raw JSON">
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+              <Text
+                className="lark-runtime-value"
+                copyable={{ text: credentialState.rawJson }}
+              >
+                {credentialState.rawJson}
+              </Text>
+            </pre>
           </Descriptions.Item>
         ) : null}
-        {authCodeState.status === 'error' && authCodeState.errorMessage ? (
-          <Descriptions.Item label="Auth code error">
-            <Text type="danger">{authCodeState.errorMessage}</Text>
+        {credentialState.status === 'error' && credentialState.rawJson ? (
+          <Descriptions.Item label="Auth error raw JSON">
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+              <Text type="danger" copyable={{ text: credentialState.rawJson }}>
+                {credentialState.rawJson}
+              </Text>
+            </pre>
           </Descriptions.Item>
         ) : null}
       </Descriptions>

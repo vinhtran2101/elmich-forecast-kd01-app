@@ -1,36 +1,37 @@
 type LarkSdkReadyCallback = () => void;
 type LarkSdkErrorCallback = (error?: unknown) => void;
-type LarkRequestAuthCodeSuccessCallback = (
-  result: LarkRequestAuthCodeSuccessResult,
-) => void;
-type LarkRequestAuthCodeErrorCallback = (
-  error?: LarkRequestAuthCodeErrorResult,
-) => void;
+type LarkJsApiSuccessCallback = (result: LarkJsApiResult) => void;
+type LarkJsApiErrorCallback = (error?: LarkJsApiResult) => void;
 
 interface LarkH5SdkGlobal extends Record<string, unknown> {
   ready?: (callback: LarkSdkReadyCallback) => void;
   error?: (callback: LarkSdkErrorCallback) => void;
 }
 
-interface LarkRequestAuthCodeSuccessResult extends Record<string, unknown> {
+interface LarkJsApiResult extends Record<string, unknown> {
   code?: string;
-}
-
-interface LarkRequestAuthCodeErrorResult extends Record<string, unknown> {
   errMsg?: string;
   message?: string;
 }
 
-interface LarkRequestAuthCodeOptions extends Record<string, unknown> {
+interface LarkCredentialBaseOptions extends Record<string, unknown> {
   appId?: string;
-  success?: LarkRequestAuthCodeSuccessCallback;
-  fail?: LarkRequestAuthCodeErrorCallback;
-  complete?: (
-    result?: LarkRequestAuthCodeSuccessResult | LarkRequestAuthCodeErrorResult,
-  ) => void;
+  redirectUri?: string;
+  success?: LarkJsApiSuccessCallback;
+  fail?: LarkJsApiErrorCallback;
+  complete?: (result?: LarkJsApiResult) => void;
+}
+
+interface LarkRequestAccessOptions extends LarkCredentialBaseOptions {
+  scopeList: string[];
+}
+
+interface LarkRequestAuthCodeOptions extends LarkCredentialBaseOptions {
+  scopeList?: string[];
 }
 
 interface LarkTtGlobal extends Record<string, unknown> {
+  requestAccess?: (options: LarkRequestAccessOptions) => void;
   requestAuthCode?: (options: LarkRequestAuthCodeOptions) => void;
 }
 
