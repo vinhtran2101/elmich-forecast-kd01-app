@@ -1,13 +1,22 @@
-thông tin hiện trạng Lark App
+# Deployment
 
-GitHub repo:
-https://github.com/vinhtran2101/lark-webapp-dem
+Repo GitHub:
 
-Vercel URL:
-https://lark-webapp-demo-hu4n.vercel.app/
+```text
+https://github.com/vinhtran2101/elmich-forecast-kd01-app
+```
 
-Lark Web App Desktop Homepage:
-https://lark-webapp-demo-hu4n.vercel.app/
+Lệnh kiểm tra trước khi push:
 
-Trạng thái hiện tại:
-React + Vite frontend đã mở được trong Lark Desktop bằng public deployment URL.o
+```bash
+npm install
+npm run build
+```
+
+Nếu repo này đang nối với Vercel project cũ, mỗi lần push lên `main` Vercel sẽ tự tạo deployment mới.
+
+Sau khi deploy xong, kiểm tra:
+
+- Link Vercel mở được.
+- Giao diện KD01 hiển thị đúng.
+- Lark Developer Console đang trỏ Desktop/Mobile Homepage tới link Vercel đúng.

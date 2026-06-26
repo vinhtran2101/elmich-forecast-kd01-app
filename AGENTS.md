@@ -2,20 +2,13 @@
 
 ## Project Overview
 
-This project is a demo frontend for a Lark Web App.
-
-The current goal is to prove that a React frontend can be opened inside Lark Desktop through the Web App capability.
+This project is the Elmich Forecast KD01 frontend prototype.
 
 Current stack:
 
 - React
-- TypeScript
 - Vite
-- Ant Design
-- CSS
-- Lark Web App configuration
+- lucide-react
+- Plain CSS
 
-The app currently runs locally at:
-
-```txt
-http://127.0.0.1:5173/
+The app uses mock data only. Do not add Lark app secrets, access tokens, or internal credentials to frontend code.
