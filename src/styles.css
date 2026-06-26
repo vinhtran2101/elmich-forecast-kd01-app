@@ -3254,16 +3254,17 @@ button {
   width: fit-content;
   overflow: hidden;
   border: 1px solid #c3cde0;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #fff;
 }
 
 .system-switcher button {
-  min-height: 38px;
+  min-height: 34px;
   border-right: 1px solid #d7deea;
   background: #fff;
   color: #4b5563;
-  padding: 0 16px;
+  padding: 0 14px;
+  font-size: 14px;
   font-weight: 760;
 }
 
@@ -3278,36 +3279,43 @@ button {
 
 .frame-config-page,
 .workflow-config-page {
-  max-width: 972px;
+  max-width: none;
 }
 
 .frame-intro {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 18px;
 }
 
 .frame-intro p {
   margin: 0;
   color: #4b5563;
-  font-size: 17px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.frame-intro .primary-button {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
 .config-chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .config-chip {
   display: inline-flex;
-  min-height: 28px;
+  min-height: 24px;
   align-items: center;
   border-radius: 999px;
-  padding: 0 14px;
-  font-size: 12px;
+  padding: 0 11px;
+  font-size: 11px;
   font-weight: 850;
 }
 
@@ -3322,38 +3330,47 @@ button {
 }
 
 .framework-table-panel {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-color: #bec9dc;
   padding: 0;
 }
 
 .framework-table {
-  min-width: 930px;
+  width: 100%;
+  min-width: 980px;
 }
 
 .framework-head,
 .framework-row {
   display: grid;
-  grid-template-columns: 1.25fr 0.8fr 1.35fr 1.25fr 1.75fr 0.55fr;
+  grid-template-columns: minmax(150px, 1.15fr) minmax(100px, 0.72fr) minmax(170px, 1.24fr) minmax(160px, 1.1fr) minmax(240px, 1.62fr) minmax(82px, 0.46fr);
   align-items: center;
-  gap: 16px;
-  padding: 0 24px;
+  gap: 12px;
+  padding: 0 18px;
+}
+
+.framework-head > span,
+.framework-row > * {
+  min-width: 0;
 }
 
 .framework-head {
-  min-height: 80px;
+  min-height: 56px;
   border-bottom: 1px solid var(--line);
   background: #f1f3f6;
   color: #4c5567;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 850;
   letter-spacing: 0;
+  line-height: 1.22;
   text-transform: uppercase;
 }
 
 .framework-row {
-  min-height: 108px;
+  min-height: 78px;
   border-bottom: 1px solid var(--line);
+  font-size: 14px;
 }
 
 .framework-channel {
@@ -3379,25 +3396,35 @@ button {
 }
 
 .framework-channel strong {
-  line-height: 1.35;
+  line-height: 1.2;
+}
+
+.framework-row .person-cell {
+  gap: 8px;
+}
+
+.framework-row .person-badge {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
 }
 
 .asm-tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .asm-tag-list span {
   display: inline-flex;
-  min-height: 28px;
+  min-height: 24px;
   align-items: center;
   border: 1px solid #d4d9e2;
   border-radius: 5px;
   background: #e6e9ee;
   color: #3f4655;
-  padding: 0 9px;
-  font-size: 12px;
+  padding: 0 8px;
+  font-size: 11px;
 }
 
 .asm-tag-list button {
@@ -3409,32 +3436,66 @@ button {
 
 .framework-actions {
   display: flex;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
 }
 
 .framework-actions button {
   display: grid;
+  width: 28px;
+  height: 28px;
   place-items: center;
   background: transparent;
   color: #465a78;
 }
 
+.pagination-row {
+  display: flex;
+  min-width: 980px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding: 0 18px;
+  color: #596373;
+  font-size: 13px;
+}
+
+.pages {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pages button {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  font-weight: 700;
+}
+
+.pages button.active {
+  background: var(--blue);
+  color: #fff;
+}
+
 .framework-bottom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 
 .framework-stat-card,
 .framework-guide-card {
-  min-height: 198px;
-  padding: 24px;
+  min-height: 154px;
+  padding: 18px;
 }
 
 .framework-stat-card {
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 10px;
   border-color: #bec9dc;
 }
 
@@ -3448,7 +3509,7 @@ button {
 .stat-card-title h3,
 .framework-guide-card h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .stat-card-title svg {
@@ -3463,12 +3524,13 @@ button {
 .framework-guide-card p {
   margin: 0;
   color: #4b5563;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .framework-stat-card strong {
   color: var(--blue);
-  font-size: 34px;
+  font-size: 28px;
   line-height: 1;
 }
 
@@ -3484,7 +3546,7 @@ button {
 
 .framework-stat-card i {
   display: block;
-  height: 8px;
+  height: 6px;
   overflow: hidden;
   border-radius: 999px;
   background: #e5e7eb;
@@ -3504,7 +3566,7 @@ button {
 .framework-guide-card {
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 12px;
   border-radius: 8px;
   background: linear-gradient(135deg, #1d70dc, #2f80ed);
   color: #fff;
@@ -3518,13 +3580,14 @@ button {
 .framework-guide-card button {
   display: inline-flex;
   width: fit-content;
-  min-height: 34px;
+  min-height: 32px;
   align-items: center;
   gap: 6px;
   border-radius: 7px;
   background: #fff;
   color: var(--blue);
-  padding: 0 14px;
+  padding: 0 12px;
+  font-size: 13px;
   font-weight: 850;
 }
 
@@ -3533,39 +3596,50 @@ button {
 }
 
 .workflow-heading .breadcrumb {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+}
+
+.workflow-heading h2,
+.sla-heading h2 {
+  font-size: 24px;
+}
+
+.workflow-heading p,
+.sla-heading p {
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 .workflow-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 390px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: 16px;
 }
 
 .workflow-step-card,
 .workflow-final-card,
 .workflow-logic-card {
   display: grid;
-  gap: 16px;
+  gap: 12px;
   border-color: #bec9dc;
-  padding: 24px;
+  padding: 18px;
 }
 
 .workflow-step-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .workflow-step-title span {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   place-items: center;
   border-radius: 999px;
   background: #2875e4;
   color: #fff;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 850;
 }
 
@@ -3575,28 +3649,28 @@ button {
 
 .workflow-step-title h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .workflow-role-card {
   display: grid;
-  gap: 16px;
+  gap: 10px;
   border: 1px solid #c7d0df;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #f6f7f9;
-  padding: 16px;
+  padding: 12px;
 }
 
 .workflow-role-grid,
 .workflow-two-cols {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 128px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 106px;
+  gap: 10px;
 }
 
 .workflow-field {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .workflow-field.full {
@@ -3606,7 +3680,7 @@ button {
 .workflow-field span,
 .workflow-priority span {
   color: #4b5563;
-  font-size: 16px;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -3614,11 +3688,14 @@ button {
 .workflow-field select,
 .workflow-priority strong,
 .monthly-deadline-box input {
-  min-height: 42px;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
   border: 1px solid #aeb8c8;
   border-radius: 6px;
   background: #fff;
-  padding: 0 14px;
+  padding: 0 10px;
+  font-size: 14px;
 }
 
 .workflow-field select {
@@ -3626,12 +3703,12 @@ button {
 }
 
 .priority-select {
-  width: 128px;
+  width: 120px;
 }
 
 .add-role-button {
   display: inline-flex;
-  min-height: 48px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -3645,11 +3722,11 @@ button {
 .monthly-deadline-box {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   border: 1px solid #c7d0df;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #fff;
-  padding: 18px 16px;
+  padding: 12px;
 }
 
 .monthly-deadline-box svg {
@@ -3663,28 +3740,30 @@ button {
 
 .monthly-deadline-box strong {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
 }
 
 .monthly-deadline-box p {
   margin: 0;
+  font-size: 14px;
 }
 
 .monthly-deadline-box input {
-  width: 64px;
-  min-height: 34px;
-  margin: 0 6px;
+  width: 54px;
+  min-height: 30px;
+  margin: 0 5px;
   text-align: center;
 }
 
 .workflow-side {
   display: grid;
   align-content: start;
-  gap: 24px;
+  gap: 16px;
 }
 
 .workflow-final-card {
-  gap: 22px;
+  gap: 14px;
 }
 
 .workflow-priority {
@@ -3704,8 +3783,8 @@ button {
 .workflow-logic-card h3 {
   border-bottom: 1px solid #c7d0df;
   color: var(--blue);
-  padding-bottom: 14px;
-  font-size: 16px;
+  padding-bottom: 10px;
+  font-size: 14px;
   font-weight: 760;
 }
 
@@ -3713,7 +3792,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 14px;
 }
 
 .logic-toggle-row strong,
@@ -3731,8 +3810,8 @@ button {
 
 .switch-toggle {
   position: relative;
-  width: 44px;
-  height: 24px;
+  width: 38px;
+  height: 20px;
   flex: 0 0 auto;
   border-radius: 999px;
   background: #cbd5e1;
@@ -3742,8 +3821,8 @@ button {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 999px;
   background: #fff;
   content: "";
@@ -3754,17 +3833,17 @@ button {
 }
 
 .switch-toggle.active::after {
-  left: 23px;
+  left: 21px;
 }
 
 .logic-info-box {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid #cfe0f6;
   border-radius: 8px;
   background: #eff6ff;
   color: #58708f;
-  padding: 16px;
+  padding: 12px;
 }
 
 .logic-info-box svg {
@@ -3774,70 +3853,66 @@ button {
 
 .logic-info-box p {
   margin: 0;
-  line-height: 1.45;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .sla-config-page {
-  max-width: 956px;
-  min-height: calc(100vh - 110px);
+  max-width: none;
+  min-height: 0;
 }
 
 .sla-heading {
   align-items: end;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 24px;
-}
-
-.sla-heading h2 {
-  font-size: 30px;
+  padding-bottom: 16px;
 }
 
 .sla-heading p {
   max-width: 690px;
-  line-height: 1.45;
 }
 
 .sla-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 18px;
 }
 
 .sla-right-column {
   display: grid;
   align-content: start;
-  gap: 24px;
+  gap: 18px;
 }
 
 .sla-stage-card {
   display: grid;
-  gap: 24px;
+  gap: 16px;
   border-color: #bec9dc;
-  padding: 24px;
+  padding: 20px;
 }
 
 .sla-card-header {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: 34px 1fr auto;
   align-items: center;
   gap: 10px;
 }
 
 .sla-card-header h3 {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .sla-card-header small {
   display: inline-flex;
-  min-height: 24px;
+  min-height: 22px;
   align-items: center;
   border-radius: 5px;
   background: #d9e9ff;
   color: #1d4f8e;
-  padding: 0 12px;
-  font-size: 10px;
+  padding: 0 10px;
+  font-size: 9px;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .sla-stage-card.green .sla-card-header small {
@@ -3847,8 +3922,8 @@ button {
 
 .sla-card-icon {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border-radius: 8px;
   color: var(--blue);
@@ -3866,18 +3941,19 @@ button {
 .sla-stage-card > p {
   margin: 0;
   color: #4b5563;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .sla-option {
   display: flex;
-  min-height: 94px;
+  min-height: 76px;
   align-items: flex-start;
-  gap: 14px;
+  gap: 10px;
   border: 1px solid #c4cedd;
   border-radius: 8px;
   background: #fff;
-  padding: 18px 16px;
+  padding: 14px;
 }
 
 .sla-option svg {
@@ -3893,16 +3969,18 @@ button {
 
 .sla-option strong {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
+  font-size: 14px;
 }
 
 .sla-option p {
   margin: 0;
+  font-size: 14px;
 }
 
 .sla-option input {
-  width: 64px;
-  min-height: 34px;
+  width: 54px;
+  min-height: 30px;
   border: 1px solid #c2cad9;
   border-radius: 4px;
   background: #fff;
@@ -3912,7 +3990,7 @@ button {
 
 .sla-role-section {
   border-top: 1px solid var(--line);
-  padding-top: 18px;
+  padding-top: 12px;
 }
 
 .sla-role-section > span {
@@ -3931,24 +4009,24 @@ button {
 
 .sla-role-section small {
   display: inline-flex;
-  min-height: 30px;
+  min-height: 26px;
   align-items: center;
   gap: 4px;
   border-radius: 999px;
   background: #e5e7eb;
   color: #4b5563;
-  padding: 0 10px;
-  font-size: 13px;
+  padding: 0 9px;
+  font-size: 12px;
 }
 
 .sla-warning-card {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   border: 1px solid #fecaca;
   border-radius: 8px;
   background: #fff7f7;
   color: #4b5563;
-  padding: 18px;
+  padding: 16px;
 }
 
 .sla-warning-card svg {
@@ -3964,18 +4042,19 @@ button {
 
 .sla-warning-card p {
   margin: 0;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .sla-footer-card {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   border: 1px solid #bec9dc;
   border-radius: 8px;
   background: #fff;
-  margin-top: 84px;
-  padding: 24px;
+  margin-top: 20px;
+  padding: 16px;
 }
 
 .avatar-stack.compact span {
@@ -4008,7 +4087,7 @@ button {
 .sla-page-footer {
   color: #c0c7d2;
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   text-align: center;
 }
 
