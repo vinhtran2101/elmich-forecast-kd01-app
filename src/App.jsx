@@ -1180,7 +1180,7 @@ function AppraisalList({ onOpen }) {
                 <span><Badge tone={row.statusTone}>{row.status}</Badge></span>
                 <span className="file-link">
                   <FileText size={16} />
-                  {row.file}
+                  <span className="file-link-text">{row.file}</span>
                 </span>
                 <span className="row-tools">
                   <button className="icon-button table-action" title="Thẩm định" onClick={onOpen}>
@@ -1484,7 +1484,7 @@ function ApprovalList({ onOpen }) {
                 <span><Badge tone={row.statusTone}>{row.status}</Badge></span>
                 <span className="file-link">
                   <FileText size={16} />
-                  {row.file}
+                  <span className="file-link-text">{row.file}</span>
                 </span>
                 <span className="row-tools">
                   <button className="icon-button table-action" title={index === 0 ? "Đã duyệt" : "Phê duyệt"} onClick={onOpen}>

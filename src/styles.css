@@ -2581,7 +2581,8 @@ button {
 }
 
 .appraisal-table-panel {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-color: #bec9dc;
   padding: 0;
 }
@@ -2650,16 +2651,33 @@ button {
 }
 
 .appraisal-table {
-  min-width: 900px;
+  min-width: 1120px;
 }
 
 .appraisal-head,
 .appraisal-row {
   display: grid;
-  grid-template-columns: 1.45fr 1fr 0.9fr 1.25fr 1.05fr 1.35fr 0.72fr;
+  grid-template-columns:
+    minmax(160px, 1fr)
+    minmax(126px, 0.75fr)
+    minmax(110px, 0.65fr)
+    minmax(162px, 0.9fr)
+    minmax(150px, 0.85fr)
+    minmax(280px, 1.45fr)
+    minmax(78px, 0.45fr);
   align-items: center;
-  gap: 18px;
-  padding: 0 24px;
+  gap: 12px;
+  padding: 0 20px;
+}
+
+.appraisal-head > span,
+.appraisal-row > * {
+  min-width: 0;
+}
+
+.appraisal-head > span:last-child,
+.appraisal-row > .row-tools {
+  justify-self: end;
 }
 
 .appraisal-head {
@@ -2677,9 +2695,14 @@ button {
 }
 
 .appraisal-channel {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+.appraisal-channel strong {
+  line-height: 1.2;
 }
 
 .appraisal-month,
@@ -2687,10 +2710,23 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  max-width: 100%;
+  min-width: 0;
   background: transparent;
   color: var(--blue);
   font-weight: 700;
   text-align: left;
+}
+
+.file-link svg {
+  flex: 0 0 auto;
+}
+
+.file-link-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sent-at {
@@ -2700,6 +2736,7 @@ button {
   color: #374151;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .task-icon.purple {
