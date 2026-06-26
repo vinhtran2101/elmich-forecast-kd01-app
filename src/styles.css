@@ -32,6 +32,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: var(--bg);
+  overflow-x: hidden;
 }
 
 button,
@@ -152,6 +153,7 @@ button {
 
 .main-shell {
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -530,6 +532,19 @@ button {
 .form-panel,
 .channel-panel {
   padding: 24px;
+}
+
+.table-panel,
+.schedule-list-panel,
+.framework-table-panel,
+.storage-list-panel,
+.version-card,
+.appraisal-table-panel,
+.detail-task-panel,
+.task-list-panel,
+.assignment-panel {
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .panel-header,
@@ -4321,6 +4336,183 @@ button {
 
 .file-stats-card p svg {
   color: #9bbcff;
+}
+
+@media (min-width: 861px) and (max-width: 1500px) {
+  .app-shell {
+    grid-template-columns: 218px minmax(0, 1fr);
+  }
+
+  .brand {
+    gap: 9px;
+    padding: 14px 14px 26px;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand strong {
+    font-size: 15px;
+  }
+
+  .brand span {
+    font-size: 12px;
+  }
+
+  .nav-list {
+    gap: 5px;
+    padding: 0 7px;
+  }
+
+  .nav-item {
+    min-height: 42px;
+    gap: 11px;
+    padding: 0 12px;
+  }
+
+  .nav-item.active::before {
+    height: 42px;
+  }
+
+  .nav-item span {
+    font-size: 14px;
+  }
+
+  .sidebar-footer {
+    padding: 14px 7px 16px;
+  }
+
+  .topbar {
+    min-height: 56px;
+    gap: 16px;
+    padding: 0 20px;
+  }
+
+  .topbar-title {
+    min-width: 190px;
+  }
+
+  .topbar h1 {
+    font-size: 22px;
+  }
+
+  .topbar-tools {
+    gap: 10px;
+  }
+
+  .search-box {
+    width: clamp(210px, 28vw, 320px);
+    height: 36px;
+  }
+
+  .icon-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .user-chip {
+    padding-left: 12px;
+  }
+
+  .content-area {
+    padding: 20px;
+  }
+
+  .page-flow {
+    gap: 18px;
+    max-width: none;
+  }
+
+  .page-heading h2 {
+    font-size: 26px;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .muted-button,
+  .secondary-blue-button,
+  .dashed-button {
+    min-height: 40px;
+    padding: 0 14px;
+  }
+
+  .metric-grid {
+    gap: 14px;
+  }
+
+  .metric-card {
+    min-height: 146px;
+    padding: 14px;
+  }
+
+  .metric-value {
+    font-size: 27px;
+  }
+
+  .chart-panel,
+  .notice-panel,
+  .table-panel,
+  .schedule-list-panel,
+  .side-panel,
+  .form-panel,
+  .channel-panel {
+    padding: 20px;
+  }
+
+  .schedule-top {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(178px, 220px);
+    gap: 14px;
+  }
+
+  .mini-metric {
+    min-height: 88px;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .mini-metric strong {
+    font-size: 22px;
+  }
+
+  .large-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .schedule-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .right-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .schedule-head,
+  .schedule-row {
+    grid-template-columns: minmax(220px, 1.35fr) minmax(92px, 0.7fr) minmax(122px, 0.85fr) minmax(92px, 0.72fr) minmax(64px, 0.45fr);
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .schedule-table {
+    margin-top: 18px;
+  }
+
+  .schedule-row {
+    min-height: 88px;
+  }
+
+  .mini-bar {
+    width: 78px;
+  }
+
+  .file-item {
+    min-height: 56px;
+  }
 }
 
 @media (max-width: 1180px) {
