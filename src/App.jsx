@@ -993,6 +993,8 @@ function TaskMetric({ title, value, note, delta, progress, tone }) {
 }
 
 function TaskUpdate({ onBack }) {
+  const [taskStatus, setTaskStatus] = useState("doing");
+
   return (
     <section className="task-update-page">
       <div className="task-update-main">
@@ -1004,16 +1006,6 @@ function TaskUpdate({ onBack }) {
           <div>
             <h2>Cập nhật Forecast Kênh TMĐT - Tháng 07/2026</h2>
             <p>Mã Task: #FC-2026-07-EC • Phân công: ASM TMĐT Toàn quốc</p>
-          </div>
-          <div className="action-row">
-            <button className="secondary-button">
-              <Save size={18} />
-              Lưu bản nháp
-            </button>
-            <button className="primary-button">
-              <CheckCircle2 size={18} />
-              Gửi cập nhật
-            </button>
           </div>
         </div>
 
@@ -1073,22 +1065,40 @@ function TaskUpdate({ onBack }) {
       </div>
 
       <aside className="task-update-rail">
+        <div className="task-update-actions">
+          <button className="secondary-button">
+            <Save size={18} />
+            Lưu bản nháp
+          </button>
+          <button className="primary-button">
+            <CheckCircle2 size={18} />
+            Gửi cập nhật
+          </button>
+        </div>
         <section className="panel status-update-card">
           <h3>Cập nhật trạng thái</h3>
-          <label className="status-option active">
+          <button
+            className={`status-option ${taskStatus === "doing" ? "active" : ""}`}
+            type="button"
+            onClick={() => setTaskStatus("doing")}
+          >
             <Circle size={18} />
             <span>
               <strong>Đang thực hiện</strong>
               <small>Vẫn đang tổng hợp và kiểm tra dữ liệu.</small>
             </span>
-          </label>
-          <label className="status-option">
+          </button>
+          <button
+            className={`status-option ${taskStatus === "done" ? "active" : ""}`}
+            type="button"
+            onClick={() => setTaskStatus("done")}
+          >
             <Circle size={18} />
             <span>
               <strong>Hoàn thành</strong>
               <small>Sẵn sàng để quản lý xem xét.</small>
             </span>
-          </label>
+          </button>
         </section>
 
         <section className="panel record-history-card">
