@@ -646,14 +646,20 @@ button {
 
 .notice-list {
   display: grid;
-  gap: 26px;
-  margin-top: 30px;
+  gap: 22px;
+  margin-top: 26px;
 }
 
 .notice-item {
   display: grid;
   grid-template-columns: 42px 1fr;
   gap: 14px;
+  min-width: 0;
+  align-items: start;
+}
+
+.notice-item > div {
+  min-width: 0;
 }
 
 .notice-icon {
@@ -662,22 +668,30 @@ button {
 }
 
 .notice-item strong {
-  display: block;
+  display: -webkit-box;
+  overflow: hidden;
   line-height: 1.28;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .notice-item p {
+  display: -webkit-box;
   overflow: hidden;
-  margin: 4px 0 0;
+  margin: 5px 0 0;
   color: #626b7c;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .notice-item small {
   display: block;
-  margin-top: 4px;
+  margin-top: 6px;
   color: #8a94a6;
+  font-size: 12px;
 }
 
 .data-table {
@@ -4459,6 +4473,49 @@ button {
   .form-panel,
   .channel-panel {
     padding: 20px;
+  }
+
+  .notice-panel .panel-title-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .notice-panel .panel-title-row h3 {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .notice-panel .panel-title-row button {
+    max-width: 72px;
+    justify-content: flex-end;
+    text-align: right;
+    white-space: normal;
+    line-height: 1.15;
+  }
+
+  .notice-list {
+    gap: 18px;
+    margin-top: 22px;
+  }
+
+  .notice-item {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .notice-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .notice-item strong {
+    font-size: 14px;
+  }
+
+  .notice-item p {
+    font-size: 13px;
   }
 
   .schedule-top {
