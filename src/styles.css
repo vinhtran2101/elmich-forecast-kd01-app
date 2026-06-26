@@ -1906,16 +1906,16 @@ button {
 }
 
 .task-table {
-  min-width: 930px;
+  min-width: 900px;
 }
 
 .task-head,
 .task-row {
   display: grid;
-  grid-template-columns: 1.6fr 0.88fr 0.95fr 1.05fr 1fr 1.15fr;
+  grid-template-columns: minmax(210px, 1.42fr) minmax(150px, 1.05fr) minmax(122px, 0.92fr) minmax(110px, 0.82fr) minmax(126px, 0.86fr) minmax(112px, 0.72fr);
   align-items: center;
-  gap: 18px;
-  padding: 0 24px;
+  gap: 14px;
+  padding: 0 22px;
 }
 
 .task-head {
@@ -1979,13 +1979,27 @@ button {
 .task-owner {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
+  min-width: 0;
+}
+
+.task-owner > span:not(.mini-avatar) {
+  min-width: 0;
+}
+
+.task-owner strong {
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.task-owner small {
+  line-height: 1.25;
 }
 
 .mini-avatar {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
@@ -2034,9 +2048,26 @@ button {
 
 .task-progress-cell div {
   display: grid;
-  min-width: 82px;
+  min-width: 62px;
   color: #4b5563;
   font-size: 13px;
+}
+
+.task-row .detail-action-icons {
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task-row .detail-action-icons .icon-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.task-row .detail-action-icons .icon-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .task-progress-cell small {
@@ -4569,6 +4600,48 @@ button {
 
   .file-item {
     min-height: 56px;
+  }
+
+  .task-table {
+    min-width: 0;
+  }
+
+  .task-head,
+  .task-row {
+    grid-template-columns: minmax(218px, 1.38fr) minmax(164px, 1.08fr) minmax(124px, 0.86fr) minmax(100px, 0.72fr) minmax(120px, 0.78fr) minmax(104px, 0.58fr);
+    gap: 10px;
+    padding: 0 18px;
+  }
+
+  .task-row {
+    min-height: 104px;
+  }
+
+  .task-title-cell strong {
+    font-size: 15px;
+  }
+
+  .task-owner {
+    gap: 8px;
+  }
+
+  .task-owner strong {
+    font-size: 14px;
+    line-height: 1.22;
+  }
+
+  .task-owner small {
+    font-size: 12px;
+  }
+
+  .task-row .detail-action-icons .icon-button {
+    width: 26px;
+    height: 26px;
+  }
+
+  .task-row .detail-action-icons .icon-button svg {
+    width: 15px;
+    height: 15px;
   }
 }
 
