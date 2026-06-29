@@ -561,40 +561,50 @@ const adminUsers = [
   { id: "u-02", name: "Trần Văn A", email: "planning@elmich.vn", role: "Planning", scope: "Phòng Kế hoạch", status: "Active", initials: "TA", tone: "green" },
   { id: "u-03", name: "Lê Quang Minh", email: "asm.ec@elmich.vn", role: "ASM", scope: "Kênh TMĐT", status: "Active", initials: "LM", tone: "blue" },
   { id: "u-04", name: "Nguyễn Diệp Chi", email: "asm.gt@elmich.vn", role: "ASM", scope: "Kênh GT - Miền Bắc", status: "Active", initials: "DC", tone: "purple" },
-  { id: "u-05", name: "Đặng Văn D", email: "showroom@elmich.vn", role: "ASM", scope: "Kênh Showroom", status: "Inactive", initials: "DD", tone: "slate" },
+  { id: "u-05", name: "Đặng Văn D", email: "asm.mt@elmich.vn", role: "ASM", scope: "Kênh MT - Toàn quốc", status: "Inactive", initials: "DD", tone: "slate" },
   { id: "u-06", name: "Lê Thị Thảo", email: "rsm.mt@elmich.vn", role: "RSM", scope: "Kênh MT", status: "Active", initials: "LT", tone: "green" },
-  { id: "u-07", name: "Nguyễn Văn Nam", email: "gdkd.gt@elmich.vn", role: "GĐKD", scope: "GT/Showroom", status: "Active", initials: "NN", tone: "blue" },
-  { id: "u-08", name: "Phạm Khánh Linh", email: "rsm.ec@elmich.vn", role: "RSM", scope: "Kênh TMĐT", status: "Locked", initials: "PL", tone: "orange" },
-  { id: "u-09", name: "Bộ phận Cung ứng", email: "supply@elmich.vn", role: "Thẩm định", scope: "Cung ứng", status: "Active", initials: "CU", tone: "green" },
-  { id: "u-10", name: "CEO Office", email: "ceo@elmich.vn", role: "CEO", scope: "Phê duyệt cuối", status: "Active", initials: "CO", tone: "purple" },
+  { id: "u-07", name: "Nguyễn Văn Nam", email: "gdkd@elmich.vn", role: "GĐKD", scope: "GT/MT/TMĐT", status: "Active", initials: "NN", tone: "blue" },
+  { id: "u-08", name: "Bộ phận Cung ứng", email: "supply@elmich.vn", role: "Cung ứng", scope: "Tồn kho và khả năng cung ứng", status: "Active", initials: "CU", tone: "green" },
+  { id: "u-09", name: "Phòng Tài chính", email: "finance@elmich.vn", role: "Tài chính", scope: "Giá vốn, margin, ngân sách", status: "Active", initials: "TC", tone: "orange" },
+  { id: "u-10", name: "BI Team", email: "bi@elmich.vn", role: "BI", scope: "Dữ liệu bán hàng và lịch sử forecast", status: "Active", initials: "BI", tone: "purple" },
+  { id: "u-11", name: "Kế hoạch Nhà máy", email: "factory@elmich.vn", role: "Nhà máy", scope: "Năng lực sản xuất và lịch giao hàng", status: "Active", initials: "NM", tone: "slate" },
+  { id: "u-12", name: "CEO Office", email: "ceo@elmich.vn", role: "CEO", scope: "Phê duyệt cuối", status: "Active", initials: "CO", tone: "purple" },
+  { id: "u-13", name: "Ban điều hành", email: "viewer@elmich.vn", role: "Viewer", scope: "Báo cáo và kho lưu trữ", status: "Active", initials: "VD", tone: "blue" },
 ];
 
 const roleDefinitions = [
   { id: "admin", name: "Admin", description: "Toàn quyền cấu hình và giám sát Forecast KD01", scope: "Toàn hệ thống", users: 1, risk: "Cao" },
   { id: "planning", name: "Planning", description: "Tạo kỳ Forecast, tổng hợp file và trình hồ sơ", scope: "Phòng Kế hoạch", users: 1, risk: "Trung bình" },
   { id: "asm", name: "ASM", description: "Cập nhật file Forecast theo kênh được phân công", scope: "Theo kênh/vùng", users: 3, risk: "Thấp" },
-  { id: "rsm", name: "RSM", description: "Duyệt Forecast cấp quản lý vùng/kênh", scope: "Theo kênh", users: 2, risk: "Trung bình" },
+  { id: "rsm", name: "RSM", description: "Rà soát và duyệt Forecast cấp quản lý vùng/kênh", scope: "Theo kênh", users: 1, risk: "Trung bình" },
   { id: "gdkd", name: "GĐKD", description: "Duyệt Forecast cấp Giám đốc kinh doanh", scope: "Theo khối kinh doanh", users: 1, risk: "Cao" },
-  { id: "appraiser", name: "Thẩm định", description: "Rà soát dữ liệu từ Cung ứng, BI, Nhà máy, Tài chính", scope: "Theo bộ phận", users: 1, risk: "Trung bình" },
+  { id: "supply", name: "Cung ứng", description: "Thẩm định tồn kho, nguồn hàng và khả năng đáp ứng", scope: "Dữ liệu cung ứng", users: 1, risk: "Trung bình" },
+  { id: "finance", name: "Tài chính", description: "Thẩm định giá vốn, biên lợi nhuận và ngân sách", scope: "Dữ liệu tài chính", users: 1, risk: "Cao" },
+  { id: "bi", name: "BI", description: "Đối chiếu lịch sử bán hàng, dữ liệu forecast và báo cáo", scope: "Dữ liệu phân tích", users: 1, risk: "Trung bình" },
+  { id: "factory", name: "Nhà máy", description: "Thẩm định năng lực sản xuất và lịch giao hàng", scope: "Dữ liệu sản xuất", users: 1, risk: "Trung bình" },
   { id: "ceo", name: "CEO", description: "Phê duyệt cuối và phát hành bản Forecast chính thức", scope: "Toàn công ty", users: 1, risk: "Cao" },
-  { id: "viewer", name: "Viewer", description: "Chỉ xem báo cáo và kho lưu trữ", scope: "Theo phân quyền", users: 0, risk: "Thấp" },
+  { id: "viewer", name: "Viewer", description: "Chỉ xem báo cáo và kho lưu trữ", scope: "Theo phân quyền", users: 1, risk: "Thấp" },
 ];
 
 const permissionMatrix = [
-  { module: "Lịch Forecast", data: "Kỳ forecast", admin: "Toàn quyền", planning: "Tạo/Sửa", asm: "Xem", rsm: "Xem", gdkd: "Xem", appraiser: "Xem", ceo: "Xem", viewer: "Xem" },
-  { module: "Công việc ASM", data: "Task theo kênh", admin: "Toàn quyền", planning: "Theo dõi", asm: "Cập nhật", rsm: "Xem", gdkd: "Xem", appraiser: "Không", ceo: "Xem", viewer: "Không" },
-  { module: "Duyệt kinh doanh", data: "File kênh", admin: "Toàn quyền", planning: "Theo dõi", asm: "Không", rsm: "Duyệt", gdkd: "Duyệt", appraiser: "Không", ceo: "Xem", viewer: "Không" },
-  { module: "Thẩm định", data: "Hồ sơ tổng hợp", admin: "Toàn quyền", planning: "Trình hồ sơ", asm: "Không", rsm: "Xem", gdkd: "Xem", appraiser: "Thẩm định", ceo: "Xem", viewer: "Xem" },
-  { module: "Phê duyệt CEO", data: "Bản cuối", admin: "Toàn quyền", planning: "Theo dõi", asm: "Không", rsm: "Không", gdkd: "Xem", appraiser: "Xem", ceo: "Duyệt", viewer: "Xem" },
-  { module: "Kho lưu trữ", data: "File phát hành", admin: "Toàn quyền", planning: "Phát hành", asm: "Xem", rsm: "Xem", gdkd: "Xem", appraiser: "Xem", ceo: "Xem", viewer: "Xem" },
-  { module: "Quản trị hệ thống", data: "User/role/SLA", admin: "Toàn quyền", planning: "Đề xuất", asm: "Không", rsm: "Không", gdkd: "Không", appraiser: "Không", ceo: "Xem", viewer: "Không" },
+  { module: "Lịch Forecast", data: "Kỳ forecast", admin: "Toàn quyền", planning: "Tạo/Sửa", asm: "Xem", rsm: "Xem", gdkd: "Xem", supply: "Xem", finance: "Xem", bi: "Xem", factory: "Xem", ceo: "Xem", viewer: "Xem" },
+  { module: "Giao việc kênh", data: "Task theo kênh", admin: "Toàn quyền", planning: "Phân công", asm: "Nhận việc", rsm: "Theo dõi", gdkd: "Xem", supply: "Không", finance: "Không", bi: "Không", factory: "Không", ceo: "Xem", viewer: "Không" },
+  { module: "Nộp file Forecast", data: "File ASM/kênh", admin: "Toàn quyền", planning: "Theo dõi", asm: "Nộp/Sửa", rsm: "Xem", gdkd: "Xem", supply: "Không", finance: "Không", bi: "Không", factory: "Không", ceo: "Xem", viewer: "Không" },
+  { module: "Duyệt kinh doanh", data: "File đã nộp", admin: "Toàn quyền", planning: "Theo dõi", asm: "Không", rsm: "Duyệt", gdkd: "Duyệt", supply: "Không", finance: "Không", bi: "Không", factory: "Không", ceo: "Xem", viewer: "Không" },
+  { module: "Thẩm định Cung ứng", data: "Tồn kho/nguồn hàng", admin: "Toàn quyền", planning: "Trình hồ sơ", asm: "Không", rsm: "Xem", gdkd: "Xem", supply: "Thẩm định", finance: "Xem", bi: "Xem", factory: "Xem", ceo: "Xem", viewer: "Xem" },
+  { module: "Thẩm định Tài chính", data: "Giá vốn/margin", admin: "Toàn quyền", planning: "Trình hồ sơ", asm: "Không", rsm: "Xem", gdkd: "Xem", supply: "Xem", finance: "Thẩm định", bi: "Xem", factory: "Không", ceo: "Xem", viewer: "Xem" },
+  { module: "Thẩm định BI", data: "Lịch sử bán hàng", admin: "Toàn quyền", planning: "Trình hồ sơ", asm: "Không", rsm: "Xem", gdkd: "Xem", supply: "Xem", finance: "Xem", bi: "Thẩm định", factory: "Không", ceo: "Xem", viewer: "Xem" },
+  { module: "Kế hoạch Nhà máy", data: "Năng lực sản xuất", admin: "Toàn quyền", planning: "Trình hồ sơ", asm: "Không", rsm: "Xem", gdkd: "Xem", supply: "Xem", finance: "Không", bi: "Xem", factory: "Thẩm định", ceo: "Xem", viewer: "Xem" },
+  { module: "Phê duyệt CEO", data: "Bản cuối", admin: "Toàn quyền", planning: "Theo dõi", asm: "Không", rsm: "Không", gdkd: "Xem", supply: "Xem", finance: "Xem", bi: "Xem", factory: "Xem", ceo: "Duyệt", viewer: "Xem" },
+  { module: "Kho lưu trữ", data: "File phát hành", admin: "Toàn quyền", planning: "Phát hành", asm: "Xem", rsm: "Xem", gdkd: "Xem", supply: "Xem", finance: "Xem", bi: "Xem", factory: "Xem", ceo: "Xem", viewer: "Xem" },
+  { module: "Quản trị hệ thống", data: "User/role/SLA", admin: "Toàn quyền", planning: "Đề xuất", asm: "Không", rsm: "Không", gdkd: "Không", supply: "Không", finance: "Không", bi: "Không", factory: "Không", ceo: "Xem", viewer: "Không" },
 ];
 
 const permissionActivityLog = [
   { id: "pa-01", title: "Cập nhật người dùng: Nguyễn Tú Anh", detail: "Admin -> Toàn hệ thống", time: "10:58 29/06/2026", tone: "blue" },
-  { id: "pa-02", title: "Gán quyền: Lê Thị Thảo", detail: "RSM -> Kênh MT", time: "10:42 29/06/2026", tone: "green" },
-  { id: "pa-03", title: "Cập nhật phạm vi Planning", detail: "Thêm quyền phát hành kho lưu trữ", time: "09:20 29/06/2026", tone: "green" },
-  { id: "pa-04", title: "Khóa tài khoản Phạm Khánh Linh", detail: "Tạm khóa quyền truy cập forecast", time: "17:35 28/06/2026", tone: "orange" },
+  { id: "pa-02", title: "Gán quyền: Phòng Tài chính", detail: "Tài chính -> Thẩm định giá vốn/margin", time: "10:42 29/06/2026", tone: "green" },
+  { id: "pa-03", title: "Cập nhật phạm vi Planning", detail: "Thêm quyền phát hành file forecast chính thức", time: "09:20 29/06/2026", tone: "green" },
+  { id: "pa-04", title: "Rà soát quyền Nhà máy", detail: "Giới hạn quyền ở dữ liệu năng lực sản xuất", time: "17:35 28/06/2026", tone: "orange" },
 ];
 
 const statusToneMap = {
@@ -2845,8 +2855,8 @@ function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaCo
       <div className="admin-metric-grid">
         <AdminMetric label="Vai trò" value={roleDefinitions.length} hint="Nhóm quyền" icon={Lock} tone="blue" />
         <AdminMetric label="Nhân sự" value={adminUsers.length} hint="Đang quản lý" icon={Users} tone="green" />
-        <AdminMetric label="Phạm vi" value="6" hint="Lớp dữ liệu" icon={Settings} tone="cyan" />
-        <AdminMetric label="Rủi ro" value="3" hint="Cần rà soát" icon={AlertTriangle} tone="orange" />
+        <AdminMetric label="Phạm vi" value="8" hint="Lớp dữ liệu KD01" icon={Settings} tone="cyan" />
+        <AdminMetric label="Rủi ro" value="4" hint="Role nhạy cảm" icon={AlertTriangle} tone="orange" />
       </div>
 
       <div className="permission-layout">
