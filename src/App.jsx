@@ -3471,7 +3471,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
                 {row.file ? (
                   <span className="file-pill">
                     <FileText size={15} />
-                    {row.file}
+                    <span>{row.file}</span>
                   </span>
                 ) : (
                   <button className="attach-template">

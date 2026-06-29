@@ -2374,7 +2374,8 @@ button {
 }
 
 .assignment-panel {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-color: #bec9dc;
   padding: 0;
 }
@@ -2384,17 +2385,17 @@ button {
 }
 
 .assignment-table {
-  min-width: 1010px;
   width: 100%;
+  min-width: 1160px;
 }
 
 .assignment-head,
 .assignment-row {
   display: grid;
-  grid-template-columns: 92px 88px minmax(136px, 1fr) minmax(136px, 1fr) 108px 178px 168px;
+  grid-template-columns: 108px 96px minmax(150px, 1fr) minmax(150px, 1fr) 116px 190px minmax(236px, 0.92fr);
   align-items: center;
-  gap: 14px;
-  padding: 0 24px;
+  gap: 16px;
+  padding: 0 28px;
 }
 
 .assignment-head {
@@ -2441,10 +2442,9 @@ button {
 
 .date-input-chip,
 .attach-template,
-.file-pill {
+.assignment-row .file-pill {
   max-width: 100%;
   overflow: hidden;
-  justify-content: center;
   white-space: nowrap;
 }
 
@@ -2453,12 +2453,34 @@ button {
 }
 
 .attach-template,
-.file-pill {
+.assignment-row .file-pill {
   width: 100%;
+  min-width: 208px;
 }
 
-.file-pill {
+.assignment-row .file-pill {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d6e4fb;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: var(--blue);
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.assignment-row .file-pill svg {
+  flex: 0 0 auto;
+}
+
+.assignment-row .file-pill span {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .date-input-chip {
