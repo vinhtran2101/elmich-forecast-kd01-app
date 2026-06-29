@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   CircleHelp,
   Circle,
@@ -776,6 +777,7 @@ function App() {
     note: "",
   });
   const [toast, setToast] = useState("");
+  const [roles, setRoles] = useState(roleDefinitions);
   const [permissionDrafts, setPermissionDrafts] = useState(buildInitialPermissionDrafts);
   const [previewRoleId, setPreviewRoleId] = useState("");
 
@@ -789,7 +791,7 @@ function App() {
     tasks[0];
   const selectedFile =
     publishedFiles.find((file) => file.id === selectedFileId) || publishedFiles[0];
-  const previewRole = roleDefinitions.find((role) => role.id === previewRoleId);
+  const previewRole = roles.find((role) => role.id === previewRoleId);
   const previewPermissions = previewRole ? permissionDrafts[previewRole.id] : null;
   const previewScreenAllowed = isPreviewScreenAllowed(screen, previewPermissions);
   const canCreateForecast = !previewPermissions || canEditPermission(previewPermissions, "Lịch Forecast");
@@ -878,7 +880,7 @@ function App() {
   };
 
   const handlePreviewRole = (roleId) => {
-    const role = roleDefinitions.find((item) => item.id === roleId);
+    const role = roles.find((item) => item.id === roleId);
     const permissions = permissionDrafts[roleId] || {};
     setPreviewRoleId(roleId);
     setScreen(getFirstPreviewScreen(permissions));
@@ -1245,6 +1247,7 @@ function App() {
               onChannelConfig={() => setScreen("channel-config")}
               onApprovalConfig={() => setScreen("approval-config")}
               onSlaConfig={() => setScreen("sla-config")}
+              roleCount={roles.length}
             />
           )}
           {screen === "system-permissions" && (
@@ -1256,6 +1259,8 @@ function App() {
               permissionDrafts={permissionDrafts}
               setPermissionDrafts={setPermissionDrafts}
               onPreviewRole={handlePreviewRole}
+              roles={roles}
+              setRoles={setRoles}
             />
           )}
           {screen === "channel-config" && (
@@ -1788,7 +1793,14 @@ function ScheduleList({ onCreate, onOpen, forecasts = initialForecasts, tasks = 
 }
 
 function TaskList({ onOpen, onRsmApprove, onGdkdApprove, tasks = initialTasks }) {
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 6;
   const totalTasks = tasks.length;
+  const totalPages = Math.ceil(totalTasks / rowsPerPage);
+  const currentPage = Math.min(page, totalPages || 1);
+  const visibleTasks = tasks.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const startRow = totalTasks ? (currentPage - 1) * rowsPerPage + 1 : 0;
+  const endRow = Math.min(currentPage * rowsPerPage, totalTasks);
   const doingTasks = tasks.filter((task) => !["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
   const doneTasks = tasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
   const lateTasks = tasks.filter((task) => task.status === "Quá hạn").length;
@@ -1840,7 +1852,7 @@ function TaskList({ onOpen, onRsmApprove, onGdkdApprove, tasks = initialTasks })
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
-          {tasks.map((row) => (
+          {visibleTasks.map((row) => (
             <article className="task-row" key={row.title}>
               <button className="task-title-cell" onClick={() => onOpen(row.id)}>
                 <i className={row.marker} />
@@ -1894,14 +1906,8 @@ function TaskList({ onOpen, onRsmApprove, onGdkdApprove, tasks = initialTasks })
           ))}
         </div>
         <div className="table-footer">
-          <span>Hiển thị 1 - 10 trên tổng số 42 Task</span>
-          <div className="pagination">
-            <button className="ghost-page">‹</button>
-            <button className="current">1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>...</button>
-          </div>
+          <span>Hiển thị {startRow} - {endRow} trên tổng số {totalTasks} Task</span>
+          <SimplePagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </section>
 
@@ -2075,6 +2081,7 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
   const [selectedForecastId, setSelectedForecastId] = useState(defaultForecast?.id || "");
   const [quickFilter, setQuickFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
   const selectedForecast =
     forecasts.find((forecast) => forecast.id === selectedForecastId) || defaultForecast;
   const forecastTasks = tasks.filter((task) => task.forecastId === selectedForecast?.id);
@@ -2126,6 +2133,12 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
         .toLowerCase()
         .includes(normalizedSearch);
     });
+  const rowsPerPage = 6;
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+  const currentPage = Math.min(page, totalPages || 1);
+  const pagedRows = rows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const startRow = rows.length ? (currentPage - 1) * rowsPerPage + 1 : 0;
+  const endRow = Math.min(currentPage * rowsPerPage, rows.length);
 
   return (
     <section className="page-flow appraisal-page">
@@ -2149,26 +2162,26 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
       <section className="panel appraisal-table-panel">
         <div className="appraisal-toolbar">
           <div className="segmented-tabs">
-            <button className={quickFilter === "all" ? "active" : ""} onClick={() => setQuickFilter("all")}>Tất cả</button>
-            <button className={quickFilter === "appraisal" ? "active" : ""} onClick={() => setQuickFilter("appraisal")}>Chờ thẩm định</button>
-            <button className={quickFilter === "approval" ? "active" : ""} onClick={() => setQuickFilter("approval")}>Chờ duyệt</button>
+            <button className={quickFilter === "all" ? "active" : ""} onClick={() => { setQuickFilter("all"); setPage(1); }}>Tất cả</button>
+            <button className={quickFilter === "appraisal" ? "active" : ""} onClick={() => { setQuickFilter("appraisal"); setPage(1); }}>Chờ thẩm định</button>
+            <button className={quickFilter === "approval" ? "active" : ""} onClick={() => { setQuickFilter("approval"); setPage(1); }}>Chờ duyệt</button>
           </div>
           <label className="month-select forecast-month-select">
-            <select value={selectedForecast?.id || ""} onChange={(event) => setSelectedForecastId(event.target.value)}>
+            <select value={selectedForecast?.id || ""} onChange={(event) => { setSelectedForecastId(event.target.value); setPage(1); }}>
               {forecasts.map((forecast) => (
                 <option key={forecast.id} value={forecast.id}>
                   {forecast.month}
                 </option>
               ))}
             </select>
-            <ChevronRight size={16} />
+            <ChevronDown size={16} />
           </label>
           <label className="appraisal-search">
             <Search size={19} />
             <input
               placeholder="Tìm kiếm kênh hoặc tên task..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => { setSearchTerm(event.target.value); setPage(1); }}
             />
           </label>
         </div>
@@ -2183,7 +2196,7 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
             <span>Tài liệu</span>
             <span>Thao tác</span>
           </div>
-          {rows.map((row) => {
+          {pagedRows.map((row) => {
             const Icon = row.icon;
             return (
               <article className="appraisal-row" key={row.taskId}>
@@ -2222,13 +2235,8 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
           )}
         </div>
         <div className="table-footer">
-          <span>Hiển thị {rows.length} trong tổng số {allRows.length} tác vụ</span>
-          <div className="pagination">
-            <button className="ghost-page">‹</button>
-            <button className="current">1</button>
-            <button>2</button>
-            <button>›</button>
-          </div>
+          <span>Hiển thị {startRow} - {endRow} trong tổng số {rows.length} tác vụ</span>
+          <SimplePagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </section>
 
@@ -2456,6 +2464,7 @@ function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTas
   const [selectedForecastId, setSelectedForecastId] = useState(defaultForecast?.id || "");
   const [quickFilter, setQuickFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
   const selectedForecast =
     forecasts.find((forecast) => forecast.id === selectedForecastId) || defaultForecast;
   const forecastTasks = tasks.filter((task) => task.forecastId === selectedForecast?.id);
@@ -2502,6 +2511,12 @@ function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTas
         .toLowerCase()
         .includes(normalizedSearch);
     });
+  const rowsPerPage = 6;
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+  const currentPage = Math.min(page, totalPages || 1);
+  const pagedRows = rows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const startRow = rows.length ? (currentPage - 1) * rowsPerPage + 1 : 0;
+  const endRow = Math.min(currentPage * rowsPerPage, rows.length);
 
   return (
     <section className="page-flow appraisal-page">
@@ -2525,26 +2540,26 @@ function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTas
       <section className="panel appraisal-table-panel">
         <div className="appraisal-toolbar approval-toolbar">
           <div className="segmented-tabs approval-tabs">
-            <button className={quickFilter === "all" ? "active" : ""} onClick={() => setQuickFilter("all")}>Tất cả</button>
-            <button className={quickFilter === "pending" ? "active" : ""} onClick={() => setQuickFilter("pending")}>Chờ phê duyệt</button>
-            <button className={quickFilter === "approved" ? "active" : ""} onClick={() => setQuickFilter("approved")}>Đã phê duyệt</button>
+            <button className={quickFilter === "all" ? "active" : ""} onClick={() => { setQuickFilter("all"); setPage(1); }}>Tất cả</button>
+            <button className={quickFilter === "pending" ? "active" : ""} onClick={() => { setQuickFilter("pending"); setPage(1); }}>Chờ phê duyệt</button>
+            <button className={quickFilter === "approved" ? "active" : ""} onClick={() => { setQuickFilter("approved"); setPage(1); }}>Đã phê duyệt</button>
           </div>
           <label className="month-select forecast-month-select">
-            <select value={selectedForecast?.id || ""} onChange={(event) => setSelectedForecastId(event.target.value)}>
+            <select value={selectedForecast?.id || ""} onChange={(event) => { setSelectedForecastId(event.target.value); setPage(1); }}>
               {forecasts.map((forecast) => (
                 <option key={forecast.id} value={forecast.id}>
                   {forecast.month}
                 </option>
               ))}
             </select>
-            <ChevronRight size={16} />
+            <ChevronDown size={16} />
           </label>
           <label className="appraisal-search">
             <Search size={19} />
             <input
               placeholder="Tìm kiếm kênh hoặc tên task..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => { setSearchTerm(event.target.value); setPage(1); }}
             />
           </label>
         </div>
@@ -2559,7 +2574,7 @@ function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTas
             <span>Tài liệu</span>
             <span>Thao tác</span>
           </div>
-          {rows.map((row) => {
+          {pagedRows.map((row) => {
             const Icon = row.icon;
             return (
               <article className="appraisal-row" key={row.taskId}>
@@ -2598,13 +2613,8 @@ function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTas
           )}
         </div>
         <div className="table-footer">
-          <span>Hiển thị {rows.length} trong tổng số {allRows.length} tác vụ</span>
-          <div className="pagination">
-            <button className="ghost-page">‹</button>
-            <button className="current">1</button>
-            <button>2</button>
-            <button>›</button>
-          </div>
+          <span>Hiển thị {startRow} - {endRow} trong tổng số {rows.length} tác vụ</span>
+          <SimplePagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </section>
 
@@ -2846,7 +2856,7 @@ function SystemSwitcher({ active, onUsers, onPermissions, onChannelConfig, onApp
   );
 }
 
-function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaConfig }) {
+function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaConfig, roleCount = roleDefinitions.length }) {
   const [roleFilter, setRoleFilter] = useState("Tất cả vai trò");
   const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
   const [searchTerm, setSearchTerm] = useState("");
@@ -2901,7 +2911,7 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
         <AdminMetric label="Tài khoản" value={adminUsers.length} hint="Tổng hồ sơ" icon={Users} tone="blue" />
         <AdminMetric label="Đang hoạt động" value={activeCount} hint="Có thể truy cập" icon={CheckCircle2} tone="green" />
         <AdminMetric label="Tạm khóa" value={lockedCount} hint="Đang bị chặn" icon={Lock} tone="orange" />
-        <AdminMetric label="Vai trò" value={roleDefinitions.length} hint="Nhóm quyền" icon={Settings} tone="purple" />
+        <AdminMetric label="Vai trò" value={roleCount} hint="Nhóm quyền" icon={Settings} tone="purple" />
       </div>
 
       <section className="panel admin-directory-panel">
@@ -2970,10 +2980,15 @@ function SystemPermissions({
   permissionDrafts,
   setPermissionDrafts,
   onPreviewRole,
+  roles = roleDefinitions,
+  setRoles,
 }) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
   const [roleUserSearch, setRoleUserSearch] = useState("");
-  const selectedRole = roleDefinitions.find((role) => role.id === selectedRoleId) || roleDefinitions[0];
+  const [roleFormOpen, setRoleFormOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleScope, setNewRoleScope] = useState("Theo phân quyền");
+  const selectedRole = roles.find((role) => role.id === selectedRoleId) || roles[0];
   const selectedPermissions = permissionDrafts[selectedRole.id] || {};
   const roleUsers = adminUsers.filter((user) => user.role === selectedRole.name);
   const visibleRoleUsers = roleUsers.filter((user) => {
@@ -2981,6 +2996,7 @@ function SystemPermissions({
     return haystack.includes(roleUserSearch.toLowerCase());
   });
   const updateRolePermission = (module, level) => {
+    if (selectedRole.id === "admin") return;
     setPermissionDrafts((current) => ({
       ...current,
       [selectedRole.id]: {
@@ -2988,6 +3004,33 @@ function SystemPermissions({
         [module]: level,
       },
     }));
+  };
+  const createRole = () => {
+    const name = newRoleName.trim();
+    if (!name || !setRoles) return;
+    const id = `custom-${Date.now()}`;
+    setRoles((current) => [
+      ...current,
+      { id, name, description: "Vai trò tùy chỉnh cho Forecast KD01", scope: newRoleScope || "Theo phân quyền", users: 0, risk: "Trung bình" },
+    ]);
+    setPermissionDrafts((current) => ({
+      ...current,
+      [id]: permissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
+    }));
+    setSelectedRoleId(id);
+    setNewRoleName("");
+    setNewRoleScope("Theo phân quyền");
+    setRoleFormOpen(false);
+  };
+  const deleteRole = (roleId) => {
+    if (roleId === "admin" || !setRoles) return;
+    setRoles((current) => current.filter((role) => role.id !== roleId));
+    setPermissionDrafts((current) => {
+      const next = { ...current };
+      delete next[roleId];
+      return next;
+    });
+    if (selectedRoleId === roleId) setSelectedRoleId("admin");
   };
 
   return (
@@ -3011,14 +3054,14 @@ function SystemPermissions({
             <p>Thiết lập role, phạm vi dữ liệu và quyền thao tác cho từng bước Forecast KD01.</p>
           </div>
         </div>
-        <button className="primary-button">
+        <button className="primary-button" onClick={() => setRoleFormOpen((open) => !open)}>
           <UserPlus size={18} />
           Tạo vai trò
         </button>
       </div>
 
       <div className="admin-metric-grid">
-        <AdminMetric label="Vai trò" value={roleDefinitions.length} hint="Nhóm quyền" icon={Lock} tone="blue" />
+        <AdminMetric label="Vai trò" value={roles.length} hint="Nhóm quyền" icon={Lock} tone="blue" />
         <AdminMetric label="Nhân sự" value={adminUsers.length} hint="Đang quản lý" icon={Users} tone="green" />
         <AdminMetric label="Phạm vi" value="8" hint="Lớp dữ liệu KD01" icon={Settings} tone="cyan" />
         <AdminMetric label="Rủi ro" value="4" hint="Role nhạy cảm" icon={AlertTriangle} tone="orange" />
@@ -3030,19 +3073,32 @@ function SystemPermissions({
             <h3>Vai trò</h3>
             <Badge tone="success">OK</Badge>
           </div>
-          {roleDefinitions.map((role) => (
-            <button
-              className={`role-list-item ${role.id === selectedRoleId ? "active" : ""}`}
-              key={role.id}
-              onClick={() => setSelectedRoleId(role.id)}
-            >
+          {roleFormOpen && (
+            <div className="role-create-panel">
+              <input value={newRoleName} onChange={(event) => setNewRoleName(event.target.value)} placeholder="Tên vai trò mới" />
+              <input value={newRoleScope} onChange={(event) => setNewRoleScope(event.target.value)} placeholder="Phạm vi dữ liệu" />
               <div>
-                <strong>{role.name}</strong>
-                <span>{role.description}</span>
-                <small>{role.scope}</small>
+                <button className="primary-button" onClick={createRole}>Tạo</button>
+                <button className="secondary-button" onClick={() => setRoleFormOpen(false)}>Hủy</button>
               </div>
-              <b>{role.users}</b>
-            </button>
+            </div>
+          )}
+          {roles.map((role) => (
+            <article className={`role-list-item ${role.id === selectedRoleId ? "active" : ""}`} key={role.id}>
+              <button className="role-pick-button" onClick={() => setSelectedRoleId(role.id)}>
+                <div>
+                  <strong>{role.name}</strong>
+                  <span>{role.description}</span>
+                  <small>{role.scope}</small>
+                </div>
+                <b>{role.users}</b>
+              </button>
+              {role.id !== "admin" && (
+                <button className="role-delete-button" onClick={() => deleteRole(role.id)} title="Xóa vai trò">
+                  <Trash2 size={16} />
+                </button>
+              )}
+            </article>
           ))}
         </section>
 
@@ -3074,6 +3130,7 @@ function SystemPermissions({
                   <select
                     className={`permission-level-select ${level}`}
                     value={level}
+                    disabled={selectedRole.id === "admin"}
                     onChange={(event) => updateRolePermission(row.module, event.target.value)}
                   >
                     {permissionLevelOptions.map((option) => (
@@ -3137,11 +3194,13 @@ function SystemPermissions({
 
           <div className="permission-card-footer">
             <span>Hiển thị {visibleRoleUsers.length ? `1-${visibleRoleUsers.length}` : "0"} / {roleUsers.length}</span>
-            <div className="pager-actions">
-              <button disabled>Trước</button>
-              <strong>1/1</strong>
-              <button disabled>Sau</button>
-            </div>
+            {roleUsers.length > 7 && (
+              <div className="pager-actions">
+                <button disabled>Trước</button>
+                <strong>1/1</strong>
+                <button disabled>Sau</button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -4321,6 +4380,21 @@ function Person({ name, badge, tone }) {
 
 function Badge({ children, tone }) {
   return <span className={`status-badge ${tone}`}>{children}</span>;
+}
+
+function SimplePagination({ page, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="pagination">
+      <button className="ghost-page" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>‹</button>
+      {Array.from({ length: totalPages }, (_, index) => index + 1).map((item) => (
+        <button key={item} className={item === page ? "current" : ""} onClick={() => onPageChange(item)}>
+          {item}
+        </button>
+      ))}
+      <button disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>›</button>
+    </div>
+  );
 }
 
 export default App;

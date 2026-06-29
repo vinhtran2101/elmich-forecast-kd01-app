@@ -15,7 +15,7 @@
   --red-soft: #fef2f2;
   --orange: #f59e0b;
   --orange-soft: #fffbeb;
-  --shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  --shadow: 0 8px 18px rgba(15, 23, 42, 0.055);
   color: var(--text);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -45,6 +45,12 @@ textarea {
 button {
   border: 0;
   cursor: pointer;
+}
+
+select {
+  font-family: inherit;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .app-shell {
@@ -444,7 +450,7 @@ button {
 .panel,
 .mini-metric {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 14px;
   background: var(--panel);
 }
 
@@ -600,7 +606,7 @@ button {
 }
 
 .panel {
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.045);
 }
 
 .chart-panel,
@@ -2701,6 +2707,8 @@ button {
 
 .appraisal-page {
   max-width: none;
+  gap: 18px;
+  font-size: 14px;
 }
 
 .appraisal-breadcrumb {
@@ -2708,7 +2716,7 @@ button {
 }
 
 .appraisal-table-panel {
-  --appraisal-table-min: 1320px;
+  --appraisal-table-min: 980px;
   overflow-x: auto;
   overflow-y: hidden;
   border-color: #bec9dc;
@@ -2717,54 +2725,55 @@ button {
 
 .appraisal-toolbar {
   display: grid;
-  grid-template-columns: 1.1fr 164px minmax(260px, 1.25fr);
-  gap: 14px;
+  grid-template-columns: minmax(360px, 0.95fr) 148px minmax(220px, 1fr);
+  gap: 12px;
   align-items: center;
   min-width: var(--appraisal-table-min);
   border-bottom: 1px solid var(--line);
   background: #f8fafc;
-  padding: 16px;
+  padding: 12px 14px;
 }
 
 .segmented-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  border-radius: 6px;
-  background: #dfe2e5;
-  padding: 4px;
+  border-radius: 12px;
+  background: #eef2f7;
+  padding: 3px;
 }
 
 .segmented-tabs button {
-  min-height: 44px;
-  border-radius: 5px;
+  min-height: 34px;
+  border-radius: 9px;
   background: transparent;
   color: #4b5563;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 750;
 }
 
 .segmented-tabs button.active {
   background: #fff;
   color: var(--blue);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
 }
 
 .month-select,
 .appraisal-search {
   display: flex;
-  min-height: 38px;
+  min-height: 36px;
   align-items: center;
   justify-content: space-between;
   border: 1px solid #c4cedf;
-  border-radius: 6px;
+  border-radius: 10px;
   background: #fff;
   color: #4b5563;
-  padding: 0 12px;
-  font-weight: 650;
+  padding: 0 10px;
+  font-weight: 550;
 }
 
 .month-select {
-  background: #dfe2e5;
+  background: #fff;
 }
 
 .forecast-month-select {
@@ -2804,16 +2813,16 @@ button {
 .appraisal-row {
   display: grid;
   grid-template-columns:
-    minmax(168px, 0.95fr)
-    minmax(132px, 0.72fr)
-    minmax(126px, 0.72fr)
-    minmax(170px, 0.9fr)
-    minmax(158px, 0.85fr)
-    minmax(300px, 1.35fr)
-    minmax(126px, 0.55fr);
+    minmax(130px, 0.85fr)
+    minmax(112px, 0.64fr)
+    minmax(104px, 0.6fr)
+    minmax(128px, 0.72fr)
+    minmax(118px, 0.7fr)
+    minmax(210px, 1.05fr)
+    minmax(88px, 0.42fr);
   align-items: center;
-  gap: 12px;
-  padding: 0 28px;
+  gap: 10px;
+  padding: 0 16px;
 }
 
 .appraisal-head > span,
@@ -2827,7 +2836,7 @@ button {
 }
 
 .appraisal-head {
-  min-height: 82px;
+  min-height: 56px;
   border-bottom: 1px solid var(--line);
   background: #f8fafc;
   color: #4c5567;
@@ -2837,13 +2846,13 @@ button {
 }
 
 .appraisal-row {
-  min-height: 86px;
+  min-height: 60px;
   border-bottom: 1px solid var(--line);
 }
 
 .appraisal-empty-row {
   display: grid;
-  min-height: 96px;
+  min-height: 86px;
   place-items: center;
   border-bottom: 1px solid var(--line);
   color: #64748b;
@@ -2852,7 +2861,7 @@ button {
 
 .appraisal-channel {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
 }
@@ -2891,7 +2900,7 @@ button {
   gap: 6px;
   color: #374151;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 13px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -2913,22 +2922,23 @@ button {
 .appraisal-bottom-grid {
   display: grid;
   grid-template-columns: 0.85fr 0.85fr 0.85fr minmax(260px, 1.32fr);
-  gap: 24px;
+  gap: 16px;
 }
 
 .appraisal-stat-card,
 .recent-activity-card {
   border: 1px solid #bec9dc;
-  border-radius: 8px;
+  border-radius: 14px;
   background: #fff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.045);
 }
 
 .appraisal-stat-card {
   display: grid;
-  min-height: 160px;
+  min-height: 120px;
   align-content: center;
   gap: 14px;
-  padding: 24px;
+  padding: 16px;
 }
 
 .appraisal-stat-card div {
@@ -2947,7 +2957,7 @@ button {
 }
 
 .appraisal-stat-card b {
-  font-size: 31px;
+  font-size: 26px;
   line-height: 1;
 }
 
@@ -3498,7 +3508,7 @@ button {
   align-items: center;
   gap: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 14px;
   background: #fff;
   padding: 14px;
   box-shadow: var(--shadow);
@@ -3509,10 +3519,24 @@ button {
   color: #64748b;
 }
 
+.admin-metric-card span {
+  display: block;
+  margin-bottom: 4px;
+}
+
 .admin-metric-card strong {
   display: inline-block;
   margin: 4px 6px 0 0;
   font-size: 24px;
+  line-height: 1;
+  vertical-align: baseline;
+}
+
+.admin-metric-card small {
+  display: inline;
+  font-size: 13px;
+  line-height: 1.25;
+  vertical-align: baseline;
 }
 
 .admin-metric-card i {
@@ -3550,6 +3574,7 @@ button {
 .role-users-panel,
 .permission-activity-panel {
   border-color: #bec9dc;
+  border-radius: 14px;
 }
 
 .admin-directory-panel {
@@ -3697,13 +3722,24 @@ button {
 .role-list-item {
   display: grid;
   width: 100%;
-  grid-template-columns: 1fr 42px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   border: 1px solid transparent;
   border-radius: 8px;
   background: #fff;
   padding: 12px;
+  text-align: left;
+}
+
+.role-pick-button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: inherit;
   text-align: left;
 }
 
@@ -3727,7 +3763,8 @@ button {
   color: #64748b;
 }
 
-.role-list-item b {
+.role-list-item b,
+.role-delete-button {
   display: grid;
   width: 36px;
   height: 36px;
@@ -3735,6 +3772,37 @@ button {
   border: 1px solid #dbe3ef;
   border-radius: 999px;
   background: #fff;
+}
+
+.role-delete-button {
+  color: #ef4444;
+}
+
+.role-list-item.active {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.08);
+}
+
+.role-create-panel {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 12px;
+}
+
+.role-create-panel input {
+  min-height: 38px;
+  border: 1px solid #c5cedf;
+  border-radius: 10px;
+  padding: 0 10px;
+}
+
+.role-create-panel div {
+  display: flex;
+  gap: 8px;
 }
 
 .permission-detail-title {
@@ -3803,6 +3871,11 @@ button {
 .permission-level-select:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.permission-level-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.9;
 }
 
 .permission-level-select.full {
