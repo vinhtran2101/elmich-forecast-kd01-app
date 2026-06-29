@@ -654,6 +654,12 @@ function normalizePermissionLevel(value) {
   return "scoped";
 }
 
+function getUserInitials(name = "") {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "NV";
+  return parts.slice(-2).map((part) => part[0]).join("").toUpperCase();
+}
+
 function buildInitialPermissionDrafts() {
   return roleDefinitions.reduce((roleAcc, role) => {
     roleAcc[role.id] = permissionMatrix.reduce((matrixAcc, row) => {
@@ -777,6 +783,7 @@ function App() {
     note: "",
   });
   const [toast, setToast] = useState("");
+  const [users, setUsers] = useState(adminUsers);
   const [roles, setRoles] = useState(roleDefinitions);
   const [permissionDrafts, setPermissionDrafts] = useState(buildInitialPermissionDrafts);
   const [previewRoleId, setPreviewRoleId] = useState("");
@@ -1248,6 +1255,9 @@ function App() {
               onApprovalConfig={() => setScreen("approval-config")}
               onSlaConfig={() => setScreen("sla-config")}
               roleCount={roles.length}
+              roles={roles}
+              users={users}
+              setUsers={setUsers}
             />
           )}
           {screen === "system-permissions" && (
@@ -1261,6 +1271,7 @@ function App() {
               onPreviewRole={handlePreviewRole}
               roles={roles}
               setRoles={setRoles}
+              users={users}
             />
           )}
           {screen === "channel-config" && (
@@ -2856,13 +2867,169 @@ function SystemSwitcher({ active, onUsers, onPermissions, onChannelConfig, onApp
   );
 }
 
-function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaConfig, roleCount = roleDefinitions.length }) {
+function RoleCreateModal({ role, setRole, onClose, onSubmit }) {
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal role-modal-card" role="dialog" aria-modal="true" aria-label="Tạo vai trò">
+        <div className="admin-modal-header">
+          <div>
+            <h3>Tạo vai trò</h3>
+            <p>Khai báo thông tin vai trò. Mã hệ thống có thể để trống để tự tạo.</p>
+          </div>
+          <button className="modal-close-button" onClick={onClose} title="Đóng">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="admin-modal-body modal-grid two-cols">
+          <label>
+            <span>Tên vai trò</span>
+            <input value={role.name} onChange={(event) => setRole({ ...role, name: event.target.value })} placeholder="Ví dụ: Quản lý vùng mới" />
+          </label>
+          <label>
+            <span>Phạm vi</span>
+            <input value={role.scope} onChange={(event) => setRole({ ...role, scope: event.target.value })} placeholder="Theo vùng / theo kênh" />
+          </label>
+          <label>
+            <span>Mã hệ thống</span>
+            <input value={role.code} onChange={(event) => setRole({ ...role, code: event.target.value })} placeholder="Tự tạo sau khi lưu vai trò" />
+          </label>
+          <label className="full">
+            <span>Mô tả</span>
+            <textarea value={role.description} onChange={(event) => setRole({ ...role, description: event.target.value })} placeholder="Mô tả trách nhiệm, dữ liệu và phạm vi vận hành..." />
+          </label>
+        </div>
+        <div className="admin-modal-actions">
+          <button className="secondary-button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" onClick={onSubmit}>Tạo vai trò</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function UserAccountModal({ mode, user, roles, onChange, onClose, onSave }) {
+  const title = mode === "edit" ? "Chỉnh sửa tài khoản" : "Tạo tài khoản mới";
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal user-modal-card" role="dialog" aria-modal="true" aria-label={title}>
+        <div className="admin-modal-header">
+          <h3>{title}</h3>
+          <button className="modal-close-button" onClick={onClose} title="Đóng">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="admin-modal-body modal-grid two-cols">
+          <label>
+            <span>Tên tài khoản</span>
+            <input value={user.name} onChange={(event) => onChange({ name: event.target.value })} placeholder="Nguyễn Văn A" />
+          </label>
+          <label>
+            <span>Mã nhân sự</span>
+            <input value={user.employeeCode || ""} onChange={(event) => onChange({ employeeCode: event.target.value })} placeholder="NV-001" />
+          </label>
+          <label>
+            <span>Email đăng nhập</span>
+            <input value={user.email} onChange={(event) => onChange({ email: event.target.value })} placeholder="ten@elmich.vn" />
+          </label>
+          <label>
+            <span>Email phụ</span>
+            <input value={user.secondaryEmail || ""} onChange={(event) => onChange({ secondaryEmail: event.target.value })} placeholder="ten@gmail.com" />
+          </label>
+          <label>
+            <span>Số điện thoại</span>
+            <input value={user.phone || ""} onChange={(event) => onChange({ phone: event.target.value })} placeholder="098xxxxxxx" />
+          </label>
+          <label>
+            <span>Chức danh</span>
+            <input value={user.title || ""} onChange={(event) => onChange({ title: event.target.value })} placeholder="Admin hệ thống" />
+          </label>
+          <label>
+            <span>Phòng ban</span>
+            <input value={user.department || ""} onChange={(event) => onChange({ department: event.target.value })} placeholder="Kế hoạch / Kinh doanh / Tài chính" />
+          </label>
+          <label>
+            <span>Trạng thái</span>
+            <select value={user.status} onChange={(event) => onChange({ status: event.target.value })}>
+              <option>Active</option>
+              <option>Inactive</option>
+              <option>Locked</option>
+            </select>
+          </label>
+          <label>
+            <span>Vai trò phân quyền</span>
+            <select value={user.role} onChange={(event) => onChange({ role: event.target.value })}>
+              {roles.map((role) => (
+                <option key={role.id}>{role.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Phạm vi phụ trách</span>
+            <input value={user.scope} onChange={(event) => onChange({ scope: event.target.value })} placeholder="Theo phân quyền" />
+          </label>
+        </div>
+        <div className="admin-modal-actions">
+          <button className="secondary-button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" onClick={onSave}>
+            <Save size={17} />
+            Lưu
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ConfirmDialog({ title, body, confirmLabel, onCancel, onConfirm }) {
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal confirm-modal-card" role="dialog" aria-modal="true" aria-label={title}>
+        <div className="admin-modal-header">
+          <div>
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </div>
+          <button className="modal-close-button" onClick={onCancel} title="Đóng">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="admin-modal-actions">
+          <button className="secondary-button" onClick={onCancel}>Hủy</button>
+          <button className="danger-button" onClick={onConfirm}>{confirmLabel}</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SystemUsers({
+  onPermissions,
+  onChannelConfig,
+  onApprovalConfig,
+  onSlaConfig,
+  roleCount = roleDefinitions.length,
+  roles = roleDefinitions,
+  users = adminUsers,
+  setUsers,
+}) {
   const [roleFilter, setRoleFilter] = useState("Tất cả vai trò");
   const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
   const [searchTerm, setSearchTerm] = useState("");
-  const roleOptions = ["Tất cả vai trò", ...Array.from(new Set(adminUsers.map((user) => user.role)))];
+  const [userModal, setUserModal] = useState(null);
+  const blankUser = {
+    id: "",
+    name: "",
+    email: "",
+    role: roles[0]?.name || "Admin",
+    scope: "Theo phân quyền",
+    status: "Active",
+    initials: "NV",
+    tone: "blue",
+  };
+  const userForm = userModal?.user || blankUser;
+  const roleOptions = ["Tất cả vai trò", ...Array.from(new Set(users.map((user) => user.role)))];
   const statusOptions = ["Tất cả trạng thái", "Active", "Inactive", "Locked"];
-  const filteredUsers = adminUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     const matchRole = roleFilter === "Tất cả vai trò" || user.role === roleFilter;
     const matchStatus = statusFilter === "Tất cả trạng thái" || user.status === statusFilter;
     const matchSearch = [user.name, user.email, user.role, user.scope]
@@ -2871,8 +3038,32 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
       .includes(searchTerm.trim().toLowerCase());
     return matchRole && matchStatus && matchSearch;
   });
-  const activeCount = adminUsers.filter((user) => user.status === "Active").length;
-  const lockedCount = adminUsers.filter((user) => user.status === "Locked").length;
+  const activeCount = users.filter((user) => user.status === "Active").length;
+  const lockedCount = users.filter((user) => user.status === "Locked").length;
+  const openCreateUser = () => setUserModal({ mode: "create", user: blankUser });
+  const openEditUser = (user) => setUserModal({ mode: "edit", user });
+  const updateUserForm = (patch) => {
+    setUserModal((current) => ({ ...current, user: { ...(current?.user || blankUser), ...patch } }));
+  };
+  const saveUser = () => {
+    if (!setUsers) return;
+    const name = userForm.name.trim() || "Người dùng mới";
+    const nextUser = {
+      ...userForm,
+      id: userForm.id || `u-${Date.now()}`,
+      name,
+      email: userForm.email.trim() || "user@elmich.vn",
+      scope: userForm.scope.trim() || "Theo phân quyền",
+      initials: getUserInitials(name),
+      tone: userForm.tone || "blue",
+    };
+    setUsers((current) =>
+      userModal?.mode === "edit"
+        ? current.map((user) => (user.id === nextUser.id ? nextUser : user))
+        : [nextUser, ...current]
+    );
+    setUserModal(null);
+  };
 
   return (
     <section className="page-flow admin-page">
@@ -2900,7 +3091,7 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
             <Cloud size={18} />
             Đồng bộ danh bạ
           </button>
-          <button className="primary-button">
+          <button className="primary-button" onClick={openCreateUser}>
             <UserPlus size={18} />
             Tạo tài khoản
           </button>
@@ -2908,7 +3099,7 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
       </div>
 
       <div className="admin-metric-grid">
-        <AdminMetric label="Tài khoản" value={adminUsers.length} hint="Tổng hồ sơ" icon={Users} tone="blue" />
+        <AdminMetric label="Tài khoản" value={users.length} hint="Tổng hồ sơ" icon={Users} tone="blue" />
         <AdminMetric label="Đang hoạt động" value={activeCount} hint="Có thể truy cập" icon={CheckCircle2} tone="green" />
         <AdminMetric label="Tạm khóa" value={lockedCount} hint="Đang bị chặn" icon={Lock} tone="orange" />
         <AdminMetric label="Vai trò" value={roleCount} hint="Nhóm quyền" icon={Settings} tone="purple" />
@@ -2961,13 +3152,23 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
               <span><Badge tone="neutral">{user.role}</Badge></span>
               <strong>{user.scope}</strong>
               <span><Badge tone={user.status === "Active" ? "success" : user.status === "Locked" ? "danger" : "neutral"}>{user.status}</Badge></span>
-              <button className="secondary-button compact-action" title="Thao tác">
+              <button className="secondary-button compact-action" title="Chỉnh sửa" onClick={() => openEditUser(user)}>
                 <MoreVertical size={17} />
               </button>
             </article>
           ))}
         </div>
       </section>
+      {userModal && (
+        <UserAccountModal
+          mode={userModal.mode}
+          user={userForm}
+          roles={roles}
+          onChange={updateUserForm}
+          onClose={() => setUserModal(null)}
+          onSave={saveUser}
+        />
+      )}
     </section>
   );
 }
@@ -2982,15 +3183,25 @@ function SystemPermissions({
   onPreviewRole,
   roles = roleDefinitions,
   setRoles,
+  users = adminUsers,
 }) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
   const [roleUserSearch, setRoleUserSearch] = useState("");
-  const [roleFormOpen, setRoleFormOpen] = useState(false);
-  const [newRoleName, setNewRoleName] = useState("");
-  const [newRoleScope, setNewRoleScope] = useState("Theo phân quyền");
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [confirmDeleteRole, setConfirmDeleteRole] = useState(null);
+  const [newRole, setNewRole] = useState({
+    name: "",
+    scope: "Theo phân quyền",
+    code: "",
+    description: "",
+  });
   const selectedRole = roles.find((role) => role.id === selectedRoleId) || roles[0];
   const selectedPermissions = permissionDrafts[selectedRole.id] || {};
-  const roleUsers = adminUsers.filter((user) => user.role === selectedRole.name);
+  const roleUserCounts = users.reduce((acc, user) => {
+    acc[user.role] = (acc[user.role] || 0) + 1;
+    return acc;
+  }, {});
+  const roleUsers = users.filter((user) => user.role === selectedRole.name);
   const visibleRoleUsers = roleUsers.filter((user) => {
     const haystack = `${user.name} ${user.email} ${user.scope}`.toLowerCase();
     return haystack.includes(roleUserSearch.toLowerCase());
@@ -3006,21 +3217,27 @@ function SystemPermissions({
     }));
   };
   const createRole = () => {
-    const name = newRoleName.trim();
+    const name = newRole.name.trim();
     if (!name || !setRoles) return;
-    const id = `custom-${Date.now()}`;
+    const id = newRole.code.trim() || `custom-${Date.now()}`;
     setRoles((current) => [
       ...current,
-      { id, name, description: "Vai trò tùy chỉnh cho Forecast KD01", scope: newRoleScope || "Theo phân quyền", users: 0, risk: "Trung bình" },
+      {
+        id,
+        name,
+        description: newRole.description.trim() || "Vai trò tùy chỉnh cho Forecast KD01",
+        scope: newRole.scope.trim() || "Theo phân quyền",
+        users: 0,
+        risk: "Trung bình",
+      },
     ]);
     setPermissionDrafts((current) => ({
       ...current,
       [id]: permissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
     }));
     setSelectedRoleId(id);
-    setNewRoleName("");
-    setNewRoleScope("Theo phân quyền");
-    setRoleFormOpen(false);
+    setNewRole({ name: "", scope: "Theo phân quyền", code: "", description: "" });
+    setRoleModalOpen(false);
   };
   const deleteRole = (roleId) => {
     if (roleId === "admin" || !setRoles) return;
@@ -3054,7 +3271,7 @@ function SystemPermissions({
             <p>Thiết lập role, phạm vi dữ liệu và quyền thao tác cho từng bước Forecast KD01.</p>
           </div>
         </div>
-        <button className="primary-button" onClick={() => setRoleFormOpen((open) => !open)}>
+        <button className="primary-button" onClick={() => setRoleModalOpen(true)}>
           <UserPlus size={18} />
           Tạo vai trò
         </button>
@@ -3062,7 +3279,7 @@ function SystemPermissions({
 
       <div className="admin-metric-grid">
         <AdminMetric label="Vai trò" value={roles.length} hint="Nhóm quyền" icon={Lock} tone="blue" />
-        <AdminMetric label="Nhân sự" value={adminUsers.length} hint="Đang quản lý" icon={Users} tone="green" />
+        <AdminMetric label="Nhân sự" value={users.length} hint="Đang quản lý" icon={Users} tone="green" />
         <AdminMetric label="Phạm vi" value="8" hint="Lớp dữ liệu KD01" icon={Settings} tone="cyan" />
         <AdminMetric label="Rủi ro" value="4" hint="Role nhạy cảm" icon={AlertTriangle} tone="orange" />
       </div>
@@ -3071,18 +3288,7 @@ function SystemPermissions({
         <section className="panel role-list-panel">
           <div className="panel-title-row">
             <h3>Vai trò</h3>
-            <Badge tone="success">OK</Badge>
           </div>
-          {roleFormOpen && (
-            <div className="role-create-panel">
-              <input value={newRoleName} onChange={(event) => setNewRoleName(event.target.value)} placeholder="Tên vai trò mới" />
-              <input value={newRoleScope} onChange={(event) => setNewRoleScope(event.target.value)} placeholder="Phạm vi dữ liệu" />
-              <div>
-                <button className="primary-button" onClick={createRole}>Tạo</button>
-                <button className="secondary-button" onClick={() => setRoleFormOpen(false)}>Hủy</button>
-              </div>
-            </div>
-          )}
           {roles.map((role) => (
             <article className={`role-list-item ${role.id === selectedRoleId ? "active" : ""}`} key={role.id}>
               <button className="role-pick-button" onClick={() => setSelectedRoleId(role.id)}>
@@ -3091,10 +3297,10 @@ function SystemPermissions({
                   <span>{role.description}</span>
                   <small>{role.scope}</small>
                 </div>
-                <b>{role.users}</b>
+                <b>{roleUserCounts[role.name] || role.users || 0}</b>
               </button>
               {role.id !== "admin" && (
-                <button className="role-delete-button" onClick={() => deleteRole(role.id)} title="Xóa vai trò">
+                <button className="role-delete-button" onClick={() => setConfirmDeleteRole(role)} title="Xóa vai trò">
                   <Trash2 size={16} />
                 </button>
               )}
@@ -3109,10 +3315,12 @@ function SystemPermissions({
               <p>{selectedRole.description}</p>
             </div>
             <div className="action-row">
-              <button className="secondary-blue-button" onClick={() => onPreviewRole(selectedRole.id)}>
-                <Eye size={18} />
-                Xem trước
-              </button>
+              {selectedRole.id !== "admin" && (
+                <button className="secondary-blue-button" onClick={() => onPreviewRole(selectedRole.id)}>
+                  <Eye size={18} />
+                  Xem trước
+                </button>
+              )}
             </div>
           </div>
 
@@ -3150,7 +3358,7 @@ function SystemPermissions({
           <div className="role-users-heading">
             <div>
               <h3>Người dùng</h3>
-              <p>{visibleRoleUsers.length}/{selectedRole.users} người có thể truy cập với vai trò {selectedRole.name}</p>
+              <p>{visibleRoleUsers.length}/{roleUserCounts[selectedRole.name] || selectedRole.users || 0} người có thể truy cập với vai trò {selectedRole.name}</p>
             </div>
             <button className="icon-action-button" title="Tùy chọn">
               <MoreVertical size={18} />
@@ -3238,6 +3446,26 @@ function SystemPermissions({
           </div>
         </section>
       </div>
+      {roleModalOpen && (
+        <RoleCreateModal
+          role={newRole}
+          setRole={setNewRole}
+          onClose={() => setRoleModalOpen(false)}
+          onSubmit={createRole}
+        />
+      )}
+      {confirmDeleteRole && (
+        <ConfirmDialog
+          title="Xóa vai trò?"
+          body={`Vai trò "${confirmDeleteRole.name}" sẽ bị xóa khỏi mock phân quyền. Admin mặc định vẫn được giữ nguyên.`}
+          confirmLabel="Xóa vai trò"
+          onCancel={() => setConfirmDeleteRole(null)}
+          onConfirm={() => {
+            deleteRole(confirmDeleteRole.id);
+            setConfirmDeleteRole(null);
+          }}
+        />
+      )}
     </section>
   );
 }
