@@ -333,8 +333,575 @@ const approvalRows = [
   },
 ];
 
+const workflowChannels = [
+  {
+    channel: "Kênh GT",
+    region: "Miền Bắc",
+    owner: "Nguyễn Diệp Chi",
+    ownerRole: "ASM GT Miền Bắc",
+    rsm: "Trần Văn Hùng",
+    director: "Nguyễn Văn Nam",
+    marker: "blue",
+    icon: Store,
+    iconTone: "blue",
+  },
+  {
+    channel: "Kênh MT",
+    region: "Toàn quốc",
+    owner: "Trần Văn A",
+    ownerRole: "ASM MT",
+    rsm: "Lê Thị Thảo",
+    director: "Trần Thu Hà",
+    marker: "green",
+    icon: ShoppingCart,
+    iconTone: "orange",
+  },
+  {
+    channel: "Kênh Showroom",
+    region: "Miền Nam",
+    owner: "Đặng Văn D",
+    ownerRole: "ASM Showroom",
+    rsm: "Trần Thị B",
+    director: "Lê Minh Hoàng",
+    marker: "slate",
+    icon: Building2,
+    iconTone: "green",
+  },
+  {
+    channel: "Kênh TMĐT",
+    region: "Toàn quốc",
+    owner: "Lê Quang Minh",
+    ownerRole: "ASM TMĐT",
+    rsm: "Phạm Khánh Linh",
+    director: "Phạm Tuyết Mai",
+    marker: "blue",
+    icon: Globe2,
+    iconTone: "purple",
+  },
+];
+
+const initialForecasts = [
+  {
+    id: "fc-2026-07",
+    title: "Forecast Tháng 07/2026",
+    month: "Tháng 07/2026",
+    monthShort: "T07/2026",
+    created: "24/06/2026",
+    deadline: "22/07/2026",
+    status: "Đang thực hiện",
+    tone: "active",
+    note: "Ưu tiên rà soát kênh TMĐT, MT và GT do có nhiều chương trình khuyến mãi tháng 07.",
+    template: "Template_FC_KD01_T07_2026.xlsx",
+  },
+  {
+    id: "fc-2026-06",
+    title: "Forecast Tháng 06/2026",
+    month: "Tháng 06/2026",
+    monthShort: "T06/2026",
+    created: "20/05/2026",
+    deadline: "22/06/2026",
+    status: "Phát hành",
+    tone: "ended-blue",
+    note: "Kỳ Forecast đã phát hành và lưu trữ chính thức.",
+    template: "Template_FC_KD01_T06_2026.xlsx",
+  },
+];
+
+const initialTasks = [
+  {
+    id: "task-2026-07-mt",
+    forecastId: "fc-2026-07",
+    title: "Forecast Kênh MT - Tháng 07/2026",
+    channel: "Kênh MT",
+    region: "Toàn quốc",
+    owner: "Trần Văn A",
+    ownerRole: "ASM MT",
+    rsm: "Lê Thị Thảo",
+    director: "Trần Thu Hà",
+    deadline: "18/07/2026",
+    due: "Đã được GĐKD duyệt",
+    progress: 100,
+    status: "GĐKD đã duyệt",
+    statusTone: "success",
+    marker: "green",
+    file: "Forecast_MT_T07_2026_v2.xlsx",
+    fileSize: "4.8 MB",
+    icon: ShoppingCart,
+    iconTone: "orange",
+  },
+  {
+    id: "task-2026-07-ec",
+    forecastId: "fc-2026-07",
+    title: "Forecast Kênh TMĐT - Tháng 07/2026",
+    channel: "Kênh TMĐT",
+    region: "Toàn quốc",
+    owner: "Lê Quang Minh",
+    ownerRole: "ASM TMĐT",
+    rsm: "Phạm Khánh Linh",
+    director: "Phạm Tuyết Mai",
+    deadline: "19/07/2026",
+    due: "Còn 2 ngày tới hạn nộp file",
+    progress: 35,
+    status: "Chờ ASM cập nhật",
+    statusTone: "warning",
+    marker: "blue",
+    file: "",
+    fileSize: "",
+    icon: Globe2,
+    iconTone: "purple",
+  },
+  {
+    id: "task-2026-07-gt",
+    forecastId: "fc-2026-07",
+    title: "Forecast Kênh GT - Tháng 07/2026",
+    channel: "Kênh GT",
+    region: "Miền Bắc",
+    owner: "Nguyễn Diệp Chi",
+    ownerRole: "ASM GT Miền Bắc",
+    rsm: "Trần Văn Hùng",
+    director: "Nguyễn Văn Nam",
+    deadline: "17/07/2026",
+    due: "Đã nộp file, chờ RSM duyệt",
+    progress: 60,
+    status: "Chờ RSM duyệt",
+    statusTone: "warning",
+    marker: "slate",
+    file: "Forecast_GT_T07_2026_v1.xlsx",
+    fileSize: "3.9 MB",
+    icon: Store,
+    iconTone: "blue",
+  },
+  {
+    id: "task-2026-07-showroom",
+    forecastId: "fc-2026-07",
+    title: "Forecast Kênh Showroom - Tháng 07/2026",
+    channel: "Kênh Showroom",
+    region: "Miền Nam",
+    owner: "Đặng Văn D",
+    ownerRole: "ASM Showroom",
+    rsm: "Trần Thị B",
+    director: "Lê Minh Hoàng",
+    deadline: "20/07/2026",
+    due: "Chưa có file",
+    progress: 10,
+    status: "Chờ ASM cập nhật",
+    statusTone: "neutral",
+    marker: "blue",
+    file: "",
+    fileSize: "",
+    icon: Building2,
+    iconTone: "green",
+  },
+  {
+    id: "task-2026-06-mt",
+    forecastId: "fc-2026-06",
+    title: "Forecast Kênh MT - Tháng 06/2026",
+    channel: "Kênh MT",
+    region: "Toàn quốc",
+    owner: "Trần Văn A",
+    ownerRole: "ASM MT",
+    rsm: "Lê Thị Thảo",
+    director: "Trần Thu Hà",
+    deadline: "18/06/2026",
+    due: "Đã phát hành",
+    progress: 100,
+    status: "Phát hành",
+    statusTone: "success",
+    marker: "green",
+    file: "Forecast_MT_T06_2026_final.xlsx",
+    fileSize: "4.1 MB",
+    icon: ShoppingCart,
+    iconTone: "orange",
+  },
+];
+
+const initialEvents = [
+  {
+    id: "evt-1",
+    tone: "blue",
+    icon: Calendar,
+    title: "Kỳ Forecast 07/2026 đã mở",
+    body: "Hệ thống đã tạo task cho các kênh trong kỳ 07/2026.",
+    time: "10 phút trước",
+  },
+  {
+    id: "evt-2",
+    tone: "green",
+    icon: CheckCircle2,
+    title: "Kênh MT đã được GĐKD duyệt",
+    body: "Task Forecast MT sẵn sàng cho bước tổng hợp.",
+    time: "2 giờ trước",
+  },
+  {
+    id: "evt-3",
+    tone: "red",
+    icon: AlertTriangle,
+    title: "Cảnh báo SLA Kênh GT",
+    body: "Task GT đang chờ RSM duyệt, cần xử lý trước deadline.",
+    time: "4 giờ trước",
+  },
+];
+
+const initialPublishedFiles = [
+  {
+    id: "file-2026-06-mt",
+    forecastId: "fc-2026-06",
+    name: "Forecast_MT_T06_2026_final.xlsx",
+    channel: "Kênh MT",
+    month: "T06/2026",
+    size: "4.1 MB",
+    modified: "22/06/2026 14:30",
+    owner: "Nguyễn Tú Anh",
+    version: "v2.1",
+  },
+];
+
+const statusToneMap = {
+  "Nháp": "neutral",
+  "Đang thực hiện": "success",
+  "Chờ ASM cập nhật": "neutral",
+  "ASM đã cập nhật": "warning",
+  "Chờ RSM duyệt": "warning",
+  "Chờ GĐKD duyệt": "warning",
+  "GĐKD đã duyệt": "success",
+  "Chờ thẩm định": "warning",
+  "Hoàn thành thẩm định": "success",
+  "Chờ CEO duyệt": "danger",
+  "Phát hành": "success",
+  "Không duyệt thẩm định": "danger",
+  "CEO không duyệt": "danger",
+  "Quá hạn": "danger",
+};
+
+function getStatusTone(status) {
+  return statusToneMap[status] || "neutral";
+}
+
+function getForecastProgress(forecast, tasks) {
+  if (!forecast) return 0;
+  if (forecast.status === "Phát hành") return 100;
+  const ownTasks = tasks.filter((task) => task.forecastId === forecast.id);
+  if (!ownTasks.length) return 0;
+  const total = ownTasks.reduce((sum, task) => sum + task.progress, 0);
+  return Math.round(total / ownTasks.length);
+}
+
+function buildTasksForForecast(forecast) {
+  const monthCode = forecast.monthShort.replace("/", "_");
+  return workflowChannels.map((channel, index) => ({
+    id: `${forecast.id}-${index}`,
+    forecastId: forecast.id,
+    title: `Forecast ${channel.channel} - ${forecast.month}`,
+    channel: channel.channel,
+    region: channel.region,
+    owner: channel.owner,
+    ownerRole: channel.ownerRole,
+    rsm: channel.rsm,
+    director: channel.director,
+    deadline: index < 2 ? "18/08/2026" : "19/08/2026",
+    due: "Chờ ASM upload file Forecast",
+    progress: 0,
+    status: "Chờ ASM cập nhật",
+    statusTone: "neutral",
+    marker: channel.marker,
+    file: "",
+    fileSize: "",
+    icon: channel.icon,
+    iconTone: channel.iconTone,
+    template: `Template_FC_KD01_${monthCode}.xlsx`,
+  }));
+}
+
+function nextEventId() {
+  return `evt-${Date.now()}-${Math.round(Math.random() * 1000)}`;
+}
+
 function App() {
   const [screen, setScreen] = useState("overview");
+  const [forecasts, setForecasts] = useState(initialForecasts);
+  const [tasks, setTasks] = useState(initialTasks);
+  const [events, setEvents] = useState(initialEvents);
+  const [publishedFiles, setPublishedFiles] = useState(initialPublishedFiles);
+  const [selectedForecastId, setSelectedForecastId] = useState("fc-2026-07");
+  const [selectedTaskId, setSelectedTaskId] = useState("task-2026-07-ec");
+  const [selectedFileId, setSelectedFileId] = useState("file-2026-06-mt");
+  const [draftForecast, setDraftForecast] = useState({
+    month: "Tháng 08/2026",
+    deadline: "22/08/2026",
+    time: "17:00",
+    note: "",
+  });
+  const [toast, setToast] = useState("");
+
+  const selectedForecast =
+    forecasts.find((forecast) => forecast.id === selectedForecastId) || forecasts[0];
+  const activeForecast =
+    forecasts.find((forecast) => forecast.status !== "Phát hành") || selectedForecast;
+  const selectedTask =
+    tasks.find((task) => task.id === selectedTaskId) ||
+    tasks.find((task) => task.forecastId === selectedForecast?.id) ||
+    tasks[0];
+  const selectedFile =
+    publishedFiles.find((file) => file.id === selectedFileId) || publishedFiles[0];
+
+  const showToast = (message) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2200);
+  };
+
+  const addEvent = ({ icon = CheckCircle2, tone = "blue", title, body }) => {
+    setEvents((current) => [
+      {
+        id: nextEventId(),
+        icon,
+        tone,
+        title,
+        body,
+        time: "Vừa xong",
+      },
+      ...current.slice(0, 7),
+    ]);
+  };
+
+  const updateForecast = (forecastId, patch) => {
+    setForecasts((current) =>
+      current.map((forecast) =>
+        forecast.id === forecastId ? { ...forecast, ...patch } : forecast
+      )
+    );
+  };
+
+  const updateTaskStatus = (taskId, patch, event) => {
+    let nextTasks = [];
+    let updatedTask;
+
+    setTasks((current) => {
+      nextTasks = current.map((task) => {
+        if (task.id !== taskId) return task;
+        updatedTask = {
+          ...task,
+          ...patch,
+          statusTone: patch.status ? getStatusTone(patch.status) : task.statusTone,
+        };
+        return updatedTask;
+      });
+      return nextTasks;
+    });
+
+    if (updatedTask) {
+      const ownTasks = nextTasks.filter((task) => task.forecastId === updatedTask.forecastId);
+      const allBusinessApproved = ownTasks.length > 0 && ownTasks.every((task) => task.status === "GĐKD đã duyệt");
+      if (allBusinessApproved) {
+        updateForecast(updatedTask.forecastId, {
+          status: "GĐKD đã duyệt",
+          tone: "active",
+        });
+      }
+    }
+
+    if (event) addEvent(event);
+  };
+
+  const openForecast = (forecastId) => {
+    setSelectedForecastId(forecastId);
+    setScreen("detail");
+  };
+
+  const openTask = (taskId) => {
+    setSelectedTaskId(taskId);
+    setScreen("task-update");
+  };
+
+  const openAppraisal = (forecastId) => {
+    setSelectedForecastId(forecastId);
+    setScreen("appraisal-detail");
+  };
+
+  const openApproval = (forecastId) => {
+    setSelectedForecastId(forecastId);
+    setScreen("approval-detail");
+  };
+
+  const openFile = (fileId) => {
+    setSelectedFileId(fileId);
+    setScreen("storage-file");
+  };
+
+  const handleCreateForecast = () => {
+    const monthNumber = draftForecast.month.match(/(\d{2})\/(\d{4})/)?.[1] || "08";
+    const year = draftForecast.month.match(/\/(\d{4})/)?.[1] || "2026";
+    const id = `fc-${year}-${monthNumber}`;
+    const forecast = {
+      id,
+      title: `Forecast ${draftForecast.month}`,
+      month: draftForecast.month,
+      monthShort: `T${monthNumber}/${year}`,
+      created: "29/06/2026",
+      deadline: draftForecast.deadline,
+      status: "Đang thực hiện",
+      tone: "active",
+      note: draftForecast.note || "Mock kỳ Forecast mới, dùng để chạy thử tròn luồng trên app.",
+      template: `Template_FC_KD01_T${monthNumber}_${year}.xlsx`,
+    };
+
+    if (forecasts.some((item) => item.id === id)) {
+      showToast("Kỳ Forecast này đã tồn tại trong mock data.");
+      return;
+    }
+
+    const generatedTasks = buildTasksForForecast(forecast);
+    setForecasts((current) => [forecast, ...current]);
+    setTasks((current) => [...generatedTasks, ...current]);
+    setSelectedForecastId(id);
+    setSelectedTaskId(generatedTasks[0]?.id || selectedTaskId);
+    addEvent({
+      icon: Calendar,
+      tone: "blue",
+      title: `${forecast.title} đã được tạo`,
+      body: `Hệ thống đã sinh ${generatedTasks.length} task Forecast theo kênh.`,
+    });
+    showToast("Đã tạo lịch Forecast và sinh task mock.");
+    setScreen("detail");
+  };
+
+  const handleTaskSubmit = (taskId, fileName, note) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) return;
+
+    updateTaskStatus(
+      taskId,
+      {
+        file: fileName,
+        fileSize: "4.2 MB",
+        due: "Đã nộp file, chờ RSM duyệt",
+        progress: 55,
+        status: "Chờ RSM duyệt",
+      },
+      {
+        icon: Upload,
+        tone: "green",
+        title: `${task.channel} đã gửi file Forecast`,
+        body: note || `${fileName} đã được upload và chuyển sang RSM duyệt.`,
+      }
+    );
+    showToast("Đã gửi cập nhật, task chuyển sang chờ RSM duyệt.");
+    setScreen("tasks");
+  };
+
+  const handleRsmApprove = (taskId) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) return;
+
+    updateTaskStatus(
+      taskId,
+      {
+        due: "RSM đã duyệt, chờ GĐKD duyệt",
+        progress: 75,
+        status: "Chờ GĐKD duyệt",
+      },
+      {
+        icon: CheckCircle2,
+        tone: "blue",
+        title: `RSM đã duyệt ${task.channel}`,
+        body: `Task được chuyển sang ${task.director} phê duyệt cấp kinh doanh.`,
+      }
+    );
+    showToast("RSM đã duyệt, chuyển tiếp GĐKD.");
+  };
+
+  const handleGdkdApprove = (taskId) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) return;
+
+    updateTaskStatus(
+      taskId,
+      {
+        due: "Đã được GĐKD duyệt",
+        progress: 100,
+        status: "GĐKD đã duyệt",
+      },
+      {
+        icon: CheckCircle2,
+        tone: "green",
+        title: `GĐKD đã duyệt ${task.channel}`,
+        body: "Forecast kênh đã hoàn tất duyệt cấp kinh doanh.",
+      }
+    );
+    showToast("GĐKD đã duyệt task.");
+  };
+
+  const handleSubmitAppraisal = (forecastId) => {
+    updateForecast(forecastId, {
+      status: "Chờ thẩm định",
+      tone: "active",
+    });
+    addEvent({
+      icon: Star,
+      tone: "blue",
+      title: "Hồ sơ đã trình thẩm định",
+      body: "Các bộ phận Cung ứng, BI, Nhà máy và Tài chính nhận task thẩm định.",
+    });
+    showToast("Đã trình hồ sơ sang thẩm định.");
+    setScreen("appraisal");
+  };
+
+  const handleAppraisalResult = (forecastId, approved) => {
+    updateForecast(forecastId, {
+      status: approved ? "Chờ CEO duyệt" : "Không duyệt thẩm định",
+      tone: approved ? "active" : "muted",
+    });
+    addEvent({
+      icon: approved ? CheckCircle2 : X,
+      tone: approved ? "green" : "red",
+      title: approved ? "Hoàn thành thẩm định" : "Thẩm định không duyệt",
+      body: approved
+        ? "Hồ sơ được chuyển sang CEO/BĐH phê duyệt cuối."
+        : "Hồ sơ được trả về Phòng Kế hoạch để điều chỉnh.",
+    });
+    showToast(approved ? "Đã hoàn thành thẩm định, chuyển CEO duyệt." : "Đã trả hồ sơ về sau thẩm định.");
+    setScreen(approved ? "approval" : "detail");
+  };
+
+  const handleApprovalResult = (forecastId, approved) => {
+    const forecast = forecasts.find((item) => item.id === forecastId);
+    if (!forecast) return;
+
+    updateForecast(forecastId, {
+      status: approved ? "Phát hành" : "CEO không duyệt",
+      tone: approved ? "ended-blue" : "muted",
+    });
+
+    if (approved) {
+      const fileId = `file-${forecastId}`;
+      const file = {
+        id: fileId,
+        forecastId,
+        name: `Forecast_${forecast.monthShort.replace("/", "_")}_final.xlsx`,
+        channel: "Toàn công ty",
+        month: forecast.monthShort,
+        size: "5.6 MB",
+        modified: "29/06/2026 16:30",
+        owner: "Nguyễn Tú Anh",
+        version: "v1.0",
+      };
+      setPublishedFiles((current) => {
+        if (current.some((item) => item.id === fileId)) return current;
+        return [file, ...current];
+      });
+      setSelectedFileId(fileId);
+    }
+
+    addEvent({
+      icon: approved ? CheckCircle2 : X,
+      tone: approved ? "green" : "red",
+      title: approved ? `${forecast.title} đã phát hành` : `${forecast.title} bị CEO trả lại`,
+      body: approved
+        ? "Bản Forecast chính thức đã được đưa vào Kho lưu trữ."
+        : "Phòng Kế hoạch cần điều chỉnh hồ sơ trước khi trình lại.",
+    });
+    showToast(approved ? "CEO đã duyệt, Forecast được phát hành." : "CEO không duyệt, hồ sơ được trả lại.");
+    setScreen(approved ? "storage" : "detail");
+  };
 
   const headerTitle =
     screen === "list"
@@ -394,39 +961,107 @@ function App() {
           }
         />
         <div className="content-area">
-          {screen === "overview" && <Overview onCreate={() => setScreen("create-1")} />}
-          {screen === "list" && (
-            <ScheduleList
+          {toast && <div className="mock-toast">{toast}</div>}
+          {screen === "overview" && (
+            <Overview
+              forecasts={forecasts}
+              tasks={tasks}
+              events={events}
+              activeForecast={activeForecast}
               onCreate={() => setScreen("create-1")}
-              onOpen={() => setScreen("detail")}
             />
           )}
-          {screen === "detail" && <ForecastDetail />}
-          {screen === "tasks" && <TaskList onOpen={() => setScreen("task-update")} />}
-          {screen === "task-update" && <TaskUpdate onBack={() => setScreen("tasks")} />}
+          {screen === "list" && (
+            <ScheduleList
+              forecasts={forecasts}
+              tasks={tasks}
+              onCreate={() => setScreen("create-1")}
+              onOpen={openForecast}
+            />
+          )}
+          {screen === "detail" && (
+            <ForecastDetail
+              forecast={selectedForecast}
+              tasks={tasks.filter((task) => task.forecastId === selectedForecast?.id)}
+              progress={getForecastProgress(selectedForecast, tasks)}
+              onOpenTask={openTask}
+              onRsmApprove={handleRsmApprove}
+              onGdkdApprove={handleGdkdApprove}
+              onSubmitAppraisal={handleSubmitAppraisal}
+            />
+          )}
+          {screen === "tasks" && (
+            <TaskList
+              tasks={tasks.filter((task) => task.forecastId === selectedForecast?.id)}
+              onOpen={openTask}
+              onRsmApprove={handleRsmApprove}
+              onGdkdApprove={handleGdkdApprove}
+            />
+          )}
+          {screen === "task-update" && (
+            <TaskUpdate
+              task={selectedTask}
+              forecast={forecasts.find((forecast) => forecast.id === selectedTask?.forecastId)}
+              onBack={() => setScreen("tasks")}
+              onSubmit={handleTaskSubmit}
+            />
+          )}
           {screen === "appraisal" && (
-            <AppraisalList onOpen={() => setScreen("appraisal-detail")} />
+            <AppraisalList
+              forecasts={forecasts}
+              tasks={tasks}
+              events={events}
+              onOpen={openAppraisal}
+            />
           )}
-          {screen === "appraisal-detail" && <AppraisalDetail />}
+          {screen === "appraisal-detail" && (
+            <AppraisalDetail
+              forecast={selectedForecast}
+              tasks={tasks.filter((task) => task.forecastId === selectedForecast?.id)}
+              onSubmit={handleAppraisalResult}
+              onBack={() => setScreen("appraisal")}
+            />
+          )}
           {screen === "approval" && (
-            <ApprovalList onOpen={() => setScreen("approval-detail")} />
+            <ApprovalList
+              forecasts={forecasts}
+              tasks={tasks}
+              events={events}
+              onOpen={openApproval}
+            />
           )}
-          {screen === "approval-detail" && <ApprovalDetail />}
+          {screen === "approval-detail" && (
+            <ApprovalDetail
+              forecast={selectedForecast}
+              tasks={tasks.filter((task) => task.forecastId === selectedForecast?.id)}
+              onSubmit={handleApprovalResult}
+              onBack={() => setScreen("approval")}
+            />
+          )}
           {screen === "storage" && (
             <StoragePage
               level="root"
+              forecasts={forecasts}
+              files={publishedFiles}
               onOpenFolder={() => setScreen("storage-folder")}
-              onOpenFile={() => setScreen("storage-file")}
+              onOpenFile={openFile}
             />
           )}
           {screen === "storage-folder" && (
             <StoragePage
               level="folder"
+              forecasts={forecasts}
+              files={publishedFiles}
               onOpenFolder={() => setScreen("storage-file")}
-              onOpenFile={() => setScreen("storage-file")}
+              onOpenFile={openFile}
             />
           )}
-          {screen === "storage-file" && <StorageFileDetail />}
+          {screen === "storage-file" && (
+            <StorageFileDetail
+              file={selectedFile}
+              forecast={forecasts.find((forecast) => forecast.id === selectedFile?.forecastId)}
+            />
+          )}
           {screen === "channel-config" && (
             <ChannelFrameworkConfig
               onApprovalConfig={() => setScreen("approval-config")}
@@ -447,14 +1082,17 @@ function App() {
           )}
           {screen === "create-1" && (
             <CreateForecastStepOne
+              draft={draftForecast}
+              setDraft={setDraftForecast}
               onCancel={() => setScreen("list")}
               onNext={() => setScreen("create-2")}
             />
           )}
           {screen === "create-2" && (
             <CreateForecastStepTwo
+              draft={draftForecast}
               onBack={() => setScreen("create-1")}
-              onFinish={() => setScreen("overview")}
+              onFinish={handleCreateForecast}
             />
           )}
         </div>
@@ -561,7 +1199,24 @@ function Topbar({ title, search, showBack, hideSearch, onBack }) {
   );
 }
 
-function Overview({ onCreate }) {
+function Overview({
+  onCreate,
+  forecasts = initialForecasts,
+  tasks = initialTasks,
+  events = initialEvents,
+  activeForecast,
+}) {
+  const currentForecast = activeForecast || forecasts[0];
+  const forecastTasks = tasks.filter((task) => task.forecastId === currentForecast?.id);
+  const submittedCount = forecastTasks.filter((task) => task.file).length;
+  const totalTasks = forecastTasks.length || 1;
+  const onTimeRate = Math.max(
+    0,
+    Math.round((forecastTasks.filter((task) => task.status !== "Quá hạn").length / totalTasks) * 100)
+  );
+  const appraisalCount = forecasts.filter((forecast) => forecast.status === "Chờ thẩm định").length;
+  const approvalCount = forecasts.filter((forecast) => forecast.status === "Chờ CEO duyệt").length;
+
   return (
     <section className="page-flow">
       <div className="page-heading with-actions">
@@ -585,43 +1240,43 @@ function Overview({ onCreate }) {
         <MetricCard
           icon={Gauge}
           label="SLA đúng hạn"
-          value="92%"
+          value={`${onTimeRate}%`}
           hint="+6%"
           tone="blue"
-          footer={<div className="metric-progress"><span style={{ width: "92%" }} /></div>}
+          footer={<div className="metric-progress"><span style={{ width: `${onTimeRate}%` }} /></div>}
         />
         <MetricCard
           icon={CheckCircle2}
           label="Kênh đã nộp file"
-          value="18/24"
-          hint="Kỳ 07/2026"
+          value={`${submittedCount}/${totalTasks}`}
+          hint={currentForecast?.monthShort || "Mock"}
           tone="green"
-          footer={<span>6 kênh còn đang nhập liệu</span>}
+          footer={<span>{totalTasks - submittedCount} kênh còn chờ file</span>}
         />
         <MetricCard
           icon={ClipboardList}
           label="Chờ thẩm định"
-          value="08"
-          hint="2 quá hạn"
+          value={String(appraisalCount).padStart(2, "0")}
+          hint="Mock workflow"
           tone="red"
           footer={<AvatarStack />}
         />
         <MetricCard
           icon={Clock3}
           label="Chờ CEO duyệt"
-          value="04"
+          value={String(approvalCount).padStart(2, "0")}
           hint="Sắp tới hạn"
           tone="soft-red"
-          footer={<span>Deadline phê duyệt: 22/07/2026</span>}
+          footer={<span>Deadline phê duyệt: {currentForecast?.deadline}</span>}
         />
       </div>
 
       <div className="overview-grid">
-        <ChartPanel />
-        <NoticePanel />
+        <ChartPanel forecast={currentForecast} tasks={forecastTasks} />
+        <NoticePanel events={events} />
       </div>
 
-      <RecentApprovals />
+      <RecentApprovals forecasts={forecasts} tasks={tasks} />
     </section>
   );
 }
@@ -652,7 +1307,7 @@ function AvatarStack() {
   );
 }
 
-function ChartPanel() {
+function ChartPanel({ forecast, tasks = [] }) {
   const bars = [
     { day: "T2", approved: 68, pending: 34 },
     { day: "T3", approved: 84, pending: 24 },
@@ -690,8 +1345,8 @@ function ChartPanel() {
   );
 }
 
-function NoticePanel() {
-  const notices = [
+function NoticePanel({ events = initialEvents }) {
+  const notices = events.length ? events : [
     {
       icon: Calendar,
       tone: "blue",
@@ -749,7 +1404,28 @@ function NoticePanel() {
   );
 }
 
-function RecentApprovals() {
+function RecentApprovals({ forecasts = initialForecasts, tasks = initialTasks }) {
+  const rows = [
+    ...tasks.slice(0, 5).map((task) => ({
+      code: task.id.replace("task-", "FC-"),
+      department: task.channel,
+      date: task.deadline,
+      status: task.status,
+      sla: task.due,
+      mode: task.statusTone,
+      action: task.file ? "view" : "edit",
+    })),
+    ...forecasts.slice(0, 2).map((forecast) => ({
+      code: forecast.id.toUpperCase(),
+      department: "Phòng Kế hoạch",
+      date: forecast.deadline,
+      status: forecast.status,
+      sla: forecast.monthShort,
+      mode: getStatusTone(forecast.status),
+      action: "view",
+    })),
+  ].slice(0, 5);
+
   return (
     <section className="panel table-panel">
       <div className="panel-title-row">
@@ -765,7 +1441,7 @@ function RecentApprovals() {
           <span>SLA còn lại</span>
           <span>Hành động</span>
         </div>
-        {recentRows.map((row) => (
+        {rows.map((row) => (
           <div className="table-row" key={row.code}>
             <span>{row.code}</span>
             <span>{row.department}</span>
@@ -787,7 +1463,14 @@ function RecentApprovals() {
   );
 }
 
-function ScheduleList({ onCreate, onOpen }) {
+function ScheduleList({ onCreate, onOpen, forecasts = initialForecasts, tasks = initialTasks }) {
+  const rows = forecasts.map((forecast) => ({
+    ...forecast,
+    deadline: forecast.deadline,
+    tone: forecast.status === "Phát hành" ? "ended-blue" : "active",
+    taskCount: tasks.filter((task) => task.forecastId === forecast.id).length,
+  }));
+
   return (
     <section className="page-flow">
       <div className="schedule-top">
@@ -824,9 +1507,9 @@ function ScheduleList({ onCreate, onOpen }) {
               <span>Trạng thái</span>
               <span>Thao tác</span>
             </div>
-            {scheduleRows.map((row, index) => (
+            {rows.map((row, index) => (
               <article className={`schedule-row ${row.tone}`} key={row.title}>
-                <button className="schedule-name schedule-open" onClick={onOpen}>
+                <button className="schedule-name schedule-open" onClick={() => onOpen(row.id)}>
                   <span className="calendar-token">
                     <Calendar size={18} />
                   </span>
@@ -837,9 +1520,9 @@ function ScheduleList({ onCreate, onOpen }) {
                   {row.deadline}
                   <i className="mini-bar" />
                 </span>
-                <span><Badge tone={row.tone === "active" ? "success" : "neutral"}>{row.status}</Badge></span>
+                <span><Badge tone={getStatusTone(row.status)}>{row.status}</Badge></span>
                 <span className="row-tools">
-                  <button className="icon-button table-action" title="Xem chi tiết" onClick={onOpen}>
+                  <button className="icon-button table-action" title="Xem chi tiết" onClick={() => onOpen(row.id)}>
                     {index === 3 ? <Eye size={19} /> : <SquarePen size={19} />}
                   </button>
                   <button className="icon-button table-action" title="Tùy chọn">
@@ -860,7 +1543,12 @@ function ScheduleList({ onCreate, onOpen }) {
   );
 }
 
-function TaskList({ onOpen }) {
+function TaskList({ onOpen, onRsmApprove, onGdkdApprove, tasks = initialTasks }) {
+  const totalTasks = tasks.length;
+  const doingTasks = tasks.filter((task) => !["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
+  const doneTasks = tasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
+  const lateTasks = tasks.filter((task) => task.status === "Quá hạn").length;
+
   return (
     <section className="page-flow task-page">
       <div className="task-filter-row">
@@ -892,10 +1580,10 @@ function TaskList({ onOpen }) {
       </div>
 
       <div className="task-metric-grid">
-        <TaskMetric title="Tổng số Task" value="42" note="so với tuần trước" delta="+12%" tone="blue" />
-        <TaskMetric title="Đang thực hiện" value="18" progress={44} tone="orange" />
-        <TaskMetric title="Hoàn thành" value="24" progress={55} tone="green" />
-        <TaskMetric title="Quá hạn SLA" value="03" note="Cần xử lý ngay" tone="red" />
+        <TaskMetric title="Tổng số Task" value={String(totalTasks)} note="mock data" delta="+12%" tone="blue" />
+        <TaskMetric title="Đang thực hiện" value={String(doingTasks)} progress={totalTasks ? Math.round((doingTasks / totalTasks) * 100) : 0} tone="orange" />
+        <TaskMetric title="Hoàn thành" value={String(doneTasks)} progress={totalTasks ? Math.round((doneTasks / totalTasks) * 100) : 0} tone="green" />
+        <TaskMetric title="Quá hạn SLA" value={String(lateTasks).padStart(2, "0")} note="Cần xử lý ngay" tone="red" />
       </div>
 
       <section className="panel task-list-panel">
@@ -908,9 +1596,9 @@ function TaskList({ onOpen }) {
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
-          {taskRows.map((row) => (
+          {tasks.map((row) => (
             <article className="task-row" key={row.title}>
-              <button className="task-title-cell" onClick={onOpen}>
+              <button className="task-title-cell" onClick={() => onOpen(row.id)}>
                 <i className={row.marker} />
                 <span>
                   <strong>{row.title}</strong>
@@ -938,15 +1626,22 @@ function TaskList({ onOpen }) {
               </div>
               <span><Badge tone={row.statusTone}>{row.status}</Badge></span>
               <span className="detail-action-icons">
-                <button className="icon-button table-action" onClick={onOpen} title="Xem">
+                <button className="icon-button table-action" onClick={() => onOpen(row.id)} title="Xem">
                   <Eye size={19} />
                 </button>
-                <button className="icon-button table-action" onClick={onOpen} title="Sửa">
+                <button className="icon-button table-action" onClick={() => onOpen(row.id)} title="Sửa">
                   <Pencil size={19} />
                 </button>
-                <button className="icon-button table-action" title="Phân công">
-                  <UserPlus size={19} />
-                </button>
+                {row.status === "Chờ RSM duyệt" && (
+                  <button className="icon-button table-action" title="RSM duyệt" onClick={() => onRsmApprove(row.id)}>
+                    <CheckCircle2 size={19} />
+                  </button>
+                )}
+                {row.status === "Chờ GĐKD duyệt" && (
+                  <button className="icon-button table-action" title="GĐKD duyệt" onClick={() => onGdkdApprove(row.id)}>
+                    <Check size={19} />
+                  </button>
+                )}
                 <button className="icon-button table-action" title="Báo cáo">
                   <BarChart3 size={19} />
                 </button>
@@ -992,8 +1687,13 @@ function TaskMetric({ title, value, note, delta, progress, tone }) {
   );
 }
 
-function TaskUpdate({ onBack }) {
+function TaskUpdate({ onBack, task, forecast, onSubmit }) {
+  const displayTask = task || initialTasks[0];
   const [taskStatus, setTaskStatus] = useState("doing");
+  const [fileName, setFileName] = useState(
+    displayTask.file || `Forecast_${displayTask.channel.replace(/\s+/g, "_")}_${forecast?.monthShort || "T07_2026"}.xlsx`
+  );
+  const [note, setNote] = useState("");
 
   return (
     <section className="task-update-page">
@@ -1004,8 +1704,8 @@ function TaskUpdate({ onBack }) {
         </button>
         <div className="task-update-title">
           <div>
-            <h2>Cập nhật Forecast Kênh TMĐT - Tháng 07/2026</h2>
-            <p>Mã Task: #FC-2026-07-EC • Phân công: ASM TMĐT Toàn quốc</p>
+            <h2>Cập nhật {displayTask.title}</h2>
+            <p>Mã Task: #{displayTask.id} • Phân công: {displayTask.ownerRole}</p>
           </div>
         </div>
 
@@ -1053,8 +1753,8 @@ function TaskUpdate({ onBack }) {
               <FileText size={22} />
             </span>
             <div>
-              <strong>Forecast_EC_T07_2026_v1.xlsx</strong>
-              <small>4.2 MB • Đã tải lên 2 phút trước</small>
+              <strong>{fileName}</strong>
+              <small>{displayTask.file ? "File đã có trong mock data" : "File mock sẽ được gửi khi bấm cập nhật"}</small>
             </div>
             <CheckCircle2 size={22} />
             <button className="icon-button table-action" title="Xóa">
@@ -1070,7 +1770,7 @@ function TaskUpdate({ onBack }) {
             <Save size={18} />
             Lưu bản nháp
           </button>
-          <button className="primary-button">
+          <button className="primary-button" onClick={() => onSubmit(displayTask.id, fileName, note)}>
             <CheckCircle2 size={18} />
             Gửi cập nhật
           </button>
@@ -1110,7 +1810,7 @@ function TaskUpdate({ onBack }) {
             ["10:00, 24/06/2026", "Nguyễn Tú Anh đã tạo task."],
             ["10:05, 24/06/2026", "Hệ thống đã gửi thông báo cho Lê Quang Minh."],
             ["11:30, 25/06/2026", "Lê Quang Minh đã đổi trạng thái sang \"Đang nhập liệu\"."],
-            ["11:32, 25/06/2026", "Lê Quang Minh đã tải lên tệp Forecast_EC_T07_2026_v1.xlsx."],
+            ["11:32, 25/06/2026", `${displayTask.owner} đã tải lên tệp ${fileName}.`],
           ].map((item, index) => (
             <article className={`history-item tone-${index}`} key={item[0]}>
               <i />
@@ -1124,7 +1824,25 @@ function TaskUpdate({ onBack }) {
   );
 }
 
-function AppraisalList({ onOpen }) {
+function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTasks }) {
+  const rows = forecasts
+    .filter((forecast) => ["Chờ thẩm định", "Không duyệt thẩm định"].includes(forecast.status))
+    .map((forecast) => {
+      const firstTask = tasks.find((task) => task.forecastId === forecast.id && task.file) || tasks.find((task) => task.forecastId === forecast.id);
+      return {
+        forecastId: forecast.id,
+        channel: forecast.title,
+        month: forecast.month,
+        sender: "Phòng Kế hoạch",
+        sentAt: "Vừa xong",
+        file: firstTask?.file || forecast.template,
+        status: forecast.status,
+        statusTone: getStatusTone(forecast.status),
+        icon: Star,
+        iconTone: "blue",
+      };
+    });
+
   return (
     <section className="page-flow appraisal-page">
       <div className="breadcrumb appraisal-breadcrumb">
@@ -1171,7 +1889,7 @@ function AppraisalList({ onOpen }) {
             <span>Tài liệu</span>
             <span>Thao tác</span>
           </div>
-          {appraisalRows.map((row) => {
+          {rows.map((row) => {
             const Icon = row.icon;
             return (
               <article className="appraisal-row" key={row.channel}>
@@ -1181,7 +1899,7 @@ function AppraisalList({ onOpen }) {
                   </span>
                   <strong>{row.channel}</strong>
                 </div>
-                <button className="appraisal-month" onClick={onOpen}>{row.month}</button>
+                <button className="appraisal-month" onClick={() => onOpen(row.forecastId)}>{row.month}</button>
                 <span>{row.sender}</span>
                 <span className="sent-at">
                   <Clock3 size={14} />
@@ -1193,10 +1911,10 @@ function AppraisalList({ onOpen }) {
                   <span className="file-link-text">{row.file}</span>
                 </span>
                 <span className="row-tools">
-                  <button className="icon-button table-action" title="Thẩm định" onClick={onOpen}>
+                  <button className="icon-button table-action" title="Thẩm định" onClick={() => onOpen(row.forecastId)}>
                     <ClipboardList size={20} />
                   </button>
-                  <button className="icon-button table-action" title="Xem" onClick={onOpen}>
+                  <button className="icon-button table-action" title="Xem" onClick={() => onOpen(row.forecastId)}>
                     <Eye size={20} />
                   </button>
                 </span>
@@ -1268,7 +1986,11 @@ function AppraisalList({ onOpen }) {
   );
 }
 
-function AppraisalDetail() {
+function AppraisalDetail({ forecast, tasks = [], onSubmit, onBack }) {
+  const [decision, setDecision] = useState("approve");
+  const displayForecast = forecast || initialForecasts[0];
+  const sourceTask = tasks.find((task) => task.file) || tasks[0] || initialTasks[0];
+
   return (
     <section className="appraisal-detail-layout">
       <div className="appraisal-detail-main">
@@ -1281,8 +2003,8 @@ function AppraisalDetail() {
         </div>
 
         <section className="panel appraisal-hero-card">
-          <span className="status-badge warning">Đang chờ thẩm định</span>
-          <h2>Thẩm định Forecast Kênh TMĐT - Tháng 07/2026</h2>
+          <span className={`status-badge ${getStatusTone(displayForecast.status)}`}>{displayForecast.status}</span>
+          <h2>Thẩm định {displayForecast.title}</h2>
           <div className="sla-countdown">
             <span>SLA còn lại</span>
             <strong>04:22:09</strong>
@@ -1326,8 +2048,8 @@ function AppraisalDetail() {
               <FileText size={26} />
             </span>
             <div>
-              <strong>Forecast_EC_T07_2026_v1.xlsx</strong>
-              <p>Dung lượng: 2.4 MB • Cập nhật lúc 09:45 - 20/07/2026</p>
+              <strong>{sourceTask.file || displayForecast.template}</strong>
+              <p>Dung lượng: {sourceTask.fileSize || "4.2 MB"} • Cập nhật trong mock workflow</p>
               <div className="forecast-values">
                 <div>
                   <span>Tổng doanh thu dự kiến</span>
@@ -1366,11 +2088,11 @@ function AppraisalDetail() {
           <h3>Kết quả thẩm định</h3>
           <span className="approval-section-label">Quyết định</span>
           <div className="decision-toggle">
-            <button className="active">
+            <button className={decision === "approve" ? "active" : ""} onClick={() => setDecision("approve")}>
               <CheckCircle2 size={20} />
               Phê duyệt
             </button>
-            <button>
+            <button className={decision === "reject" ? "active" : ""} onClick={() => setDecision("reject")}>
               <X size={20} />
               Từ chối
             </button>
@@ -1391,11 +2113,11 @@ function AppraisalDetail() {
         </section>
 
         <div className="approval-fixed-actions appraisal-submit-row">
-          <button className="secondary-button">
+          <button className="secondary-button" onClick={onBack}>
             <ArrowLeft size={18} />
             Quay lại
           </button>
-          <button className="primary-button submit-appraisal-button">
+          <button className="primary-button submit-appraisal-button" onClick={() => onSubmit(displayForecast.id, decision === "approve")}>
             Gửi kết quả thẩm định
             <ArrowRight size={18} />
           </button>
@@ -1428,7 +2150,25 @@ function AppraisalDetail() {
   );
 }
 
-function ApprovalList({ onOpen }) {
+function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTasks }) {
+  const rows = forecasts
+    .filter((forecast) => ["Chờ CEO duyệt", "Phát hành", "CEO không duyệt"].includes(forecast.status))
+    .map((forecast) => {
+      const firstTask = tasks.find((task) => task.forecastId === forecast.id && task.file) || tasks.find((task) => task.forecastId === forecast.id);
+      return {
+        forecastId: forecast.id,
+        channel: forecast.title,
+        month: forecast.month,
+        sender: "Phòng Kế hoạch",
+        sentAt: "Vừa xong",
+        file: firstTask?.file || forecast.template,
+        status: forecast.status,
+        statusTone: getStatusTone(forecast.status),
+        icon: CheckCircle2,
+        iconTone: "purple",
+      };
+    });
+
   return (
     <section className="page-flow appraisal-page">
       <div className="breadcrumb appraisal-breadcrumb">
@@ -1475,7 +2215,7 @@ function ApprovalList({ onOpen }) {
             <span>Tài liệu</span>
             <span>Thao tác</span>
           </div>
-          {approvalRows.map((row, index) => {
+          {rows.map((row, index) => {
             const Icon = row.icon;
             return (
               <article className="appraisal-row" key={row.channel}>
@@ -1485,7 +2225,7 @@ function ApprovalList({ onOpen }) {
                   </span>
                   <strong>{row.channel}</strong>
                 </div>
-                <button className="appraisal-month" onClick={onOpen}>{row.month}</button>
+                <button className="appraisal-month" onClick={() => onOpen(row.forecastId)}>{row.month}</button>
                 <span>{row.sender}</span>
                 <span className="sent-at">
                   <Clock3 size={14} />
@@ -1497,10 +2237,10 @@ function ApprovalList({ onOpen }) {
                   <span className="file-link-text">{row.file}</span>
                 </span>
                 <span className="row-tools">
-                  <button className="icon-button table-action" title={index === 0 ? "Đã duyệt" : "Phê duyệt"} onClick={onOpen}>
+                  <button className="icon-button table-action" title={index === 0 ? "Đã duyệt" : "Phê duyệt"} onClick={() => onOpen(row.forecastId)}>
                     {index === 0 ? <SquarePen size={20} /> : <CheckCircle2 size={20} />}
                   </button>
-                  <button className="icon-button table-action" title="Xem" onClick={onOpen}>
+                  <button className="icon-button table-action" title="Xem" onClick={() => onOpen(row.forecastId)}>
                     <Eye size={20} />
                   </button>
                 </span>
@@ -1572,7 +2312,11 @@ function ApprovalList({ onOpen }) {
   );
 }
 
-function ApprovalDetail() {
+function ApprovalDetail({ forecast, tasks = [], onSubmit, onBack }) {
+  const [decision, setDecision] = useState("approve");
+  const displayForecast = forecast || initialForecasts[0];
+  const sourceTask = tasks.find((task) => task.file) || tasks[0] || initialTasks[0];
+
   return (
     <section className="appraisal-detail-layout approval-detail-layout">
       <div className="appraisal-detail-main">
@@ -1585,8 +2329,8 @@ function ApprovalDetail() {
         </div>
 
         <section className="panel appraisal-hero-card">
-          <span className="status-badge danger">Chờ duyệt</span>
-          <h2>Phê duyệt Forecast Kênh TMĐT - Tháng 07/2026</h2>
+          <span className={`status-badge ${getStatusTone(displayForecast.status)}`}>{displayForecast.status}</span>
+          <h2>Phê duyệt {displayForecast.title}</h2>
           <div className="sla-countdown">
             <span>SLA còn lại</span>
             <strong>04:22:09</strong>
@@ -1630,8 +2374,8 @@ function ApprovalDetail() {
               <FileText size={26} />
             </span>
             <div>
-              <strong>Forecast_EC_T07_2026_v1.xlsx</strong>
-              <p>Dung lượng: 2.4 MB • Cập nhật lúc 09:45 - 20/07/2026</p>
+              <strong>{sourceTask.file || displayForecast.template}</strong>
+              <p>Dung lượng: {sourceTask.fileSize || "5.6 MB"} • Hồ sơ đã hoàn tất thẩm định</p>
               <div className="forecast-values">
                 <div>
                   <span>Tổng doanh thu dự kiến</span>
@@ -1670,11 +2414,11 @@ function ApprovalDetail() {
           <h3>Kết quả phê duyệt</h3>
           <span className="approval-section-label">Quyết định</span>
           <div className="decision-toggle">
-            <button className="active">
+            <button className={decision === "approve" ? "active" : ""} onClick={() => setDecision("approve")}>
               <CheckCircle2 size={20} />
               Phê duyệt
             </button>
-            <button>
+            <button className={decision === "reject" ? "active" : ""} onClick={() => setDecision("reject")}>
               <X size={20} />
               Từ chối
             </button>
@@ -1695,12 +2439,12 @@ function ApprovalDetail() {
         </section>
 
         <div className="approval-fixed-actions">
-          <button className="secondary-button">
+          <button className="secondary-button" onClick={onBack}>
             <ArrowLeft size={18} />
             Quay lại
           </button>
-          <button className="approve-button">
-            Duyệt
+          <button className="approve-button" onClick={() => onSubmit(displayForecast.id, decision === "approve")}>
+            {decision === "approve" ? "Duyệt" : "Từ chối"}
             <CheckCircle2 size={18} />
           </button>
         </div>
@@ -2080,21 +2824,18 @@ function WorkflowRoleCard({ role, sla, priority }) {
   );
 }
 
-function StoragePage({ level, onOpenFolder, onOpenFile }) {
+function StoragePage({ level, onOpenFolder, onOpenFile, forecasts = initialForecasts, files = initialPublishedFiles }) {
   const isFolder = level === "folder";
+  const publishedForecasts = forecasts.filter((forecast) => forecast.status === "Phát hành");
   const rows = isFolder
-    ? [
-      ["Kênh MT", "Thư mục • 15 tệp tin", "24/10/2026 14:30", "--"],
-        ["Kênh GT", "Thư mục • 15 tệp tin", "22/07/2026 14:30", "--"],
-        ["Kênh TMĐT", "Thư mục • 15 tệp tin", "22/07/2026 14:30", "--"],
-        ["Kênh Showroom", "Thư mục • 15 tệp tin", "22/07/2026 14:30", "--"],
-      ]
-    : [
-        ["Tháng 07/2026", "Thư mục • 15 tệp tin", "22/07/2026 14:30", "--"],
-        ["Tháng 06/2026", "Thư mục • 15 tệp tin", "22/06/2026 14:30", "--"],
-        ["Tháng 05/2026", "Thư mục • 15 tệp tin", "22/05/2026 14:30", "--"],
-        ["Tháng 04/2026", "Thư mục • 15 tệp tin", "22/04/2026 14:30", "--"],
-      ];
+    ? files.map((file) => [file.name, `${file.channel} • ${file.version}`, file.modified, file.size, file.id])
+    : publishedForecasts.map((forecast) => [
+        forecast.month,
+        `Thư mục • ${files.filter((file) => file.forecastId === forecast.id).length || 1} tệp tin`,
+        forecast.deadline,
+        "--",
+        forecast.id,
+      ]);
 
   return (
     <section className="page-flow storage-page">
@@ -2174,7 +2915,7 @@ function StoragePage({ level, onOpenFolder, onOpenFile }) {
             <button
               className="storage-row"
               key={row[0]}
-              onClick={isFolder && index === 3 ? onOpenFile : onOpenFolder}
+              onClick={() => (isFolder ? onOpenFile(row[4]) : onOpenFolder(row[4]))}
             >
               <span className="storage-name">
                 <Folder size={22} />
@@ -2203,7 +2944,10 @@ function StoragePage({ level, onOpenFolder, onOpenFile }) {
   );
 }
 
-function StorageFileDetail() {
+function StorageFileDetail({ file, forecast }) {
+  const displayFile = file || initialPublishedFiles[0];
+  const displayForecast = forecast || initialForecasts.find((item) => item.id === displayFile?.forecastId) || initialForecasts[0];
+
   return (
     <section className="storage-file-layout">
       <div className="storage-file-main">
@@ -2213,7 +2957,7 @@ function StorageFileDetail() {
           </span>
           <div className="file-hero-content">
             <div className="file-title-line">
-              <h2>Forecast_Showroom_T07_2026_v2.xlsx</h2>
+              <h2>{displayFile?.name}</h2>
               <button className="primary-button">
                 <Download size={18} />
                 Tải xuống
@@ -2225,7 +2969,7 @@ function StorageFileDetail() {
             </div>
             <div className="file-published-row">
               <span className="status-badge success">Đã phát hành</span>
-              <p>Cập nhật 2 giờ trước bởi <strong>Nguyễn Tú Anh</strong></p>
+              <p>Cập nhật {displayFile?.modified} bởi <strong>{displayFile?.owner}</strong></p>
             </div>
             <div className="file-meta-grid">
               <div>
@@ -2234,11 +2978,11 @@ function StorageFileDetail() {
               </div>
               <div>
                 <span className="eyebrow">Dung lượng</span>
-                <strong>4.2 MB</strong>
+                <strong>{displayFile?.size}</strong>
               </div>
               <div>
                 <span className="eyebrow">Vị trí lưu</span>
-                <strong>Forecast / 2026 / T07 / Showroom</strong>
+                <strong>Forecast / {displayForecast?.monthShort} / {displayFile?.channel}</strong>
               </div>
             </div>
           </div>
@@ -2258,7 +3002,7 @@ function StorageFileDetail() {
               <span>Thao tác</span>
             </div>
             {[
-              ["v2.1 (Hiện tại)", "22/07/2026 14:20", "Nguyễn Tú Anh", "Điều chỉnh cuối sau phê duyệt CEO.", "more"],
+              [`${displayFile?.version || "v1.0"} (Hiện tại)`, displayFile?.modified || "29/06/2026 16:30", displayFile?.owner || "Nguyễn Tú Anh", "Bản Forecast chính thức sau phê duyệt CEO.", "more"],
               ["v2.0", "21/07/2026 09:15", "Lê Văn Khoa", "Nộp bản tổng hợp sau thẩm định.", "restore"],
               ["v1.8", "20/07/2026 16:45", "Trần Mỹ Linh", "Cập nhật nhu cầu SKU nhóm Gia dụng.", "restore"],
             ].map((row) => (
@@ -2285,7 +3029,7 @@ function StorageFileDetail() {
             </span>
             <div>
               <span className="eyebrow">Lịch Forecast</span>
-              <strong>Forecast Tháng 07/2026</strong>
+              <strong>{displayForecast?.title}</strong>
             </div>
             <ChevronRight size={20} />
           </article>
@@ -2295,7 +3039,7 @@ function StorageFileDetail() {
             </span>
             <div>
               <span className="eyebrow">Task liên quan</span>
-              <strong>Forecast Showroom T07/2026</strong>
+              <strong>{displayFile?.name}</strong>
             </div>
             <ChevronRight size={20} />
           </article>
@@ -2317,20 +3061,39 @@ function StorageFileDetail() {
   );
 }
 
-function ForecastDetail() {
+function ForecastDetail({
+  forecast,
+  tasks = initialTasks,
+  progress = 0,
+  onOpenTask,
+  onRsmApprove,
+  onGdkdApprove,
+  onSubmitAppraisal,
+}) {
+  const displayForecast = forecast || initialForecasts[0];
+  const allBusinessApproved = tasks.length > 0 && tasks.every((task) => task.status === "GĐKD đã duyệt");
+  const doneCount = tasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
+  const waitingCount = tasks.filter((task) => ["Chờ RSM duyệt", "Chờ GĐKD duyệt"].includes(task.status)).length;
+  const openCount = Math.max(0, tasks.length - doneCount - waitingCount);
+
   return (
     <section className="page-flow detail-page">
       <div className="detail-title-row">
         <div>
           <span className="detail-kicker">Chi tiết kế hoạch</span>
-          <h2>Lịch Forecast KD01 - Tháng 07/2026</h2>
+          <h2>Lịch Forecast KD01 - {displayForecast.month}</h2>
         </div>
         <div className="action-row">
           <button className="secondary-button">
             <Pencil size={18} />
             Chỉnh sửa
           </button>
-          <button className="primary-button">
+          <button
+            className="primary-button"
+            disabled={!allBusinessApproved}
+            onClick={() => onSubmitAppraisal(displayForecast.id)}
+            title={allBusinessApproved ? "Trình thẩm định" : "Cần GĐKD duyệt 100% task trước"}
+          >
             <Share2 size={18} />
             Tổng hợp
           </button>
@@ -2340,20 +3103,20 @@ function ForecastDetail() {
       <section className="panel forecast-info-panel">
         <div className="panel-title-row">
           <h3>Thông tin tổng quan</h3>
-          <span className="id-badge">ID: FC-2026-07</span>
+          <span className="id-badge">ID: {displayForecast.id.toUpperCase()}</span>
         </div>
         <div className="forecast-info-grid">
           <div className="forecast-info-cell month-cell">
             <div className="label-row">
               <span className="eyebrow">Kỳ Forecast</span>
-              <span className="status-badge success">Đang thực hiện</span>
+              <span className={`status-badge ${getStatusTone(displayForecast.status)}`}>{displayForecast.status}</span>
             </div>
-            <strong>Tháng 07/2026</strong>
+            <strong>{displayForecast.month}</strong>
             <div className="divider-line" />
             <span className="eyebrow">Tiến độ hoàn thành</span>
             <div className="detail-progress">
-              <i><span style={{ width: "65%" }} /></i>
-              <strong>65%</strong>
+              <i><span style={{ width: `${progress}%` }} /></i>
+              <strong>{progress}%</strong>
             </div>
           </div>
 
@@ -2364,7 +3127,7 @@ function ForecastDetail() {
                 <Calendar size={20} />
               </span>
               <div>
-                <strong>22 Tháng 07, 2026</strong>
+                <strong>{displayForecast.deadline}</strong>
                 <small>Hạn CEO phê duyệt cuối</small>
               </div>
             </div>
@@ -2372,9 +3135,7 @@ function ForecastDetail() {
 
           <div className="forecast-info-cell note-cell">
             <span className="eyebrow">Ghi chú vận hành</span>
-            <blockquote>
-              "Ưu tiên rà soát kênh TMĐT, MT và GT do có nhiều chương trình khuyến mãi tháng 07. Các file đính kèm cần dùng template KD01 version 2.4"
-            </blockquote>
+            <blockquote>{displayForecast.note}</blockquote>
           </div>
         </div>
       </section>
@@ -2401,7 +3162,7 @@ function ForecastDetail() {
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
-          {detailTaskRows.map((row) => (
+          {tasks.map((row) => (
             <article className="detail-task-row" key={row.channel}>
               <div className="task-channel">
                 <span className={`task-icon ${row.iconTone}`}>
@@ -2423,13 +3184,12 @@ function ForecastDetail() {
                     {row.file}
                   </span>
                 )}
-                {row.upload && (
-                  <button className="upload-pill">
+                {!row.file && (
+                  <button className="upload-pill" onClick={() => onOpenTask(row.id)}>
                     <Upload size={14} />
                     Tải lên
                   </button>
                 )}
-                {row.emptyFile && <span className="empty-file">{row.emptyFile}</span>}
               </div>
               <span>
                 <Badge tone={row.statusTone}>{row.status}</Badge>
@@ -2438,7 +3198,7 @@ function ForecastDetail() {
                 <button className="icon-button table-action" title="Tài liệu">
                   <Calendar size={18} />
                 </button>
-                <button className="icon-button table-action" title="Chỉnh sửa">
+                <button className="icon-button table-action" title="Chỉnh sửa" onClick={() => onOpenTask(row.id)}>
                   <Pencil size={18} />
                 </button>
                 <button className="icon-button table-action" title="Báo cáo">
@@ -2447,9 +3207,16 @@ function ForecastDetail() {
                 <button className="icon-button table-action" title="Checklist">
                   <ClipboardList size={18} />
                 </button>
-                <button className="icon-button table-action" title="Duyệt">
-                  <CheckCircle2 size={18} />
-                </button>
+                {row.status === "Chờ RSM duyệt" && (
+                  <button className="icon-button table-action" title="RSM duyệt" onClick={() => onRsmApprove(row.id)}>
+                    <CheckCircle2 size={18} />
+                  </button>
+                )}
+                {row.status === "Chờ GĐKD duyệt" && (
+                  <button className="icon-button table-action" title="GĐKD duyệt" onClick={() => onGdkdApprove(row.id)}>
+                    <Check size={18} />
+                  </button>
+                )}
               </span>
             </article>
           ))}
@@ -2463,15 +3230,15 @@ function ForecastDetail() {
 
       <div className="detail-summary-strip">
         <article className="detail-summary-card green">
-          <strong>2</strong>
+          <strong>{doneCount}</strong>
           <span>Kênh đã hoàn tất</span>
         </article>
         <article className="detail-summary-card yellow">
-          <strong>1</strong>
+          <strong>{waitingCount}</strong>
           <span>Đang chờ duyệt</span>
         </article>
         <article className="detail-summary-card red">
-          <strong>1</strong>
+          <strong>{openCount}</strong>
           <span>Cần xử lý lại</span>
         </article>
       </div>
@@ -2550,7 +3317,9 @@ function DeadlinePanel() {
   );
 }
 
-function CreateForecastStepOne({ onCancel, onNext }) {
+function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
+  const currentDraft = draft || { month: "Tháng 08/2026", deadline: "22/08/2026", time: "17:00", note: "" };
+
   return (
     <section className="page-flow create-page">
       <Breadcrumb current="Tạo lịch mới" />
@@ -2566,7 +3335,11 @@ function CreateForecastStepOne({ onCancel, onNext }) {
           <label>Chọn kỳ Forecast <strong>*</strong></label>
           <div className="month-grid">
             {["Tháng 07/2026", "Tháng 08/2026", "Tháng 09/2026", "Tháng 10/2026"].map((month) => (
-              <button className={month === "Tháng 07/2026" ? "selected" : ""} key={month}>
+              <button
+                className={month === currentDraft.month ? "selected" : ""}
+                key={month}
+                onClick={() => setDraft({ ...currentDraft, month })}
+              >
                 {month}
               </button>
             ))}
@@ -2578,11 +3351,11 @@ function CreateForecastStepOne({ onCancel, onNext }) {
           <label>Thiết lập Deadline tổng <strong>*</strong></label>
           <div className="input-grid">
             <div className="input-shell">
-              <input value="22/07/2026" readOnly />
+              <input value={currentDraft.deadline} onChange={(event) => setDraft({ ...currentDraft, deadline: event.target.value })} />
               <Calendar size={20} />
             </div>
             <div className="input-shell">
-              <input value="17:00" readOnly />
+              <input value={currentDraft.time} onChange={(event) => setDraft({ ...currentDraft, time: event.target.value })} />
               <Clock3 size={20} />
             </div>
           </div>
@@ -2594,7 +3367,11 @@ function CreateForecastStepOne({ onCancel, onNext }) {
 
         <div className="form-group">
           <label>Ghi chú / Hướng dẫn cụ thể</label>
-          <textarea placeholder="Nhập các lưu ý quan trọng cho các bộ phận tham gia forecast..." />
+          <textarea
+            placeholder="Nhập các lưu ý quan trọng cho các bộ phận tham gia forecast..."
+            value={currentDraft.note}
+            onChange={(event) => setDraft({ ...currentDraft, note: event.target.value })}
+          />
         </div>
 
         <div className="form-actions">
@@ -2609,13 +3386,14 @@ function CreateForecastStepOne({ onCancel, onNext }) {
   );
 }
 
-function CreateForecastStepTwo({ onBack, onFinish }) {
+function CreateForecastStepTwo({ onBack, onFinish, draft }) {
   const [asmModalOpen, setAsmModalOpen] = useState(false);
+  const monthCode = draft?.month?.match(/(\d{2})\/(\d{4})/)?.[1] || "08";
   const assignmentRows = [
-    { channel: "Kênh GT", region: "Miền Bắc", asm: "3 ASM", deadline: "18/07/2026", file: "" },
-    { channel: "Kênh MT", region: "Toàn Quốc", asm: "2 ASM", deadline: "18/07/2026", file: "Template_FC_KD01_T07.xlsx" },
-    { channel: "Kênh Showroom", region: "Miền Nam", asm: "4 ASM", deadline: "19/07/2026", file: "" },
-    { channel: "Kênh TMĐT", region: "Toàn Quốc", asm: "5 ASM", deadline: "19/07/2026", file: "Template_FC_KD01_T07.xlsx" },
+    { channel: "Kênh GT", region: "Miền Bắc", asm: "3 ASM", deadline: `18/${monthCode}/2026`, file: "" },
+    { channel: "Kênh MT", region: "Toàn Quốc", asm: "2 ASM", deadline: `18/${monthCode}/2026`, file: `Template_FC_KD01_T${monthCode}.xlsx` },
+    { channel: "Kênh Showroom", region: "Miền Nam", asm: "4 ASM", deadline: `19/${monthCode}/2026`, file: "" },
+    { channel: "Kênh TMĐT", region: "Toàn Quốc", asm: "5 ASM", deadline: `19/${monthCode}/2026`, file: `Template_FC_KD01_T${monthCode}.xlsx` },
   ];
 
   return (
