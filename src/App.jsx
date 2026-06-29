@@ -616,6 +616,21 @@ function nextEventId() {
   return `evt-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 }
 
+function toDateInputValue(value) {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return "";
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+function toDisplayDate(value) {
+  if (!value) return "";
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return value;
+  return `${match[3]}/${match[2]}/${match[1]}`;
+}
+
 function App() {
   const [screen, setScreen] = useState("overview");
   const [forecasts, setForecasts] = useState(initialForecasts);
@@ -3319,6 +3334,13 @@ function DeadlinePanel() {
 
 function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
   const currentDraft = draft || { month: "Tháng 08/2026", deadline: "22/08/2026", time: "17:00", note: "" };
+  const deadlineInputValue = toDateInputValue(currentDraft.deadline);
+  const updateDraft = (patch) => setDraft({ ...currentDraft, ...patch });
+  const openPicker = (event) => {
+    const input = event.currentTarget.querySelector("input");
+    input?.showPicker?.();
+    input?.focus();
+  };
 
   return (
     <section className="page-flow create-page">
@@ -3338,7 +3360,7 @@ function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
               <button
                 className={month === currentDraft.month ? "selected" : ""}
                 key={month}
-                onClick={() => setDraft({ ...currentDraft, month })}
+                onClick={() => updateDraft({ month })}
               >
                 {month}
               </button>
@@ -3350,12 +3372,22 @@ function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
         <div className="form-group">
           <label>Thiết lập Deadline tổng <strong>*</strong></label>
           <div className="input-grid">
-            <div className="input-shell">
-              <input value={currentDraft.deadline} onChange={(event) => setDraft({ ...currentDraft, deadline: event.target.value })} />
+            <div className="input-shell picker-shell" onClick={openPicker}>
+              <input
+                aria-label="Chọn ngày deadline tổng"
+                type="date"
+                value={deadlineInputValue}
+                onChange={(event) => updateDraft({ deadline: toDisplayDate(event.target.value) })}
+              />
               <Calendar size={20} />
             </div>
-            <div className="input-shell">
-              <input value={currentDraft.time} onChange={(event) => setDraft({ ...currentDraft, time: event.target.value })} />
+            <div className="input-shell picker-shell" onClick={openPicker}>
+              <input
+                aria-label="Chọn giờ deadline tổng"
+                type="time"
+                value={currentDraft.time || "17:00"}
+                onChange={(event) => updateDraft({ time: event.target.value })}
+              />
               <Clock3 size={20} />
             </div>
           </div>
@@ -3370,7 +3402,7 @@ function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
           <textarea
             placeholder="Nhập các lưu ý quan trọng cho các bộ phận tham gia forecast..."
             value={currentDraft.note}
-            onChange={(event) => setDraft({ ...currentDraft, note: event.target.value })}
+            onChange={(event) => updateDraft({ note: event.target.value })}
           />
         </div>
 

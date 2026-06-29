@@ -1164,15 +1164,28 @@ button {
   padding: 0 12px;
 }
 
+.picker-shell {
+  cursor: pointer;
+}
+
 .input-shell input {
   width: 100%;
   border: 0;
   outline: 0;
   background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.input-shell input[type="date"],
+.input-shell input[type="time"] {
+  cursor: pointer;
 }
 
 .input-shell svg {
+  flex: 0 0 auto;
   color: #6e7788;
+  pointer-events: none;
 }
 
 .warning-box {
