@@ -1840,22 +1840,62 @@ function TaskUpdate({ onBack, task, forecast, onSubmit }) {
 }
 
 function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTasks }) {
-  const rows = forecasts
-    .filter((forecast) => ["Chờ thẩm định", "Không duyệt thẩm định"].includes(forecast.status))
-    .map((forecast) => {
-      const firstTask = tasks.find((task) => task.forecastId === forecast.id && task.file) || tasks.find((task) => task.forecastId === forecast.id);
-      return {
-        forecastId: forecast.id,
-        channel: forecast.title,
-        month: forecast.month,
-        sender: "Phòng Kế hoạch",
-        sentAt: "Vừa xong",
-        file: firstTask?.file || forecast.template,
-        status: forecast.status,
-        statusTone: getStatusTone(forecast.status),
-        icon: Star,
-        iconTone: "blue",
-      };
+  const defaultForecast =
+    forecasts.find((forecast) => ["Chờ thẩm định", "Chờ CEO duyệt"].includes(forecast.status)) ||
+    forecasts[0];
+  const [selectedForecastId, setSelectedForecastId] = useState(defaultForecast?.id || "");
+  const [quickFilter, setQuickFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const selectedForecast =
+    forecasts.find((forecast) => forecast.id === selectedForecastId) || defaultForecast;
+  const forecastTasks = tasks.filter((task) => task.forecastId === selectedForecast?.id);
+
+  const allRows = forecastTasks.map((task) => {
+    const waitingApproval = selectedForecast?.status === "Chờ CEO duyệt";
+    const waitingAppraisal =
+      selectedForecast?.status === "Chờ thẩm định" ||
+      ["GĐKD đã duyệt", "Chờ RSM duyệt", "Chờ GĐKD duyệt"].includes(task.status);
+    const status = waitingApproval
+      ? "Chờ duyệt"
+      : waitingAppraisal
+        ? "Chờ thẩm định"
+        : task.file
+          ? "Có file"
+          : "Chưa có file";
+
+    return {
+      forecastId: selectedForecast?.id,
+      taskId: task.id,
+      channel: task.channel,
+      month: selectedForecast?.month || task.deadline,
+      sender: task.owner,
+      sentAt: task.file ? "Vừa xong" : "Chưa gửi",
+      file: task.file || task.template || selectedForecast?.template || "Chưa có file",
+      status,
+      statusTone:
+        status === "Chờ duyệt"
+          ? "danger"
+          : status === "Chờ thẩm định" || status === "Có file"
+            ? "warning"
+            : "neutral",
+      icon: task.icon || Star,
+      iconTone: task.iconTone || "blue",
+    };
+  });
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const rows = allRows
+    .filter((row) => {
+      if (quickFilter === "appraisal") return row.status === "Chờ thẩm định";
+      if (quickFilter === "approval") return row.status === "Chờ duyệt";
+      return true;
+    })
+    .filter((row) => {
+      if (!normalizedSearch) return true;
+      return [row.channel, row.sender, row.file, row.month]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedSearch);
     });
 
   return (
@@ -1880,17 +1920,27 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
       <section className="panel appraisal-table-panel">
         <div className="appraisal-toolbar">
           <div className="segmented-tabs">
-            <button className="active">Tất cả</button>
-            <button>Chờ thẩm định</button>
-            <button>Chờ duyệt</button>
+            <button className={quickFilter === "all" ? "active" : ""} onClick={() => setQuickFilter("all")}>Tất cả</button>
+            <button className={quickFilter === "appraisal" ? "active" : ""} onClick={() => setQuickFilter("appraisal")}>Chờ thẩm định</button>
+            <button className={quickFilter === "approval" ? "active" : ""} onClick={() => setQuickFilter("approval")}>Chờ duyệt</button>
           </div>
-          <button className="month-select">
-            Tháng 07/2026
+          <label className="month-select forecast-month-select">
+            <select value={selectedForecast?.id || ""} onChange={(event) => setSelectedForecastId(event.target.value)}>
+              {forecasts.map((forecast) => (
+                <option key={forecast.id} value={forecast.id}>
+                  {forecast.month}
+                </option>
+              ))}
+            </select>
             <ChevronRight size={16} />
-          </button>
+          </label>
           <label className="appraisal-search">
             <Search size={19} />
-            <input placeholder="Tìm kiếm kênh hoặc tên task..." />
+            <input
+              placeholder="Tìm kiếm kênh hoặc tên task..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
           </label>
         </div>
 
@@ -1907,7 +1957,7 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
           {rows.map((row) => {
             const Icon = row.icon;
             return (
-              <article className="appraisal-row" key={row.channel}>
+              <article className="appraisal-row" key={row.taskId}>
                 <div className="appraisal-channel">
                   <span className={`task-icon ${row.iconTone}`}>
                     <Icon size={19} />
@@ -1936,9 +1986,14 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
               </article>
             );
           })}
+          {!rows.length && (
+            <div className="appraisal-empty-row">
+              Chưa có kênh phù hợp với bộ lọc hiện tại.
+            </div>
+          )}
         </div>
         <div className="table-footer">
-          <span>Hiển thị 3 trong tổng số 12 tác vụ</span>
+          <span>Hiển thị {rows.length} trong tổng số {allRows.length} tác vụ</span>
           <div className="pagination">
             <button className="ghost-page">‹</button>
             <button className="current">1</button>

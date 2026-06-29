@@ -2711,6 +2711,22 @@ button {
   background: #dfe2e5;
 }
 
+.forecast-month-select {
+  gap: 8px;
+}
+
+.forecast-month-select select {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
 .appraisal-search {
   gap: 10px;
 }
@@ -2767,6 +2783,15 @@ button {
 .appraisal-row {
   min-height: 86px;
   border-bottom: 1px solid var(--line);
+}
+
+.appraisal-empty-row {
+  display: grid;
+  min-height: 96px;
+  place-items: center;
+  border-bottom: 1px solid var(--line);
+  color: #64748b;
+  font-weight: 700;
 }
 
 .appraisal-channel {
