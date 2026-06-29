@@ -171,6 +171,62 @@ button {
   backdrop-filter: blur(12px);
 }
 
+.role-preview-banner {
+  position: sticky;
+  top: 62px;
+  z-index: 4;
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #bfdbfe;
+  background: #eff6ff;
+  padding: 10px 26px;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
+}
+
+.role-preview-banner span,
+.role-preview-banner small {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.role-preview-banner strong {
+  display: block;
+  color: #1d4ed8;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.preview-denied-card {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #fff;
+  padding: 32px;
+  text-align: center;
+}
+
+.preview-denied-card svg {
+  color: var(--blue);
+}
+
+.preview-denied-card h2,
+.preview-denied-card p {
+  max-width: 620px;
+  margin: 0;
+}
+
+.preview-denied-card p {
+  color: #64748b;
+}
+
 .topbar-title {
   display: flex;
   min-width: 220px;
@@ -3704,8 +3760,8 @@ button {
 .permission-head,
 .permission-row {
   display: grid;
-  min-width: 900px;
-  grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.7fr) minmax(180px, 0.9fr) minmax(120px, 0.55fr) 76px;
+  min-width: 720px;
+  grid-template-columns: minmax(200px, 1fr) minmax(190px, 0.75fr) minmax(220px, 1fr);
   align-items: center;
   gap: 14px;
   padding: 0 16px;
@@ -3723,6 +3779,48 @@ button {
 .permission-row {
   min-height: 62px;
   border-top: 1px solid var(--line);
+}
+
+.permission-level-select {
+  width: min(190px, 100%);
+  min-height: 36px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  padding: 0 34px 0 12px;
+  font-size: 13px;
+  font-weight: 850;
+  outline: 0;
+}
+
+.permission-level-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.permission-level-select.full {
+  border-color: #bfdbfe;
+  background-color: #eff6ff;
+  color: var(--blue);
+}
+
+.permission-level-select.scoped {
+  border-color: #bae6fd;
+  background-color: #f0f9ff;
+  color: #0284c7;
+}
+
+.permission-level-select.view {
+  border-color: #bbf7d0;
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.permission-level-select.locked {
+  border-color: #e2e8f0;
+  background-color: #f8fafc;
+  color: #94a3b8;
 }
 
 .permission-chip {

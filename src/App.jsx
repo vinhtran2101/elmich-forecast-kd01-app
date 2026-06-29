@@ -607,6 +607,84 @@ const permissionActivityLog = [
   { id: "pa-04", title: "Rà soát quyền Nhà máy", detail: "Giới hạn quyền ở dữ liệu năng lực sản xuất", time: "17:35 28/06/2026", tone: "orange" },
 ];
 
+const permissionLevelOptions = [
+  { value: "full", label: "Toàn quyền" },
+  { value: "scoped", label: "Theo phạm vi" },
+  { value: "view", label: "Chỉ xem" },
+  { value: "locked", label: "Khóa" },
+];
+
+const previewNavModules = {
+  overview: ["Lịch Forecast"],
+  list: ["Lịch Forecast"],
+  tasks: ["Giao việc kênh", "Nộp file Forecast"],
+  appraisal: ["Thẩm định Cung ứng", "Thẩm định Tài chính", "Thẩm định BI", "Kế hoạch Nhà máy"],
+  approval: ["Phê duyệt CEO"],
+  storage: ["Kho lưu trữ"],
+  "system-users": ["Quản trị hệ thống"],
+};
+
+const previewScreenModules = {
+  overview: previewNavModules.overview,
+  list: previewNavModules.list,
+  detail: ["Lịch Forecast"],
+  "create-1": ["Lịch Forecast"],
+  "create-2": ["Lịch Forecast"],
+  tasks: previewNavModules.tasks,
+  "task-update": previewNavModules.tasks,
+  appraisal: previewNavModules.appraisal,
+  "appraisal-detail": previewNavModules.appraisal,
+  approval: previewNavModules.approval,
+  "approval-detail": previewNavModules.approval,
+  storage: previewNavModules.storage,
+  "storage-folder": previewNavModules.storage,
+  "storage-file": previewNavModules.storage,
+  "system-users": previewNavModules["system-users"],
+  "system-permissions": previewNavModules["system-users"],
+  "channel-config": previewNavModules["system-users"],
+  "approval-config": previewNavModules["system-users"],
+  "sla-config": previewNavModules["system-users"],
+};
+
+function normalizePermissionLevel(value) {
+  if (value === "Toàn quyền") return "full";
+  if (value === "Không") return "locked";
+  if (value === "Xem") return "view";
+  return "scoped";
+}
+
+function buildInitialPermissionDrafts() {
+  return roleDefinitions.reduce((roleAcc, role) => {
+    roleAcc[role.id] = permissionMatrix.reduce((matrixAcc, row) => {
+      matrixAcc[row.module] = normalizePermissionLevel(row[role.id]);
+      return matrixAcc;
+    }, {});
+    return roleAcc;
+  }, {});
+}
+
+function getPermissionLevel(permissions, module) {
+  return permissions?.[module] || "locked";
+}
+
+function hasPreviewAccess(permissions, modules = []) {
+  if (!permissions) return true;
+  return modules.some((module) => getPermissionLevel(permissions, module) !== "locked");
+}
+
+function isPreviewScreenAllowed(screen, permissions) {
+  return hasPreviewAccess(permissions, previewScreenModules[screen] || []);
+}
+
+function getFirstPreviewScreen(permissions) {
+  const firstNav = navItems.find((item) => hasPreviewAccess(permissions, previewNavModules[item.screen] || []));
+  return firstNav?.screen || "overview";
+}
+
+function canEditPermission(permissions, module) {
+  return ["full", "scoped"].includes(getPermissionLevel(permissions, module));
+}
+
 const statusToneMap = {
   "Nháp": "neutral",
   "Đang thực hiện": "success",
@@ -698,6 +776,8 @@ function App() {
     note: "",
   });
   const [toast, setToast] = useState("");
+  const [permissionDrafts, setPermissionDrafts] = useState(buildInitialPermissionDrafts);
+  const [previewRoleId, setPreviewRoleId] = useState("");
 
   const selectedForecast =
     forecasts.find((forecast) => forecast.id === selectedForecastId) || forecasts[0];
@@ -709,6 +789,10 @@ function App() {
     tasks[0];
   const selectedFile =
     publishedFiles.find((file) => file.id === selectedFileId) || publishedFiles[0];
+  const previewRole = roleDefinitions.find((role) => role.id === previewRoleId);
+  const previewPermissions = previewRole ? permissionDrafts[previewRole.id] : null;
+  const previewScreenAllowed = isPreviewScreenAllowed(screen, previewPermissions);
+  const canCreateForecast = !previewPermissions || canEditPermission(previewPermissions, "Lịch Forecast");
 
   const showToast = (message) => {
     setToast(message);
@@ -791,6 +875,20 @@ function App() {
   const openFile = (fileId) => {
     setSelectedFileId(fileId);
     setScreen("storage-file");
+  };
+
+  const handlePreviewRole = (roleId) => {
+    const role = roleDefinitions.find((item) => item.id === roleId);
+    const permissions = permissionDrafts[roleId] || {};
+    setPreviewRoleId(roleId);
+    setScreen(getFirstPreviewScreen(permissions));
+    showToast(`Đang xem trước giao diện vai trò ${role?.name || ""}.`);
+  };
+
+  const exitRolePreview = () => {
+    setPreviewRoleId("");
+    setScreen("system-permissions");
+    showToast("Đã thoát chế độ xem trước.");
   };
 
   const handleCreateForecast = () => {
@@ -995,7 +1093,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar screen={screen} setScreen={setScreen} />
+      <Sidebar screen={screen} setScreen={setScreen} previewPermissions={previewPermissions} />
       <main className="main-shell">
         <Topbar
           title={headerTitle}
@@ -1034,22 +1132,27 @@ function App() {
                 : "Tìm kiếm forecast, task..."
           }
         />
+        {previewRole && <RolePreviewBanner role={previewRole} onExit={exitRolePreview} />}
         <div className="content-area">
           {toast && <div className="mock-toast">{toast}</div>}
+          {!previewScreenAllowed ? (
+            <PreviewAccessDenied role={previewRole} onExit={exitRolePreview} />
+          ) : (
+            <>
           {screen === "overview" && (
             <Overview
               forecasts={forecasts}
               tasks={tasks}
               events={events}
               activeForecast={activeForecast}
-              onCreate={() => setScreen("create-1")}
+              onCreate={canCreateForecast ? () => setScreen("create-1") : null}
             />
           )}
           {screen === "list" && (
             <ScheduleList
               forecasts={forecasts}
               tasks={tasks}
-              onCreate={() => setScreen("create-1")}
+              onCreate={canCreateForecast ? () => setScreen("create-1") : null}
               onOpen={openForecast}
             />
           )}
@@ -1150,6 +1253,9 @@ function App() {
               onChannelConfig={() => setScreen("channel-config")}
               onApprovalConfig={() => setScreen("approval-config")}
               onSlaConfig={() => setScreen("sla-config")}
+              permissionDrafts={permissionDrafts}
+              setPermissionDrafts={setPermissionDrafts}
+              onPreviewRole={handlePreviewRole}
             />
           )}
           {screen === "channel-config" && (
@@ -1191,13 +1297,49 @@ function App() {
               onFinish={handleCreateForecast}
             />
           )}
+            </>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
-function Sidebar({ screen, setScreen }) {
+function RolePreviewBanner({ role, onExit }) {
+  return (
+    <div className="role-preview-banner">
+      <div>
+        <span>Đang xem trước vai trò</span>
+        <strong>{role.name}</strong>
+        <small>{role.description}</small>
+      </div>
+      <button className="secondary-button" onClick={onExit}>
+        <X size={18} />
+        Thoát xem trước
+      </button>
+    </div>
+  );
+}
+
+function PreviewAccessDenied({ role, onExit }) {
+  return (
+    <section className="preview-denied-card">
+      <Lock size={28} />
+      <h2>Vai trò {role?.name} không có quyền truy cập màn hình này</h2>
+      <p>Các menu và khu vực không nằm trong phạm vi quyền đã được ẩn trong chế độ xem trước.</p>
+      <button className="primary-button" onClick={onExit}>
+        <X size={18} />
+        Thoát xem trước
+      </button>
+    </section>
+  );
+}
+
+function Sidebar({ screen, setScreen, previewPermissions }) {
+  const visibleNavItems = previewPermissions
+    ? navItems.filter((item) => hasPreviewAccess(previewPermissions, previewNavModules[item.screen] || []))
+    : navItems;
+
   return (
     <aside className="sidebar">
       <div>
@@ -1212,7 +1354,7 @@ function Sidebar({ screen, setScreen }) {
         </div>
 
         <nav className="nav-list" aria-label="Điều hướng chính">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isDashboard =
               item.label === "Dashboard" && screen === "overview";
@@ -1325,10 +1467,12 @@ function Overview({
             <Filter size={18} />
             Lọc dữ liệu
           </button>
-          <button className="primary-button" onClick={onCreate}>
-            <Plus size={18} />
-            Tạo Forecast mới
-          </button>
+          {onCreate && (
+            <button className="primary-button" onClick={onCreate}>
+              <Plus size={18} />
+              Tạo Forecast mới
+            </button>
+          )}
         </div>
       </div>
 
@@ -1574,14 +1718,18 @@ function ScheduleList({ onCreate, onOpen, forecasts = initialForecasts, tasks = 
         <MiniMetric icon={FileText} label="File mẫu" value="45 Bản" tone="green" />
         <MiniMetric icon={ClipboardList} label="Sắp tới hạn" value="03 Deadline" tone="pale" />
         <div className="schedule-actions">
-          <button className="primary-button" onClick={onCreate}>
-            <Plus size={19} />
-            Tạo lịch Forecast
-          </button>
-          <button className="muted-button">
-            <Upload size={18} />
-            Tải lên File mẫu
-          </button>
+          {onCreate && (
+            <>
+              <button className="primary-button" onClick={onCreate}>
+                <Plus size={19} />
+                Tạo lịch Forecast
+              </button>
+              <button className="muted-button">
+                <Upload size={18} />
+                Tải lên File mẫu
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -2815,15 +2963,33 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
   );
 }
 
-function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaConfig }) {
+function SystemPermissions({
+  onUsers,
+  onChannelConfig,
+  onApprovalConfig,
+  onSlaConfig,
+  permissionDrafts,
+  setPermissionDrafts,
+  onPreviewRole,
+}) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
   const [roleUserSearch, setRoleUserSearch] = useState("");
   const selectedRole = roleDefinitions.find((role) => role.id === selectedRoleId) || roleDefinitions[0];
+  const selectedPermissions = permissionDrafts[selectedRole.id] || {};
   const roleUsers = adminUsers.filter((user) => user.role === selectedRole.name);
   const visibleRoleUsers = roleUsers.filter((user) => {
     const haystack = `${user.name} ${user.email} ${user.scope}`.toLowerCase();
     return haystack.includes(roleUserSearch.toLowerCase());
   });
+  const updateRolePermission = (module, level) => {
+    setPermissionDrafts((current) => ({
+      ...current,
+      [selectedRole.id]: {
+        ...(current[selectedRole.id] || {}),
+        [module]: level,
+      },
+    }));
+  };
 
   return (
     <section className="page-flow admin-page">
@@ -2888,13 +3054,9 @@ function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaCo
               <p>{selectedRole.description}</p>
             </div>
             <div className="action-row">
-              <button className="secondary-blue-button">
+              <button className="secondary-blue-button" onClick={() => onPreviewRole(selectedRole.id)}>
                 <Eye size={18} />
                 Xem trước
-              </button>
-              <button className="secondary-button">
-                <Settings size={18} />
-                Phạm vi
               </button>
             </div>
           </div>
@@ -2904,20 +3066,22 @@ function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaCo
               <span>Khu vực</span>
               <span>Quyền</span>
               <span>Dữ liệu</span>
-              <span>Rủi ro</span>
-              <span>Thao tác</span>
             </div>
             {permissionMatrix.map((row) => {
-              const value = row[selectedRole.id];
+              const level = selectedPermissions[row.module] || normalizePermissionLevel(row[selectedRole.id]);
               return (
                 <article className="permission-row" key={row.module}>
                   <strong>{row.module}</strong>
-                  <span className={`permission-chip ${value === "Không" ? "blocked" : value === "Xem" ? "view" : "edit"}`}>{value}</span>
+                  <select
+                    className={`permission-level-select ${level}`}
+                    value={level}
+                    onChange={(event) => updateRolePermission(row.module, event.target.value)}
+                  >
+                    {permissionLevelOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
                   <span>{row.data}</span>
-                  <Badge tone={selectedRole.risk === "Cao" ? "danger" : selectedRole.risk === "Trung bình" ? "warning" : "success"}>{selectedRole.risk}</Badge>
-                  <button className="icon-action-button" title="Chỉnh sửa quyền">
-                    <SquarePen size={18} />
-                  </button>
                 </article>
               );
             })}
