@@ -590,6 +590,13 @@ const permissionMatrix = [
   { module: "Quản trị hệ thống", data: "User/role/SLA", admin: "Toàn quyền", planning: "Đề xuất", asm: "Không", rsm: "Không", gdkd: "Không", appraiser: "Không", ceo: "Xem", viewer: "Không" },
 ];
 
+const permissionActivityLog = [
+  { id: "pa-01", title: "Cập nhật người dùng: Nguyễn Tú Anh", detail: "Admin -> Toàn hệ thống", time: "10:58 29/06/2026", tone: "blue" },
+  { id: "pa-02", title: "Gán quyền: Lê Thị Thảo", detail: "RSM -> Kênh MT", time: "10:42 29/06/2026", tone: "green" },
+  { id: "pa-03", title: "Cập nhật phạm vi Planning", detail: "Thêm quyền phát hành kho lưu trữ", time: "09:20 29/06/2026", tone: "green" },
+  { id: "pa-04", title: "Khóa tài khoản Phạm Khánh Linh", detail: "Tạm khóa quyền truy cập forecast", time: "17:35 28/06/2026", tone: "orange" },
+];
+
 const statusToneMap = {
   "Nháp": "neutral",
   "Đang thực hiện": "success",
@@ -2800,7 +2807,13 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
 
 function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaConfig }) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
+  const [roleUserSearch, setRoleUserSearch] = useState("");
   const selectedRole = roleDefinitions.find((role) => role.id === selectedRoleId) || roleDefinitions[0];
+  const roleUsers = adminUsers.filter((user) => user.role === selectedRole.name);
+  const visibleRoleUsers = roleUsers.filter((user) => {
+    const haystack = `${user.name} ${user.email} ${user.scope}`.toLowerCase();
+    return haystack.includes(roleUserSearch.toLowerCase());
+  });
 
   return (
     <section className="page-flow admin-page">
@@ -2882,6 +2895,7 @@ function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaCo
               <span>Quyền</span>
               <span>Dữ liệu</span>
               <span>Rủi ro</span>
+              <span>Thao tác</span>
             </div>
             {permissionMatrix.map((row) => {
               const value = row[selectedRole.id];
@@ -2891,9 +2905,104 @@ function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaCo
                   <span className={`permission-chip ${value === "Không" ? "blocked" : value === "Xem" ? "view" : "edit"}`}>{value}</span>
                   <span>{row.data}</span>
                   <Badge tone={selectedRole.risk === "Cao" ? "danger" : selectedRole.risk === "Trung bình" ? "warning" : "success"}>{selectedRole.risk}</Badge>
+                  <button className="icon-action-button" title="Chỉnh sửa quyền">
+                    <SquarePen size={18} />
+                  </button>
                 </article>
               );
             })}
+          </div>
+        </section>
+      </div>
+
+      <div className="permission-lower-grid">
+        <section className="panel role-users-panel">
+          <div className="role-users-heading">
+            <div>
+              <h3>Người dùng</h3>
+              <p>{visibleRoleUsers.length}/{selectedRole.users} người có thể truy cập với vai trò {selectedRole.name}</p>
+            </div>
+            <button className="icon-action-button" title="Tùy chọn">
+              <MoreVertical size={18} />
+            </button>
+          </div>
+
+          <div className="role-users-toolbar">
+            <label className="admin-input-shell">
+              <Search size={18} />
+              <input
+                value={roleUserSearch}
+                onChange={(event) => setRoleUserSearch(event.target.value)}
+                placeholder="Tìm nhân sự..."
+              />
+            </label>
+            <button className="primary-square-button" title="Thêm người dùng">
+              <UserPlus size={20} />
+            </button>
+          </div>
+
+          <div className="role-users-table">
+            {visibleRoleUsers.length ? (
+              visibleRoleUsers.map((user) => (
+                <article className="role-user-row" key={user.id}>
+                  <input type="checkbox" aria-label={`Chọn ${user.name}`} />
+                  <span className={`avatar ${user.tone}`}>{user.initials}</span>
+                  <div>
+                    <strong>{user.name}</strong>
+                    <small>{user.email}</small>
+                  </div>
+                  <b>{user.role}</b>
+                  <span>{user.scope}</span>
+                </article>
+              ))
+            ) : (
+              <div className="empty-role-users">
+                Chưa có người dùng mock nào được gán vai trò này.
+              </div>
+            )}
+          </div>
+
+          <div className="permission-card-footer">
+            <span>Hiển thị {visibleRoleUsers.length ? `1-${visibleRoleUsers.length}` : "0"} / {roleUsers.length}</span>
+            <div className="pager-actions">
+              <button disabled>Trước</button>
+              <strong>1/1</strong>
+              <button disabled>Sau</button>
+            </div>
+          </div>
+        </section>
+
+        <section className="panel permission-activity-panel">
+          <div className="role-users-heading">
+            <div>
+              <h3>Nhật ký gần đây</h3>
+              <p>24 bản ghi thay đổi quyền và phạm vi dữ liệu</p>
+            </div>
+            <Clock3 size={20} />
+          </div>
+
+          <div className="permission-activity-list">
+            {permissionActivityLog.map((item) => (
+              <article className="permission-activity-item" key={item.id}>
+                <span className={`activity-dot ${item.tone}`}>
+                  <CheckCircle2 size={16} />
+                </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.detail}</small>
+                </div>
+                <time>{item.time}</time>
+              </article>
+            ))}
+          </div>
+
+          <div className="permission-card-footer">
+            <span>24 bản ghi</span>
+            <div className="pager-actions">
+              <button disabled>Trước</button>
+              <strong>1/6</strong>
+              <button>Sau</button>
+            </div>
           </div>
         </section>
       </div>

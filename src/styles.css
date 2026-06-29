@@ -3489,7 +3489,9 @@ button {
 
 .admin-directory-panel,
 .role-list-panel,
-.permission-detail-panel {
+.permission-detail-panel,
+.role-users-panel,
+.permission-activity-panel {
   border-color: #bec9dc;
 }
 
@@ -3611,14 +3613,24 @@ button {
   padding: 0 10px;
 }
 
-.permission-layout {
+.permission-layout,
+.permission-lower-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 2.2fr);
   gap: 18px;
 }
 
+.permission-layout {
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 2.2fr);
+}
+
+.permission-lower-grid {
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+}
+
 .role-list-panel,
-.permission-detail-panel {
+.permission-detail-panel,
+.role-users-panel,
+.permission-activity-panel {
   padding: 18px;
 }
 
@@ -3692,8 +3704,8 @@ button {
 .permission-head,
 .permission-row {
   display: grid;
-  min-width: 760px;
-  grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.7fr) minmax(180px, 0.9fr) minmax(120px, 0.55fr);
+  min-width: 900px;
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.7fr) minmax(180px, 0.9fr) minmax(120px, 0.55fr) 76px;
   align-items: center;
   gap: 14px;
   padding: 0 16px;
@@ -3737,6 +3749,199 @@ button {
 .permission-chip.blocked {
   background: #f1f5f9;
   color: #94a3b8;
+}
+
+.icon-action-button,
+.primary-square-button {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+}
+
+.icon-action-button:hover {
+  border-color: #bfdbfe;
+  color: var(--blue);
+}
+
+.primary-square-button {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(59, 130, 246, 0.22);
+}
+
+.role-users-heading,
+.role-users-toolbar,
+.permission-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.role-users-heading {
+  margin-bottom: 14px;
+}
+
+.role-users-heading h3,
+.role-users-heading p {
+  margin: 0;
+}
+
+.role-users-heading p {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.role-users-toolbar {
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.role-users-toolbar .admin-input-shell {
+  width: min(360px, 100%);
+}
+
+.role-users-table {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.role-user-row {
+  display: grid;
+  min-height: 72px;
+  grid-template-columns: 24px 38px minmax(180px, 1fr) minmax(100px, 0.45fr) minmax(180px, 0.8fr);
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding: 0 14px;
+}
+
+.role-user-row:first-child {
+  border-top: 0;
+}
+
+.role-user-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+}
+
+.role-user-row strong,
+.role-user-row small {
+  display: block;
+}
+
+.role-user-row small,
+.role-user-row span:last-child {
+  color: #64748b;
+}
+
+.role-user-row b {
+  color: #475569;
+  font-size: 13px;
+}
+
+.empty-role-users {
+  padding: 26px 16px;
+  color: #64748b;
+  text-align: center;
+}
+
+.permission-card-footer {
+  margin-top: 14px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.pager-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pager-actions button {
+  min-height: 34px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  padding: 0 12px;
+}
+
+.pager-actions button:disabled {
+  opacity: 0.45;
+}
+
+.pager-actions strong {
+  color: #334155;
+  font-size: 13px;
+}
+
+.permission-activity-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.permission-activity-list {
+  display: grid;
+  gap: 12px;
+}
+
+.permission-activity-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.permission-activity-item strong,
+.permission-activity-item small {
+  display: block;
+}
+
+.permission-activity-item strong {
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.permission-activity-item small,
+.permission-activity-item time {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.activity-dot {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.activity-dot.blue {
+  background: #eff6ff;
+  color: var(--blue);
+}
+
+.activity-dot.green {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.activity-dot.orange {
+  background: #fffbeb;
+  color: #f59e0b;
 }
 
 .frame-config-page,
@@ -5253,6 +5458,8 @@ button {
   .storage-file-layout,
   .workflow-grid,
   .framework-bottom-grid,
+  .permission-layout,
+  .permission-lower-grid,
   .sla-grid {
     grid-template-columns: 1fr;
   }
@@ -5348,6 +5555,7 @@ button {
   .channel-panel,
   .framework-table-panel,
   .storage-list-panel,
+  .role-users-panel,
   .version-card {
     overflow-x: auto;
   }
