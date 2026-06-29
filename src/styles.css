@@ -3435,6 +3435,7 @@ button {
 
 .admin-page {
   max-width: none;
+  gap: 18px;
 }
 
 .admin-heading {
@@ -3472,8 +3473,8 @@ button {
 
 .admin-title-icon {
   display: grid;
-  width: 54px;
-  height: 54px;
+  width: 48px;
+  height: 48px;
   place-items: center;
   border-radius: 999px;
   color: #fff;
@@ -3487,19 +3488,19 @@ button {
 .admin-metric-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .admin-metric-card {
   display: grid;
-  min-height: 104px;
-  grid-template-columns: 1fr 54px;
+  min-height: 84px;
+  grid-template-columns: minmax(0, 1fr) 44px;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
-  padding: 18px;
+  padding: 14px;
   box-shadow: var(--shadow);
 }
 
@@ -3510,14 +3511,14 @@ button {
 
 .admin-metric-card strong {
   display: inline-block;
-  margin: 7px 8px 0 0;
-  font-size: 28px;
+  margin: 4px 6px 0 0;
+  font-size: 24px;
 }
 
 .admin-metric-card i {
   display: grid;
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   border-radius: 999px;
 }
@@ -3558,10 +3559,10 @@ button {
 
 .admin-filter-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 1.2fr) minmax(180px, 0.8fr) minmax(180px, 0.8fr);
-  gap: 14px;
+  grid-template-columns: minmax(240px, 1.1fr) minmax(160px, 0.75fr) minmax(160px, 0.75fr);
+  gap: 12px;
   border-bottom: 1px solid var(--line);
-  padding: 20px;
+  padding: 16px;
 }
 
 .admin-filter-grid label {
@@ -3573,7 +3574,7 @@ button {
 
 .admin-filter-grid select,
 .admin-input-shell {
-  min-height: 44px;
+  min-height: 40px;
   border: 1px solid #c5cedf;
   border-radius: 8px;
   background: #fff;
@@ -3596,16 +3597,16 @@ button {
 }
 
 .admin-user-table {
-  min-width: 960px;
+  min-width: 760px;
 }
 
 .admin-user-head,
 .admin-user-row {
   display: grid;
-  grid-template-columns: minmax(260px, 1.35fr) minmax(150px, 0.75fr) minmax(220px, 1fr) minmax(130px, 0.65fr) minmax(118px, 0.55fr);
+  grid-template-columns: minmax(210px, 1.25fr) minmax(105px, 0.55fr) minmax(170px, 0.85fr) minmax(105px, 0.5fr) minmax(92px, 0.45fr);
   align-items: center;
-  gap: 16px;
-  padding: 0 20px;
+  gap: 12px;
+  padding: 0 16px;
 }
 
 .admin-user-head {
@@ -3618,7 +3619,7 @@ button {
 }
 
 .admin-user-row {
-  min-height: 76px;
+  min-height: 64px;
   border-top: 1px solid var(--line);
 }
 
@@ -3665,8 +3666,11 @@ button {
 }
 
 .compact-action {
-  min-height: 34px;
-  padding: 0 10px;
+  width: 36px;
+  min-height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .permission-layout,
@@ -3687,7 +3691,7 @@ button {
 .permission-detail-panel,
 .role-users-panel,
 .permission-activity-panel {
-  padding: 18px;
+  padding: 16px;
 }
 
 .role-list-item {
@@ -3699,7 +3703,7 @@ button {
   border: 1px solid transparent;
   border-radius: 8px;
   background: #fff;
-  padding: 14px;
+  padding: 12px;
   text-align: left;
 }
 
@@ -3760,11 +3764,11 @@ button {
 .permission-head,
 .permission-row {
   display: grid;
-  min-width: 720px;
-  grid-template-columns: minmax(200px, 1fr) minmax(190px, 0.75fr) minmax(220px, 1fr);
+  min-width: 640px;
+  grid-template-columns: minmax(190px, 1fr) minmax(160px, 0.7fr) minmax(190px, 0.95fr);
   align-items: center;
-  gap: 14px;
-  padding: 0 16px;
+  gap: 12px;
+  padding: 0 14px;
 }
 
 .permission-head {
@@ -3777,20 +3781,22 @@ button {
 }
 
 .permission-row {
-  min-height: 62px;
+  min-height: 56px;
   border-top: 1px solid var(--line);
 }
 
 .permission-level-select {
-  width: min(190px, 100%);
-  min-height: 36px;
+  width: min(168px, 100%);
+  min-height: 34px;
   border: 1px solid #dbe3ef;
   border-radius: 8px;
   background: #fff;
   color: #475569;
   padding: 0 34px 0 12px;
-  font-size: 13px;
-  font-weight: 850;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
   outline: 0;
 }
 

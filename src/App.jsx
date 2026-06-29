@@ -2951,9 +2951,8 @@ function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaCo
               <span><Badge tone="neutral">{user.role}</Badge></span>
               <strong>{user.scope}</strong>
               <span><Badge tone={user.status === "Active" ? "success" : user.status === "Locked" ? "danger" : "neutral"}>{user.status}</Badge></span>
-              <button className="secondary-button compact-action">
+              <button className="secondary-button compact-action" title="Thao tác">
                 <MoreVertical size={17} />
-                Thao tác
               </button>
             </article>
           ))}
