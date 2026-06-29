@@ -57,7 +57,7 @@ const navItems = [
   { label: "Thẩm định", icon: Star, screen: "appraisal" },
   { label: "Phê duyệt", icon: Check, screen: "approval" },
   { label: "Kho lưu trữ", icon: Folder, screen: "storage" },
-  { label: "Quản trị hệ thống", icon: Settings, screen: "channel-config" },
+  { label: "Quản trị hệ thống", icon: Settings, screen: "system-users" },
 ];
 
 const recentRows = [
@@ -556,6 +556,40 @@ const initialPublishedFiles = [
   },
 ];
 
+const adminUsers = [
+  { id: "u-01", name: "Nguyễn Tú Anh", email: "tu.anh@elmich.vn", role: "Admin", scope: "Toàn hệ thống", status: "Active", initials: "NA", tone: "blue" },
+  { id: "u-02", name: "Trần Văn A", email: "planning@elmich.vn", role: "Planning", scope: "Phòng Kế hoạch", status: "Active", initials: "TA", tone: "green" },
+  { id: "u-03", name: "Lê Quang Minh", email: "asm.ec@elmich.vn", role: "ASM", scope: "Kênh TMĐT", status: "Active", initials: "LM", tone: "blue" },
+  { id: "u-04", name: "Nguyễn Diệp Chi", email: "asm.gt@elmich.vn", role: "ASM", scope: "Kênh GT - Miền Bắc", status: "Active", initials: "DC", tone: "purple" },
+  { id: "u-05", name: "Đặng Văn D", email: "showroom@elmich.vn", role: "ASM", scope: "Kênh Showroom", status: "Inactive", initials: "DD", tone: "slate" },
+  { id: "u-06", name: "Lê Thị Thảo", email: "rsm.mt@elmich.vn", role: "RSM", scope: "Kênh MT", status: "Active", initials: "LT", tone: "green" },
+  { id: "u-07", name: "Nguyễn Văn Nam", email: "gdkd.gt@elmich.vn", role: "GĐKD", scope: "GT/Showroom", status: "Active", initials: "NN", tone: "blue" },
+  { id: "u-08", name: "Phạm Khánh Linh", email: "rsm.ec@elmich.vn", role: "RSM", scope: "Kênh TMĐT", status: "Locked", initials: "PL", tone: "orange" },
+  { id: "u-09", name: "Bộ phận Cung ứng", email: "supply@elmich.vn", role: "Thẩm định", scope: "Cung ứng", status: "Active", initials: "CU", tone: "green" },
+  { id: "u-10", name: "CEO Office", email: "ceo@elmich.vn", role: "CEO", scope: "Phê duyệt cuối", status: "Active", initials: "CO", tone: "purple" },
+];
+
+const roleDefinitions = [
+  { id: "admin", name: "Admin", description: "Toàn quyền cấu hình và giám sát Forecast KD01", scope: "Toàn hệ thống", users: 1, risk: "Cao" },
+  { id: "planning", name: "Planning", description: "Tạo kỳ Forecast, tổng hợp file và trình hồ sơ", scope: "Phòng Kế hoạch", users: 1, risk: "Trung bình" },
+  { id: "asm", name: "ASM", description: "Cập nhật file Forecast theo kênh được phân công", scope: "Theo kênh/vùng", users: 3, risk: "Thấp" },
+  { id: "rsm", name: "RSM", description: "Duyệt Forecast cấp quản lý vùng/kênh", scope: "Theo kênh", users: 2, risk: "Trung bình" },
+  { id: "gdkd", name: "GĐKD", description: "Duyệt Forecast cấp Giám đốc kinh doanh", scope: "Theo khối kinh doanh", users: 1, risk: "Cao" },
+  { id: "appraiser", name: "Thẩm định", description: "Rà soát dữ liệu từ Cung ứng, BI, Nhà máy, Tài chính", scope: "Theo bộ phận", users: 1, risk: "Trung bình" },
+  { id: "ceo", name: "CEO", description: "Phê duyệt cuối và phát hành bản Forecast chính thức", scope: "Toàn công ty", users: 1, risk: "Cao" },
+  { id: "viewer", name: "Viewer", description: "Chỉ xem báo cáo và kho lưu trữ", scope: "Theo phân quyền", users: 0, risk: "Thấp" },
+];
+
+const permissionMatrix = [
+  { module: "Lịch Forecast", data: "Kỳ forecast", admin: "Toàn quyền", planning: "Tạo/Sửa", asm: "Xem", rsm: "Xem", gdkd: "Xem", appraiser: "Xem", ceo: "Xem", viewer: "Xem" },
+  { module: "Công việc ASM", data: "Task theo kênh", admin: "Toàn quyền", planning: "Theo dõi", asm: "Cập nhật", rsm: "Xem", gdkd: "Xem", appraiser: "Không", ceo: "Xem", viewer: "Không" },
+  { module: "Duyệt kinh doanh", data: "File kênh", admin: "Toàn quyền", planning: "Theo dõi", asm: "Không", rsm: "Duyệt", gdkd: "Duyệt", appraiser: "Không", ceo: "Xem", viewer: "Không" },
+  { module: "Thẩm định", data: "Hồ sơ tổng hợp", admin: "Toàn quyền", planning: "Trình hồ sơ", asm: "Không", rsm: "Xem", gdkd: "Xem", appraiser: "Thẩm định", ceo: "Xem", viewer: "Xem" },
+  { module: "Phê duyệt CEO", data: "Bản cuối", admin: "Toàn quyền", planning: "Theo dõi", asm: "Không", rsm: "Không", gdkd: "Xem", appraiser: "Xem", ceo: "Duyệt", viewer: "Xem" },
+  { module: "Kho lưu trữ", data: "File phát hành", admin: "Toàn quyền", planning: "Phát hành", asm: "Xem", rsm: "Xem", gdkd: "Xem", appraiser: "Xem", ceo: "Xem", viewer: "Xem" },
+  { module: "Quản trị hệ thống", data: "User/role/SLA", admin: "Toàn quyền", planning: "Đề xuất", asm: "Không", rsm: "Không", gdkd: "Không", appraiser: "Không", ceo: "Xem", viewer: "Không" },
+];
+
 const statusToneMap = {
   "Nháp": "neutral",
   "Đang thực hiện": "success",
@@ -923,12 +957,16 @@ function App() {
       ? "Lịch Forecast"
       : screen === "storage-file"
         ? "File Details"
-        : screen === "channel-config"
-          ? "Cấu hình Khung Forecast"
-          : screen === "approval-config"
-            ? "Quản lý hệ thống"
-            : screen === "sla-config"
-              ? "Cấu hình SLA"
+        : screen === "system-users"
+          ? "Tài khoản"
+          : screen === "system-permissions"
+            ? "Phân quyền"
+            : screen === "channel-config"
+              ? "Cấu hình Khung Forecast"
+              : screen === "approval-config"
+                ? "Quản lý hệ thống"
+                : screen === "sla-config"
+                  ? "Cấu hình SLA"
         : "Forecast Management";
   const isBackScreen =
     screen === "create-1" ||
@@ -964,6 +1002,10 @@ function App() {
                 ? "Tìm kiếm task, hồ sơ..."
               : screen === "storage" || screen === "storage-folder" || screen === "storage-file"
                 ? "Tìm kiếm file forecast, thư mục..."
+              : screen === "system-users"
+                ? "Tìm tên, email, vai trò..."
+              : screen === "system-permissions"
+                ? "Tìm vai trò hoặc quyền..."
               : screen === "channel-config"
                 ? "Tìm kiếm kênh hoặc RSM..."
               : screen === "approval-config"
@@ -1077,20 +1119,42 @@ function App() {
               forecast={forecasts.find((forecast) => forecast.id === selectedFile?.forecastId)}
             />
           )}
+          {screen === "system-users" && (
+            <SystemUsers
+              onPermissions={() => setScreen("system-permissions")}
+              onChannelConfig={() => setScreen("channel-config")}
+              onApprovalConfig={() => setScreen("approval-config")}
+              onSlaConfig={() => setScreen("sla-config")}
+            />
+          )}
+          {screen === "system-permissions" && (
+            <SystemPermissions
+              onUsers={() => setScreen("system-users")}
+              onChannelConfig={() => setScreen("channel-config")}
+              onApprovalConfig={() => setScreen("approval-config")}
+              onSlaConfig={() => setScreen("sla-config")}
+            />
+          )}
           {screen === "channel-config" && (
             <ChannelFrameworkConfig
+              onUsers={() => setScreen("system-users")}
+              onPermissions={() => setScreen("system-permissions")}
               onApprovalConfig={() => setScreen("approval-config")}
               onSlaConfig={() => setScreen("sla-config")}
             />
           )}
           {screen === "approval-config" && (
             <ApprovalWorkflowConfig
+              onUsers={() => setScreen("system-users")}
+              onPermissions={() => setScreen("system-permissions")}
               onChannelConfig={() => setScreen("channel-config")}
               onSlaConfig={() => setScreen("sla-config")}
             />
           )}
           {screen === "sla-config" && (
             <SlaConfig
+              onUsers={() => setScreen("system-users")}
+              onPermissions={() => setScreen("system-permissions")}
               onChannelConfig={() => setScreen("channel-config")}
               onApprovalConfig={() => setScreen("approval-config")}
             />
@@ -1147,7 +1211,7 @@ function Sidebar({ screen, setScreen }) {
             const isStorageFlow =
               item.label === "Kho lưu trữ" && ["storage", "storage-folder", "storage-file"].includes(screen);
             const isSystemFlow =
-              item.label === "Quản trị hệ thống" && ["channel-config", "approval-config", "sla-config"].includes(screen);
+              item.label === "Quản trị hệ thống" && ["system-users", "system-permissions", "channel-config", "approval-config", "sla-config"].includes(screen);
             const isActive = isDashboard || isForecastFlow || isTaskFlow || isAppraisalFlow || isApprovalFlow || isStorageFlow || isSystemFlow;
 
             return (
@@ -2597,14 +2661,265 @@ function ApprovalDetail({ forecast, tasks = [], onSubmit, onBack }) {
   );
 }
 
-function ChannelFrameworkConfig({ onApprovalConfig, onSlaConfig }) {
+function SystemSwitcher({ active, onUsers, onPermissions, onChannelConfig, onApprovalConfig, onSlaConfig }) {
+  const items = [
+    { key: "users", label: "Tài khoản", onClick: onUsers },
+    { key: "permissions", label: "Phân quyền", onClick: onPermissions },
+    { key: "channels", label: "Khung kênh", onClick: onChannelConfig },
+    { key: "workflow", label: "Quy trình", onClick: onApprovalConfig },
+    { key: "sla", label: "SLA", onClick: onSlaConfig },
+  ].filter((item) => item.onClick);
+
+  return (
+    <div className="system-switcher admin-system-switcher">
+      {items.map((item) => (
+        <button key={item.key} className={active === item.key ? "active" : ""} onClick={item.onClick}>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SystemUsers({ onPermissions, onChannelConfig, onApprovalConfig, onSlaConfig }) {
+  const [roleFilter, setRoleFilter] = useState("Tất cả vai trò");
+  const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
+  const [searchTerm, setSearchTerm] = useState("");
+  const roleOptions = ["Tất cả vai trò", ...Array.from(new Set(adminUsers.map((user) => user.role)))];
+  const statusOptions = ["Tất cả trạng thái", "Active", "Inactive", "Locked"];
+  const filteredUsers = adminUsers.filter((user) => {
+    const matchRole = roleFilter === "Tất cả vai trò" || user.role === roleFilter;
+    const matchStatus = statusFilter === "Tất cả trạng thái" || user.status === statusFilter;
+    const matchSearch = [user.name, user.email, user.role, user.scope]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase());
+    return matchRole && matchStatus && matchSearch;
+  });
+  const activeCount = adminUsers.filter((user) => user.status === "Active").length;
+  const lockedCount = adminUsers.filter((user) => user.status === "Locked").length;
+
+  return (
+    <section className="page-flow admin-page">
+      <SystemSwitcher
+        active="users"
+        onPermissions={onPermissions}
+        onChannelConfig={onChannelConfig}
+        onApprovalConfig={onApprovalConfig}
+        onSlaConfig={onSlaConfig}
+      />
+
+      <div className="admin-heading with-actions">
+        <div className="admin-title-lockup">
+          <span className="admin-title-icon blue">
+            <Users size={24} />
+          </span>
+          <div>
+            <span>Quản trị hệ thống</span>
+            <h2>Tài khoản</h2>
+            <p>Mock danh sách người dùng, vai trò và phạm vi dữ liệu phục vụ Forecast KD01.</p>
+          </div>
+        </div>
+        <div className="action-row">
+          <button className="secondary-blue-button">
+            <Cloud size={18} />
+            Đồng bộ danh bạ
+          </button>
+          <button className="primary-button">
+            <UserPlus size={18} />
+            Tạo tài khoản
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-metric-grid">
+        <AdminMetric label="Tài khoản" value={adminUsers.length} hint="Tổng hồ sơ" icon={Users} tone="blue" />
+        <AdminMetric label="Đang hoạt động" value={activeCount} hint="Có thể truy cập" icon={CheckCircle2} tone="green" />
+        <AdminMetric label="Tạm khóa" value={lockedCount} hint="Đang bị chặn" icon={Lock} tone="orange" />
+        <AdminMetric label="Vai trò" value={roleDefinitions.length} hint="Nhóm quyền" icon={Settings} tone="purple" />
+      </div>
+
+      <section className="panel admin-directory-panel">
+        <div className="admin-filter-grid">
+          <label>
+            <span>Tìm kiếm</span>
+            <div className="admin-input-shell">
+              <Search size={18} />
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Tìm tên, email, vai trò, phạm vi..."
+              />
+            </div>
+          </label>
+          <label>
+            <span>Vai trò</span>
+            <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
+              {roleOptions.map((role) => <option key={role}>{role}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Trạng thái</span>
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+              {statusOptions.map((status) => <option key={status}>{status}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <div className="admin-user-table">
+          <div className="admin-user-head">
+            <span>Tài khoản</span>
+            <span>Vai trò</span>
+            <span>Phạm vi</span>
+            <span>Trạng thái</span>
+            <span>Thao tác</span>
+          </div>
+          {filteredUsers.map((user) => (
+            <article className="admin-user-row" key={user.id}>
+              <div className="admin-user-cell">
+                <span className={`avatar ${user.tone}`}>{user.initials}</span>
+                <div>
+                  <strong>{user.name}</strong>
+                  <small>{user.email}</small>
+                </div>
+              </div>
+              <span><Badge tone="neutral">{user.role}</Badge></span>
+              <strong>{user.scope}</strong>
+              <span><Badge tone={user.status === "Active" ? "success" : user.status === "Locked" ? "danger" : "neutral"}>{user.status}</Badge></span>
+              <button className="secondary-button compact-action">
+                <MoreVertical size={17} />
+                Thao tác
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+    </section>
+  );
+}
+
+function SystemPermissions({ onUsers, onChannelConfig, onApprovalConfig, onSlaConfig }) {
+  const [selectedRoleId, setSelectedRoleId] = useState("admin");
+  const selectedRole = roleDefinitions.find((role) => role.id === selectedRoleId) || roleDefinitions[0];
+
+  return (
+    <section className="page-flow admin-page">
+      <SystemSwitcher
+        active="permissions"
+        onUsers={onUsers}
+        onChannelConfig={onChannelConfig}
+        onApprovalConfig={onApprovalConfig}
+        onSlaConfig={onSlaConfig}
+      />
+
+      <div className="admin-heading with-actions">
+        <div className="admin-title-lockup">
+          <span className="admin-title-icon blue">
+            <Lock size={24} />
+          </span>
+          <div>
+            <span>Quản trị hệ thống</span>
+            <h2>Phân quyền</h2>
+            <p>Thiết lập role, phạm vi dữ liệu và quyền thao tác cho từng bước Forecast KD01.</p>
+          </div>
+        </div>
+        <button className="primary-button">
+          <UserPlus size={18} />
+          Tạo vai trò
+        </button>
+      </div>
+
+      <div className="admin-metric-grid">
+        <AdminMetric label="Vai trò" value={roleDefinitions.length} hint="Nhóm quyền" icon={Lock} tone="blue" />
+        <AdminMetric label="Nhân sự" value={adminUsers.length} hint="Đang quản lý" icon={Users} tone="green" />
+        <AdminMetric label="Phạm vi" value="6" hint="Lớp dữ liệu" icon={Settings} tone="cyan" />
+        <AdminMetric label="Rủi ro" value="3" hint="Cần rà soát" icon={AlertTriangle} tone="orange" />
+      </div>
+
+      <div className="permission-layout">
+        <section className="panel role-list-panel">
+          <div className="panel-title-row">
+            <h3>Vai trò</h3>
+            <Badge tone="success">OK</Badge>
+          </div>
+          {roleDefinitions.map((role) => (
+            <button
+              className={`role-list-item ${role.id === selectedRoleId ? "active" : ""}`}
+              key={role.id}
+              onClick={() => setSelectedRoleId(role.id)}
+            >
+              <div>
+                <strong>{role.name}</strong>
+                <span>{role.description}</span>
+                <small>{role.scope}</small>
+              </div>
+              <b>{role.users}</b>
+            </button>
+          ))}
+        </section>
+
+        <section className="panel permission-detail-panel">
+          <div className="permission-detail-title">
+            <div>
+              <h3>{selectedRole.name}</h3>
+              <p>{selectedRole.description}</p>
+            </div>
+            <div className="action-row">
+              <button className="secondary-blue-button">
+                <Eye size={18} />
+                Xem trước
+              </button>
+              <button className="secondary-button">
+                <Settings size={18} />
+                Phạm vi
+              </button>
+            </div>
+          </div>
+
+          <div className="permission-table">
+            <div className="permission-head">
+              <span>Khu vực</span>
+              <span>Quyền</span>
+              <span>Dữ liệu</span>
+              <span>Rủi ro</span>
+            </div>
+            {permissionMatrix.map((row) => {
+              const value = row[selectedRole.id];
+              return (
+                <article className="permission-row" key={row.module}>
+                  <strong>{row.module}</strong>
+                  <span className={`permission-chip ${value === "Không" ? "blocked" : value === "Xem" ? "view" : "edit"}`}>{value}</span>
+                  <span>{row.data}</span>
+                  <Badge tone={selectedRole.risk === "Cao" ? "danger" : selectedRole.risk === "Trung bình" ? "warning" : "success"}>{selectedRole.risk}</Badge>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+    </section>
+  );
+}
+
+function AdminMetric({ label, value, hint, icon: Icon, tone }) {
+  return (
+    <article className="admin-metric-card">
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small>{hint}</small>
+      </div>
+      <i className={tone}>
+        <Icon size={22} />
+      </i>
+    </article>
+  );
+}
+
+function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSlaConfig }) {
   return (
     <section className="page-flow frame-config-page">
-      <div className="system-switcher">
-        <button className="active">Cấu hình Khung</button>
-        <button onClick={onApprovalConfig}>Quy trình phê duyệt</button>
-        <button onClick={onSlaConfig}>Cấu hình SLA</button>
-      </div>
+      <SystemSwitcher active="channels" onUsers={onUsers} onPermissions={onPermissions} onApprovalConfig={onApprovalConfig} onSlaConfig={onSlaConfig} />
 
       <div className="frame-intro with-actions">
         <div>
@@ -2699,14 +3014,10 @@ function ChannelFrameworkConfig({ onApprovalConfig, onSlaConfig }) {
   );
 }
 
-function ApprovalWorkflowConfig({ onChannelConfig, onSlaConfig }) {
+function ApprovalWorkflowConfig({ onUsers, onPermissions, onChannelConfig, onSlaConfig }) {
   return (
     <section className="page-flow workflow-config-page">
-      <div className="system-switcher">
-        <button onClick={onChannelConfig}>Cấu hình Khung</button>
-        <button className="active">Quy trình phê duyệt</button>
-        <button onClick={onSlaConfig}>Cấu hình SLA</button>
-      </div>
+      <SystemSwitcher active="workflow" onUsers={onUsers} onPermissions={onPermissions} onChannelConfig={onChannelConfig} onSlaConfig={onSlaConfig} />
 
       <div className="page-heading with-actions workflow-heading">
         <div>
@@ -2805,14 +3116,10 @@ function ApprovalWorkflowConfig({ onChannelConfig, onSlaConfig }) {
   );
 }
 
-function SlaConfig({ onChannelConfig, onApprovalConfig }) {
+function SlaConfig({ onUsers, onPermissions, onChannelConfig, onApprovalConfig }) {
   return (
     <section className="page-flow sla-config-page">
-      <div className="system-switcher">
-        <button onClick={onChannelConfig}>Cấu hình Khung</button>
-        <button onClick={onApprovalConfig}>Quy trình phê duyệt</button>
-        <button className="active">Cấu hình SLA</button>
-      </div>
+      <SystemSwitcher active="sla" onUsers={onUsers} onPermissions={onPermissions} onChannelConfig={onChannelConfig} onApprovalConfig={onApprovalConfig} />
 
       <div className="page-heading with-actions sla-heading">
         <div>

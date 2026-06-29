@@ -3373,6 +3373,372 @@ button {
   color: var(--blue);
 }
 
+.admin-system-switcher {
+  flex-wrap: wrap;
+}
+
+.admin-page {
+  max-width: none;
+}
+
+.admin-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.admin-title-lockup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-title-lockup h2,
+.admin-title-lockup p {
+  margin: 0;
+}
+
+.admin-title-lockup h2 {
+  font-size: 26px;
+}
+
+.admin-title-lockup p {
+  margin-top: 4px;
+  color: #64748b;
+}
+
+.admin-title-lockup > div > span {
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-title-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.admin-title-icon.blue {
+  background: var(--blue);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.16);
+}
+
+.admin-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-metric-card {
+  display: grid;
+  min-height: 104px;
+  grid-template-columns: 1fr 54px;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.admin-metric-card span,
+.admin-metric-card small {
+  color: #64748b;
+}
+
+.admin-metric-card strong {
+  display: inline-block;
+  margin: 7px 8px 0 0;
+  font-size: 28px;
+}
+
+.admin-metric-card i {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.admin-metric-card i.blue {
+  background: #eff6ff;
+  color: var(--blue);
+}
+
+.admin-metric-card i.green {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.admin-metric-card i.orange {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.admin-metric-card i.purple,
+.admin-metric-card i.cyan {
+  background: #f4f7ff;
+  color: #6366f1;
+}
+
+.admin-directory-panel,
+.role-list-panel,
+.permission-detail-panel {
+  border-color: #bec9dc;
+}
+
+.admin-directory-panel {
+  overflow: hidden;
+  padding: 0;
+}
+
+.admin-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.2fr) minmax(180px, 0.8fr) minmax(180px, 0.8fr);
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 20px;
+}
+
+.admin-filter-grid label {
+  display: grid;
+  gap: 8px;
+  color: #64748b;
+  font-weight: 750;
+}
+
+.admin-filter-grid select,
+.admin-input-shell {
+  min-height: 44px;
+  border: 1px solid #c5cedf;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  padding: 0 12px;
+}
+
+.admin-input-shell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-input-shell input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.admin-user-table {
+  min-width: 960px;
+}
+
+.admin-user-head,
+.admin-user-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.35fr) minmax(150px, 0.75fr) minmax(220px, 1fr) minmax(130px, 0.65fr) minmax(118px, 0.55fr);
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.admin-user-head {
+  min-height: 52px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.admin-user-row {
+  min-height: 76px;
+  border-top: 1px solid var(--line);
+}
+
+.admin-user-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-user-cell strong,
+.admin-user-cell small {
+  display: block;
+}
+
+.admin-user-cell small {
+  color: #64748b;
+}
+
+.avatar.blue,
+.avatar.green,
+.avatar.purple,
+.avatar.orange,
+.avatar.slate {
+  border: 0;
+  background: var(--blue);
+  font-size: 11px;
+}
+
+.avatar.green {
+  background: #059669;
+}
+
+.avatar.purple {
+  background: #7c3aed;
+}
+
+.avatar.orange {
+  background: #f59e0b;
+}
+
+.avatar.slate {
+  background: #64748b;
+}
+
+.compact-action {
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.permission-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 2.2fr);
+  gap: 18px;
+}
+
+.role-list-panel,
+.permission-detail-panel {
+  padding: 18px;
+}
+
+.role-list-item {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 42px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+  text-align: left;
+}
+
+.role-list-item + .role-list-item {
+  margin-top: 8px;
+}
+
+.role-list-item.active {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.role-list-item strong,
+.role-list-item span,
+.role-list-item small {
+  display: block;
+}
+
+.role-list-item span,
+.role-list-item small {
+  color: #64748b;
+}
+
+.role-list-item b {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.permission-detail-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.permission-detail-title h3,
+.permission-detail-title p {
+  margin: 0;
+}
+
+.permission-detail-title p {
+  margin-top: 4px;
+  color: #64748b;
+}
+
+.permission-table {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.permission-head,
+.permission-row {
+  display: grid;
+  min-width: 760px;
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.7fr) minmax(180px, 0.9fr) minmax(120px, 0.55fr);
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+}
+
+.permission-head {
+  min-height: 48px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.permission-row {
+  min-height: 62px;
+  border-top: 1px solid var(--line);
+}
+
+.permission-chip {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 28px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.permission-chip.edit {
+  background: #eff6ff;
+  color: var(--blue);
+}
+
+.permission-chip.view {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.permission-chip.blocked {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
 .frame-config-page,
 .workflow-config-page {
   max-width: none;
