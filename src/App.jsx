@@ -598,6 +598,26 @@ function App() {
     setScreen("approval-detail");
   };
 
+  const openTaskReport = (taskId) => {
+    setSelectedTaskId(taskId);
+    showToast("Đã mở khu vực báo cáo tổng quan cho task đang chọn.");
+    setScreen("overview");
+  };
+
+  const openTaskAppraisal = (taskId) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (task?.forecastId) setSelectedForecastId(task.forecastId);
+    setSelectedTaskId(taskId);
+    setScreen("appraisal-detail");
+  };
+
+  const openTaskApproval = (taskId) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (task?.forecastId) setSelectedForecastId(task.forecastId);
+    setSelectedTaskId(taskId);
+    setScreen("approval-detail");
+  };
+
   const openFile = (fileId) => {
     setSelectedFileId(fileId);
     setScreen("storage-file");
@@ -681,6 +701,29 @@ function App() {
     );
     showToast("Đã gửi cập nhật, task chuyển sang chờ RSM duyệt.");
     setScreen("tasks");
+  };
+
+  const handleAssignTask = (taskId, user) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task || !user) return;
+
+    updateTaskStatus(
+      taskId,
+      {
+        owner: user.name,
+        ownerRole: user.title || user.role || "ASM phụ trách",
+        due: `${user.name} nhận task, chờ cập nhật file Forecast`,
+        progress: Math.max(task.progress || 0, 10),
+        status: "Chờ ASM cập nhật",
+      },
+      {
+        icon: UserPlus,
+        tone: "blue",
+        title: `Đã phân công ${task.channel}`,
+        body: `${user.name} được gán phụ trách task Forecast kênh này.`,
+      }
+    );
+    showToast(`Đã phân công ${user.name} phụ trách ${task.channel}.`);
   };
 
   const handleRsmApprove = (taskId) => {
@@ -891,8 +934,13 @@ function App() {
             <ForecastDetail
               forecast={selectedForecast}
               tasks={tasks.filter((task) => task.forecastId === selectedForecast?.id)}
+              users={users}
               progress={getForecastProgress(selectedForecast, tasks)}
               onOpenTask={openTask}
+              onAssignTask={handleAssignTask}
+              onOpenReport={openTaskReport}
+              onOpenAppraisal={openTaskAppraisal}
+              onOpenApproval={openTaskApproval}
               onRsmApprove={handleRsmApprove}
               onGdkdApprove={handleGdkdApprove}
               onSubmitAppraisal={handleSubmitAppraisal}
@@ -4000,17 +4048,35 @@ function StorageFileDetail({ file, forecast }) {
 function ForecastDetail({
   forecast,
   tasks = initialTasks,
+  users = adminUsers,
   progress = 0,
   onOpenTask,
+  onAssignTask,
+  onOpenReport,
+  onOpenAppraisal,
+  onOpenApproval,
   onRsmApprove,
   onGdkdApprove,
   onSubmitAppraisal,
 }) {
   const displayForecast = forecast || initialForecasts[0];
+  const [assignTask, setAssignTask] = useState(null);
   const allBusinessApproved = tasks.length > 0 && tasks.every((task) => task.status === "GĐKD đã duyệt");
   const doneCount = tasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
   const waitingCount = tasks.filter((task) => ["Chờ RSM duyệt", "Chờ GĐKD duyệt"].includes(task.status)).length;
   const openCount = Math.max(0, tasks.length - doneCount - waitingCount);
+  const assignableUsers = users.filter((user) => user.role === "ASM" && user.status === "Active");
+  const handleApproveAction = (task) => {
+    if (task.status === "Chờ RSM duyệt") {
+      onRsmApprove(task.id);
+      return;
+    }
+    if (task.status === "Chờ GĐKD duyệt") {
+      onGdkdApprove(task.id);
+      return;
+    }
+    onOpenApproval(task.id);
+  };
 
   return (
     <section className="page-flow detail-page">
@@ -4131,28 +4197,21 @@ function ForecastDetail({
                 <Badge tone={row.statusTone}>{row.status}</Badge>
               </span>
               <span className="detail-action-icons">
-                <button className="icon-button table-action" title="Tài liệu">
-                  <Calendar size={18} />
+                <button className="icon-button table-action" title="Phân công ASM" onClick={() => setAssignTask(row)}>
+                  <UserPlus size={18} />
                 </button>
                 <button className="icon-button table-action" title="Chỉnh sửa" onClick={() => onOpenTask(row.id)}>
                   <Pencil size={18} />
                 </button>
-                <button className="icon-button table-action" title="Báo cáo">
+                <button className="icon-button table-action" title="Báo cáo" onClick={() => onOpenReport(row.id)}>
                   <BarChart3 size={18} />
                 </button>
-                <button className="icon-button table-action" title="Checklist">
-                  <ClipboardList size={18} />
+                <button className="icon-button table-action" title="Thẩm định" onClick={() => onOpenAppraisal(row.id)}>
+                  <Star size={18} />
                 </button>
-                {row.status === "Chờ RSM duyệt" && (
-                  <button className="icon-button table-action" title="RSM duyệt" onClick={() => onRsmApprove(row.id)}>
-                    <CheckCircle2 size={18} />
-                  </button>
-                )}
-                {row.status === "Chờ GĐKD duyệt" && (
-                  <button className="icon-button table-action" title="GĐKD duyệt" onClick={() => onGdkdApprove(row.id)}>
-                    <Check size={18} />
-                  </button>
-                )}
+                <button className="icon-button table-action" title="Phê duyệt" onClick={() => handleApproveAction(row)}>
+                  <CheckCircle2 size={18} />
+                </button>
               </span>
             </article>
           ))}
@@ -4178,7 +4237,70 @@ function ForecastDetail({
           <span>Cần xử lý lại</span>
         </article>
       </div>
+      {assignTask && (
+        <TaskAssignModal
+          task={assignTask}
+          users={assignableUsers.length ? assignableUsers : users.filter((user) => user.status === "Active")}
+          onClose={() => setAssignTask(null)}
+          onSave={(user) => {
+            onAssignTask(assignTask.id, user);
+            setAssignTask(null);
+          }}
+        />
+      )}
     </section>
+  );
+}
+
+function TaskAssignModal({ task, users, onClose, onSave }) {
+  const [selectedUserId, setSelectedUserId] = useState(
+    users.find((user) => user.name === task.owner)?.id || users[0]?.id || ""
+  );
+  const selectedUser = users.find((user) => user.id === selectedUserId);
+
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal task-assign-modal" role="dialog" aria-modal="true" aria-label={`Phân công ${task.channel}`}>
+        <header className="admin-modal-header">
+          <div>
+            <h3>Phân công ASM cho {task.channel}</h3>
+            <p>RSM của kênh sẽ chọn ASM phụ trách cập nhật file Forecast.</p>
+          </div>
+          <button className="modal-close-button" type="button" onClick={onClose} title="Đóng">
+            <X size={22} />
+          </button>
+        </header>
+        <div className="admin-modal-body task-assign-body">
+          <label>
+            <span>ASM phụ trách</span>
+            <CustomSelect
+              value={selectedUserId}
+              options={users.map((user) => ({ value: user.id, label: `${user.name} - ${user.scope}` }))}
+              onChange={setSelectedUserId}
+              placeholder="Chọn ASM"
+            />
+          </label>
+          <article className="assign-preview-card">
+            <span className={`mini-avatar ${selectedUser?.tone || "blue"}`}>{selectedUser?.initials || "ASM"}</span>
+            <div>
+              <strong>{selectedUser?.name || "Chưa chọn ASM"}</strong>
+              <small>{selectedUser?.email || "Chọn người phụ trách trước khi lưu"}</small>
+            </div>
+            <b>{selectedUser?.title || "ASM phụ trách"}</b>
+          </article>
+          <p className="assign-helper-text">
+            Sau khi lưu, task sẽ chuyển về trạng thái chờ ASM cập nhật file Forecast.
+          </p>
+        </div>
+        <footer className="admin-modal-actions">
+          <button className="secondary-button" type="button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" type="button" disabled={!selectedUser} onClick={() => onSave(selectedUser)}>
+            <UserPlus size={18} />
+            Lưu phân công
+          </button>
+        </footer>
+      </section>
+    </div>
   );
 }
 
