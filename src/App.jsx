@@ -62,6 +62,14 @@ const navItems = [
   { label: "Quản trị hệ thống", icon: Settings, screen: "system-users" },
 ];
 
+const systemSubItems = [
+  { label: "Tài khoản", icon: Users, screen: "system-users" },
+  { label: "Phân quyền", icon: Lock, screen: "system-permissions" },
+  { label: "Khung kênh", icon: Store, screen: "channel-config" },
+  { label: "Quy trình", icon: ClipboardList, screen: "approval-config" },
+  { label: "SLA", icon: Clock3, screen: "sla-config" },
+];
+
 const recentRows = [
   {
     code: "FC-2026-07-MT",
@@ -322,6 +330,10 @@ const previewNavModules = {
   approval: ["Phê duyệt CEO"],
   storage: ["Kho lưu trữ"],
   "system-users": ["Quản trị hệ thống"],
+  "system-permissions": ["Quản trị hệ thống"],
+  "channel-config": ["Quản trị hệ thống"],
+  "approval-config": ["Quản trị hệ thống"],
+  "sla-config": ["Quản trị hệ thống"],
 };
 
 const previewScreenModules = {
@@ -971,6 +983,7 @@ function App() {
               roles={roles}
               setRoles={setRoles}
               users={users}
+              setUsers={setUsers}
             />
           )}
           {screen === "channel-config" && (
@@ -1050,10 +1063,70 @@ function PreviewAccessDenied({ role, onExit }) {
   );
 }
 
+function toSelectOption(option) {
+  return typeof option === "string" ? { value: option, label: option } : option;
+}
+
+function CustomSelect({ value, options, onChange, placeholder = "Chọn", className = "", disabled = false }) {
+  const [open, setOpen] = useState(false);
+  const normalizedOptions = options.map(toSelectOption);
+  const selected = normalizedOptions.find((option) => option.value === value);
+  const displayLabel = selected?.label || placeholder;
+
+  return (
+    <div
+      className={`custom-select ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${className}`}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        className="custom-select-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>{displayLabel}</span>
+        <ChevronDown size={17} />
+      </button>
+      {open && !disabled && (
+        <div className="custom-select-menu" role="listbox">
+          {normalizedOptions.map((option) => {
+            const isSelected = option.value === value;
+            return (
+              <button
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                className={`custom-select-option ${isSelected ? "selected" : ""}`}
+                key={option.value}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+              >
+                <Check size={16} />
+                <span>{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Sidebar({ screen, setScreen, previewPermissions }) {
   const visibleNavItems = previewPermissions
     ? navItems.filter((item) => hasPreviewAccess(previewPermissions, previewNavModules[item.screen] || []))
     : navItems;
+  const visibleSystemSubItems = previewPermissions
+    ? systemSubItems.filter((item) => hasPreviewAccess(previewPermissions, previewNavModules[item.screen] || []))
+    : systemSubItems;
+  const isSystemOpen = ["system-users", "system-permissions", "channel-config", "approval-config", "sla-config"].includes(screen);
 
   return (
     <aside className="sidebar">
@@ -1087,16 +1160,36 @@ function Sidebar({ screen, setScreen, previewPermissions }) {
             const isSystemFlow =
               item.label === "Quản trị hệ thống" && ["system-users", "system-permissions", "channel-config", "approval-config", "sla-config"].includes(screen);
             const isActive = isDashboard || isForecastFlow || isTaskFlow || isAppraisalFlow || isApprovalFlow || isStorageFlow || isSystemFlow;
+            const isSystemItem = item.label === "Quản trị hệ thống";
 
             return (
-              <button
-                key={item.label}
-                className={`nav-item ${isActive ? "active" : ""}`}
-                onClick={() => setScreen(item.screen)}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </button>
+              <React.Fragment key={item.label}>
+                <button
+                  className={`nav-item ${isActive ? "active" : ""} ${isSystemItem ? "system-nav-trigger" : ""}`}
+                  onClick={() => setScreen(item.screen)}
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                  {isSystemItem && <ChevronDown className={`nav-chevron ${isSystemOpen ? "open" : ""}`} size={16} />}
+                </button>
+                {isSystemItem && isSystemOpen && visibleSystemSubItems.length > 0 && (
+                  <div className="sidebar-submenu">
+                    {visibleSystemSubItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <button
+                          key={subItem.screen}
+                          className={`sidebar-subitem ${screen === subItem.screen ? "active" : ""}`}
+                          onClick={() => setScreen(subItem.screen)}
+                        >
+                          <SubIcon size={16} />
+                          <span>{subItem.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </React.Fragment>
             );
           })}
         </nav>
@@ -1876,16 +1969,15 @@ function AppraisalList({ onOpen, forecasts = initialForecasts, tasks = initialTa
             <button className={quickFilter === "appraisal" ? "active" : ""} onClick={() => { setQuickFilter("appraisal"); setPage(1); }}>Chờ thẩm định</button>
             <button className={quickFilter === "approval" ? "active" : ""} onClick={() => { setQuickFilter("approval"); setPage(1); }}>Chờ duyệt</button>
           </div>
-          <label className="month-select forecast-month-select">
-            <select value={selectedForecast?.id || ""} onChange={(event) => { setSelectedForecastId(event.target.value); setPage(1); }}>
-              {forecasts.map((forecast) => (
-                <option key={forecast.id} value={forecast.id}>
-                  {forecast.month}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} />
-          </label>
+          <CustomSelect
+            className="month-select forecast-month-select"
+            value={selectedForecast?.id || ""}
+            options={forecasts.map((forecast) => ({ value: forecast.id, label: forecast.month }))}
+            onChange={(forecastId) => {
+              setSelectedForecastId(forecastId);
+              setPage(1);
+            }}
+          />
           <label className="appraisal-search">
             <Search size={19} />
             <input
@@ -2254,16 +2346,15 @@ function ApprovalList({ onOpen, forecasts = initialForecasts, tasks = initialTas
             <button className={quickFilter === "pending" ? "active" : ""} onClick={() => { setQuickFilter("pending"); setPage(1); }}>Chờ phê duyệt</button>
             <button className={quickFilter === "approved" ? "active" : ""} onClick={() => { setQuickFilter("approved"); setPage(1); }}>Đã phê duyệt</button>
           </div>
-          <label className="month-select forecast-month-select">
-            <select value={selectedForecast?.id || ""} onChange={(event) => { setSelectedForecastId(event.target.value); setPage(1); }}>
-              {forecasts.map((forecast) => (
-                <option key={forecast.id} value={forecast.id}>
-                  {forecast.month}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} />
-          </label>
+          <CustomSelect
+            className="month-select forecast-month-select"
+            value={selectedForecast?.id || ""}
+            options={forecasts.map((forecast) => ({ value: forecast.id, label: forecast.month }))}
+            onChange={(forecastId) => {
+              setSelectedForecastId(forecastId);
+              setPage(1);
+            }}
+          />
           <label className="appraisal-search">
             <Search size={19} />
             <input
@@ -2547,23 +2638,7 @@ function ApprovalDetail({ forecast, tasks = [], onSubmit, onBack }) {
 }
 
 function SystemSwitcher({ active, onUsers, onPermissions, onChannelConfig, onApprovalConfig, onSlaConfig }) {
-  const items = [
-    { key: "users", label: "Tài khoản", onClick: onUsers },
-    { key: "permissions", label: "Phân quyền", onClick: onPermissions },
-    { key: "channels", label: "Khung kênh", onClick: onChannelConfig },
-    { key: "workflow", label: "Quy trình", onClick: onApprovalConfig },
-    { key: "sla", label: "SLA", onClick: onSlaConfig },
-  ].filter((item) => item.onClick);
-
-  return (
-    <div className="system-switcher admin-system-switcher">
-      {items.map((item) => (
-        <button key={item.key} className={active === item.key ? "active" : ""} onClick={item.onClick}>
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
+  return null;
 }
 
 function RoleCreateModal({ role, setRole, onClose, onSubmit }) {
@@ -2631,10 +2706,6 @@ function UserAccountModal({ mode, user, roles, onChange, onClose, onSave }) {
             <input value={user.email} onChange={(event) => onChange({ email: event.target.value })} placeholder="ten@elmich.vn" />
           </label>
           <label>
-            <span>Email phụ</span>
-            <input value={user.secondaryEmail || ""} onChange={(event) => onChange({ secondaryEmail: event.target.value })} placeholder="ten@gmail.com" />
-          </label>
-          <label>
             <span>Số điện thoại</span>
             <input value={user.phone || ""} onChange={(event) => onChange({ phone: event.target.value })} placeholder="098xxxxxxx" />
           </label>
@@ -2648,23 +2719,15 @@ function UserAccountModal({ mode, user, roles, onChange, onClose, onSave }) {
           </label>
           <label>
             <span>Trạng thái</span>
-            <select value={user.status} onChange={(event) => onChange({ status: event.target.value })}>
-              <option>Active</option>
-              <option>Inactive</option>
-              <option>Locked</option>
-            </select>
+            <CustomSelect value={user.status} options={["Active", "Inactive"]} onChange={(status) => onChange({ status })} />
           </label>
           <label>
             <span>Vai trò phân quyền</span>
-            <select value={user.role} onChange={(event) => onChange({ role: event.target.value })}>
-              {roles.map((role) => (
-                <option key={role.id}>{role.name}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Phạm vi phụ trách</span>
-            <input value={user.scope} onChange={(event) => onChange({ scope: event.target.value })} placeholder="Theo phân quyền" />
+            <CustomSelect
+              value={user.role}
+              options={roles.map((role) => ({ value: role.name, label: role.name }))}
+              onChange={(role) => onChange({ role })}
+            />
           </label>
         </div>
         <div className="admin-modal-actions">
@@ -2701,6 +2764,97 @@ function ConfirmDialog({ title, body, confirmLabel, onCancel, onConfirm }) {
   );
 }
 
+function AddRoleUsersModal({ role, users, onClose, onSave }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const candidates = users
+    .filter((user) => user.role !== role.name)
+    .filter((user) => {
+      if (!normalizedSearch) return true;
+      return [user.name, user.email, user.role, user.scope]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+  const toggleUser = (userId) => {
+    setSelectedIds((current) =>
+      current.includes(userId)
+        ? current.filter((id) => id !== userId)
+        : [...current, userId]
+    );
+  };
+
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal add-role-users-modal" role="dialog" aria-modal="true" aria-label={`Thêm nhân sự vào vai trò ${role.name}`}>
+        <div className="admin-modal-header">
+          <div>
+            <h3>Thêm nhân sự vào vai trò {role.name}</h3>
+            <p>Chọn nhân sự cần gán vào nhóm quyền này, sau đó bấm lưu để xác nhận.</p>
+          </div>
+          <button className="modal-close-button" onClick={onClose} title="Đóng">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="admin-modal-body add-role-users-body">
+          <label className="admin-input-shell add-role-users-search">
+            <Search size={18} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Tìm tên, email, vai trò hiện tại..."
+            />
+          </label>
+
+          <div className="add-role-users-table">
+            {candidates.length ? (
+              candidates.map((user) => {
+                const checked = selectedIds.includes(user.id);
+                return (
+                  <button
+                    className={`add-role-user-row ${checked ? "selected" : ""}`}
+                    key={user.id}
+                    onClick={() => toggleUser(user.id)}
+                    type="button"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleUser(user.id)}
+                      onClick={(event) => event.stopPropagation()}
+                      aria-label={`Chọn ${user.name}`}
+                    />
+                    <span className={`avatar ${user.tone}`}>{user.initials}</span>
+                    <div>
+                      <strong>{user.name}</strong>
+                      <small>{user.email}</small>
+                    </div>
+                    <b>{user.role}</b>
+                    <span>{user.scope}</span>
+                  </button>
+                );
+              })
+            ) : (
+              <div className="empty-role-users">
+                Không còn nhân sự phù hợp để thêm vào vai trò này.
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="admin-modal-actions">
+          <span className="modal-selection-count">Đã chọn {selectedIds.length} nhân sự</span>
+          <button className="secondary-button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" disabled={!selectedIds.length} onClick={() => onSave(selectedIds)}>
+            <Save size={17} />
+            Lưu
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function SystemUsers({
   onPermissions,
   onChannelConfig,
@@ -2727,7 +2881,7 @@ function SystemUsers({
   };
   const userForm = userModal?.user || blankUser;
   const roleOptions = ["Tất cả vai trò", ...Array.from(new Set(users.map((user) => user.role)))];
-  const statusOptions = ["Tất cả trạng thái", "Active", "Inactive", "Locked"];
+  const statusOptions = ["Tất cả trạng thái", "Active", "Inactive"];
   const filteredUsers = users.filter((user) => {
     const matchRole = roleFilter === "Tất cả vai trò" || user.role === roleFilter;
     const matchStatus = statusFilter === "Tất cả trạng thái" || user.status === statusFilter;
@@ -2738,9 +2892,16 @@ function SystemUsers({
     return matchRole && matchStatus && matchSearch;
   });
   const activeCount = users.filter((user) => user.status === "Active").length;
-  const lockedCount = users.filter((user) => user.status === "Locked").length;
+  const inactiveCount = users.filter((user) => user.status === "Inactive").length;
   const openCreateUser = () => setUserModal({ mode: "create", user: blankUser });
-  const openEditUser = (user) => setUserModal({ mode: "edit", user });
+  const openEditUser = (user) =>
+    setUserModal({
+      mode: "edit",
+      user: {
+        ...user,
+        status: ["Active", "Inactive"].includes(user.status) ? user.status : "Inactive",
+      },
+    });
   const updateUserForm = (patch) => {
     setUserModal((current) => ({ ...current, user: { ...(current?.user || blankUser), ...patch } }));
   };
@@ -2800,7 +2961,7 @@ function SystemUsers({
       <div className="admin-metric-grid">
         <AdminMetric label="Tài khoản" value={users.length} hint="Tổng hồ sơ" icon={Users} tone="blue" />
         <AdminMetric label="Đang hoạt động" value={activeCount} hint="Có thể truy cập" icon={CheckCircle2} tone="green" />
-        <AdminMetric label="Tạm khóa" value={lockedCount} hint="Đang bị chặn" icon={Lock} tone="orange" />
+        <AdminMetric label="Không hoạt động" value={inactiveCount} hint="Chưa truy cập" icon={Lock} tone="orange" />
         <AdminMetric label="Vai trò" value={roleCount} hint="Nhóm quyền" icon={Settings} tone="purple" />
       </div>
 
@@ -2819,15 +2980,11 @@ function SystemUsers({
           </label>
           <label>
             <span>Vai trò</span>
-            <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
-              {roleOptions.map((role) => <option key={role}>{role}</option>)}
-            </select>
+            <CustomSelect value={roleFilter} options={roleOptions} onChange={setRoleFilter} />
           </label>
           <label>
             <span>Trạng thái</span>
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-              {statusOptions.map((status) => <option key={status}>{status}</option>)}
-            </select>
+            <CustomSelect value={statusFilter} options={statusOptions} onChange={setStatusFilter} />
           </label>
         </div>
 
@@ -2850,7 +3007,7 @@ function SystemUsers({
               </div>
               <span><Badge tone="neutral">{user.role}</Badge></span>
               <strong>{user.scope}</strong>
-              <span><Badge tone={user.status === "Active" ? "success" : user.status === "Locked" ? "danger" : "neutral"}>{user.status}</Badge></span>
+              <span><Badge tone={user.status === "Active" ? "success" : "neutral"}>{user.status}</Badge></span>
               <button className="secondary-button compact-action" title="Chỉnh sửa" onClick={() => openEditUser(user)}>
                 <MoreVertical size={17} />
               </button>
@@ -2883,10 +3040,12 @@ function SystemPermissions({
   roles = roleDefinitions,
   setRoles,
   users = adminUsers,
+  setUsers,
 }) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
   const [roleUserSearch, setRoleUserSearch] = useState("");
   const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [addUsersModalOpen, setAddUsersModalOpen] = useState(false);
   const [confirmDeleteRole, setConfirmDeleteRole] = useState(null);
   const [newRole, setNewRole] = useState({
     name: "",
@@ -2947,6 +3106,18 @@ function SystemPermissions({
       return next;
     });
     if (selectedRoleId === roleId) setSelectedRoleId("admin");
+  };
+  const addUsersToRole = (userIds) => {
+    if (!setUsers || !userIds.length) return;
+    setUsers((current) =>
+      current.map((user) =>
+        userIds.includes(user.id)
+          ? { ...user, role: selectedRole.name, scope: selectedRole.scope || "Theo phân quyền" }
+          : user
+      )
+    );
+    setAddUsersModalOpen(false);
+    setRoleUserSearch("");
   };
 
   return (
@@ -3034,16 +3205,13 @@ function SystemPermissions({
               return (
                 <article className="permission-row" key={row.module}>
                   <strong>{row.module}</strong>
-                  <select
+                  <CustomSelect
                     className={`permission-level-select ${level}`}
                     value={level}
                     disabled={selectedRole.id === "admin"}
-                    onChange={(event) => updateRolePermission(row.module, event.target.value)}
-                  >
-                    {permissionLevelOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                    options={permissionLevelOptions}
+                    onChange={(nextLevel) => updateRolePermission(row.module, nextLevel)}
+                  />
                   <span>{row.data}</span>
                 </article>
               );
@@ -3073,7 +3241,7 @@ function SystemPermissions({
                 placeholder="Tìm nhân sự..."
               />
             </label>
-            <button className="primary-square-button" title="Thêm người dùng">
+            <button className="primary-square-button" title="Thêm người dùng" onClick={() => setAddUsersModalOpen(true)}>
               <UserPlus size={20} />
             </button>
           </div>
@@ -3163,6 +3331,14 @@ function SystemPermissions({
             deleteRole(confirmDeleteRole.id);
             setConfirmDeleteRole(null);
           }}
+        />
+      )}
+      {addUsersModalOpen && (
+        <AddRoleUsersModal
+          role={selectedRole}
+          users={users}
+          onClose={() => setAddUsersModalOpen(false)}
+          onSave={addUsersToRole}
         />
       )}
     </section>
@@ -3283,6 +3459,8 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
 }
 
 function ApprovalWorkflowConfig({ onUsers, onPermissions, onChannelConfig, onSlaConfig }) {
+  const [finalApprover, setFinalApprover] = useState("CEO");
+
   return (
     <section className="page-flow workflow-config-page">
       <SystemSwitcher active="workflow" onUsers={onUsers} onPermissions={onPermissions} onChannelConfig={onChannelConfig} onSlaConfig={onSlaConfig} />
@@ -3340,10 +3518,7 @@ function ApprovalWorkflowConfig({ onUsers, onPermissions, onChannelConfig, onSla
             </div>
             <label className="workflow-field full">
               <span>Người quyết định cuối cùng</span>
-              <select defaultValue="CEO">
-                <option>CEO</option>
-                <option>COO</option>
-              </select>
+              <CustomSelect value={finalApprover} options={["CEO", "COO"]} onChange={setFinalApprover} />
             </label>
             <div className="workflow-two-cols">
               <label className="workflow-field">
@@ -3491,16 +3666,19 @@ function SlaStageCard({ tone, icon: Icon, title, badge, description, dayValue, m
 }
 
 function WorkflowRoleCard({ role, sla, priority }) {
+  const [selectedRole, setSelectedRole] = useState(role);
+  const [selectedPriority, setSelectedPriority] = useState(priority);
+
   return (
     <article className="workflow-role-card">
       <div className="workflow-role-grid">
         <label className="workflow-field">
           <span>Vai trò thẩm định</span>
-          <select defaultValue={role}>
-            <option>{role}</option>
-            <option>BP. Nhà máy</option>
-            <option>BP. Tài chính</option>
-          </select>
+          <CustomSelect
+            value={selectedRole}
+            options={[role, "BP. Nhà máy", "BP. Tài chính"]}
+            onChange={setSelectedRole}
+          />
         </label>
         <label className="workflow-field">
           <span>SLA (giờ)</span>
@@ -3509,11 +3687,7 @@ function WorkflowRoleCard({ role, sla, priority }) {
       </div>
       <label className="workflow-field priority-select">
         <span>Ưu tiên</span>
-        <select defaultValue={priority}>
-          <option>Trung bình</option>
-          <option>Cao</option>
-          <option>Thấp</option>
-        </select>
+        <CustomSelect value={selectedPriority} options={["Trung bình", "Cao", "Thấp"]} onChange={setSelectedPriority} />
       </label>
     </article>
   );
