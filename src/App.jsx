@@ -434,29 +434,34 @@ function getForecastProgress(forecast, tasks) {
   return Math.round(total / ownTasks.length);
 }
 
-function buildTasksForForecast(forecast) {
-  const monthCode = forecast.monthShort.replace("/", "_");
-  return workflowChannels.map((channel, index) => ({
-    id: `${forecast.id}-${index}`,
+function buildTasksForForecast(forecast, assignmentRows = null) {
+  const period = parseForecastMonth(forecast.month);
+  const monthCode = String(period.month).padStart(2, "0");
+  const year = period.year;
+  const taskSource = assignmentRows?.length ? assignmentRows : workflowChannels;
+  const cutoff = Math.ceil(taskSource.length / 2);
+
+  return taskSource.map((channel, index) => ({
+    id: `${forecast.id}-${toIdPart(channel.channel)}-${index}`,
     forecastId: forecast.id,
     title: `Forecast ${channel.channel} - ${forecast.month}`,
     channel: channel.channel,
     region: channel.region,
-    owner: channel.owner,
-    ownerRole: channel.ownerRole,
+    owner: channel.asmNames?.length ? channel.asmNames.join(", ") : channel.owner || "Chưa phân công",
+    ownerRole: channel.asmNames?.length ? `${channel.asmNames.length} ASM phụ trách` : channel.ownerRole || "ASM phụ trách",
     rsm: channel.rsm,
     director: channel.director,
-    deadline: index < 2 ? "18/08/2026" : "19/08/2026",
+    deadline: channel.deadline || `${index < cutoff ? "18" : "19"}/${monthCode}/${year}`,
     due: "Chờ ASM upload file Forecast",
     progress: 0,
     status: "Chờ ASM cập nhật",
     statusTone: "neutral",
-    marker: channel.marker,
+    marker: channel.marker || channel.tone || "blue",
     file: "",
     fileSize: "",
-    icon: channel.icon,
-    iconTone: channel.iconTone,
-    template: `Template_FC_KD01_${monthCode}.xlsx`,
+    icon: channel.icon || Store,
+    iconTone: channel.iconTone || channel.tone || "blue",
+    template: channel.file || forecast.template || `Template_FC_KD01_T${monthCode}_${year}.xlsx`,
   }));
 }
 
@@ -612,7 +617,7 @@ function App() {
     showToast("Đã thoát chế độ xem trước.");
   };
 
-  const handleCreateForecast = () => {
+  const handleCreateForecast = (assignmentRows = null) => {
     const monthNumber = draftForecast.month.match(/(\d{2})\/(\d{4})/)?.[1] || "08";
     const year = draftForecast.month.match(/\/(\d{4})/)?.[1] || "2026";
     const id = `fc-${year}-${monthNumber}`;
@@ -634,7 +639,7 @@ function App() {
       return;
     }
 
-    const generatedTasks = buildTasksForForecast(forecast);
+    const generatedTasks = buildTasksForForecast(forecast, assignmentRows);
     setForecasts((current) => [forecast, ...current]);
     setTasks((current) => [...generatedTasks, ...current]);
     setSelectedForecastId(id);
@@ -3419,6 +3424,10 @@ function AdminMetric({ label, value, hint, icon: Icon, tone }) {
 }
 
 function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSlaConfig }) {
+  const activeChannelCount = channelRows.length;
+  const rsmCount = new Set(channelRows.map((row) => row.rsm)).size;
+  const asmCount = channelRows.reduce((sum, row) => sum + row.asms.length, 0);
+
   return (
     <section className="page-flow frame-config-page">
       <SystemSwitcher active="channels" onUsers={onUsers} onPermissions={onPermissions} onApprovalConfig={onApprovalConfig} onSlaConfig={onSlaConfig} />
@@ -3427,8 +3436,9 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
         <div>
           <p>Quản lý phân quyền, ánh xạ GĐKD - RSM - ASM và phạm vi kênh trong chuỗi Forecast KD01.</p>
           <div className="config-chip-row">
-            <span className="config-chip blue">8 Kênh Hoạt động</span>
-            <span className="config-chip green">12 RSM Phụ trách</span>
+            <span className="config-chip blue">{activeChannelCount} Kênh Hoạt động</span>
+            <span className="config-chip green">{rsmCount} RSM Phụ trách</span>
+            <span className="config-chip slate">{asmCount} ASM Được gán</span>
           </div>
         </div>
         <button className="primary-button">
@@ -3474,13 +3484,7 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
           ))}
         </div>
         <div className="pagination-row">
-          <span>Hiển thị 4 trên 8 kết quả</span>
-          <div className="pages">
-            <button disabled>‹</button>
-            <button className="active">1</button>
-            <button>2</button>
-            <button>›</button>
-          </div>
+          <span>Hiển thị {activeChannelCount} trên {activeChannelCount} cấu hình kênh</span>
         </div>
       </section>
 
@@ -4244,10 +4248,70 @@ function DeadlinePanel() {
   );
 }
 
+const forecastMonthOptions = Array.from({ length: 12 }, (_, index) => {
+  const value = String(index + 1).padStart(2, "0");
+  return { value, label: `Tháng ${value}` };
+});
+
+const forecastYearOptions = ["2026", "2027", "2028", "2029", "2030"];
+
+function formatForecastMonth(month, year) {
+  return `Tháng ${String(month).padStart(2, "0")}/${year}`;
+}
+
+function parseForecastMonth(value = "Tháng 08/2026") {
+  const match = value.match(/(\d{2})\/(\d{4})/);
+  if (!match) return { month: 8, year: 2026 };
+  return { month: Number(match[1]), year: Number(match[2]) };
+}
+
+function buildQuickForecastMonths(period) {
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(period.year, period.month - 1 + index, 1);
+    return formatForecastMonth(date.getMonth() + 1, date.getFullYear());
+  });
+}
+
+function ForecastPeriodPicker({ value, onChange }) {
+  const selected = parseForecastMonth(value);
+  const monthValue = String(selected.month).padStart(2, "0");
+  const yearValue = String(selected.year);
+  const quickMonths = buildQuickForecastMonths(selected);
+  const setPeriod = (patch) => {
+    onChange(formatForecastMonth(patch.month ?? selected.month, patch.year ?? selected.year));
+  };
+
+  return (
+    <div className="forecast-period-picker">
+      <div className="period-select-grid">
+        <label>
+          <span>Tháng Forecast</span>
+          <CustomSelect value={monthValue} options={forecastMonthOptions} onChange={(month) => setPeriod({ month: Number(month) })} />
+        </label>
+        <label>
+          <span>Năm</span>
+          <CustomSelect value={yearValue} options={forecastYearOptions} onChange={(year) => setPeriod({ year: Number(year) })} />
+        </label>
+      </div>
+      <div className="period-quick-row">
+        {quickMonths.map((month) => (
+          <button className={month === value ? "selected" : ""} key={month} type="button" onClick={() => onChange(month)}>
+            {month}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
   const currentDraft = draft || { month: "Tháng 08/2026", deadline: "22/08/2026", time: "17:00", note: "" };
   const deadlineInputValue = toDateInputValue(currentDraft.deadline);
   const updateDraft = (patch) => setDraft({ ...currentDraft, ...patch });
+  const updateForecastPeriod = (month) => {
+    const period = parseForecastMonth(month);
+    updateDraft({ month, deadline: `22/${String(period.month).padStart(2, "0")}/${period.year}` });
+  };
   const openPicker = (event) => {
     const input = event.currentTarget.querySelector("input");
     input?.showPicker?.();
@@ -4267,17 +4331,7 @@ function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
       <section className="panel form-panel">
         <div className="form-group">
           <label>Chọn kỳ Forecast <strong>*</strong></label>
-          <div className="month-grid">
-            {["Tháng 07/2026", "Tháng 08/2026", "Tháng 09/2026", "Tháng 10/2026"].map((month) => (
-              <button
-                className={month === currentDraft.month ? "selected" : ""}
-                key={month}
-                onClick={() => updateDraft({ month })}
-              >
-                {month}
-              </button>
-            ))}
-          </div>
+          <ForecastPeriodPicker value={currentDraft.month} onChange={updateForecastPeriod} />
           <p>Kỳ Forecast sẽ tạo task cho từng kênh và theo dõi từ lúc giao việc đến khi phát hành bản chính thức.</p>
         </div>
 
@@ -4330,71 +4384,63 @@ function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
   );
 }
 
-const assignmentAsmCandidates = [
-  { id: "asm-gt-bac", name: "Nguyễn Diệp Chi", email: "asm.gt@elmich.vn", region: "Kênh GT - Miền Bắc", initials: "DC", tone: "purple" },
-  { id: "asm-gt-nam", name: "Phạm Hoàng Linh", email: "asm.gtn@elmich.vn", region: "Kênh GT - Miền Nam", initials: "HL", tone: "blue" },
-  { id: "asm-gt-tay", name: "Bùi Minh Hòa", email: "asm.gtt@elmich.vn", region: "Kênh GT - Miền Tây", initials: "BH", tone: "green" },
-  { id: "asm-mt-bac", name: "Đặng Văn D", email: "asm.mt@elmich.vn", region: "Kênh MT - Toàn quốc", initials: "DD", tone: "slate" },
-  { id: "asm-mt-nam", name: "Lê Quang Minh", email: "asm.ec@elmich.vn", region: "Kênh TMĐT", initials: "LM", tone: "blue" },
-  { id: "asm-showroom", name: "Kiều Mỹ Nhung", email: "showroom@elmich.vn", region: "Showroom miền Nam", initials: "MN", tone: "green" },
-  { id: "asm-showroom-2", name: "Trần Thanh Mai", email: "showroom2@elmich.vn", region: "Showroom miền Bắc", initials: "TM", tone: "purple" },
-  { id: "asm-ecom", name: "Nguyễn Hoàng Nam", email: "ecom@elmich.vn", region: "TMĐT / Marketplace", initials: "NN", tone: "blue" },
-];
-
-function buildAssignmentRows(monthCode) {
-  return [
-    {
-      id: "channel-gt",
-      channel: "Kênh GT",
-      region: "Miền Bắc",
-      director: "Nguyễn Văn Nam",
-      directorBadge: "N",
-      rsm: "Lê Thị Thảo",
-      rsmBadge: "L",
-      asms: ["asm-gt-bac", "asm-gt-nam", "asm-gt-tay"],
-      deadline: `18/${monthCode}/2026`,
-      file: "",
-    },
-    {
-      id: "channel-mt",
-      channel: "Kênh MT",
-      region: "Toàn Quốc",
-      director: "Nguyễn Văn Nam",
-      directorBadge: "N",
-      rsm: "Lê Thị Thảo",
-      rsmBadge: "L",
-      asms: ["asm-mt-bac", "asm-mt-nam"],
-      deadline: `18/${monthCode}/2026`,
-      file: `Template_FC_KD01_T${monthCode}.xlsx`,
-    },
-    {
-      id: "channel-showroom",
-      channel: "Kênh Showroom",
-      region: "Miền Nam",
-      director: "Nguyễn Văn Nam",
-      directorBadge: "N",
-      rsm: "Trần Thị B",
-      rsmBadge: "T",
-      asms: ["asm-showroom", "asm-showroom-2", "asm-gt-nam", "asm-gt-tay"],
-      deadline: `19/${monthCode}/2026`,
-      file: "",
-    },
-    {
-      id: "channel-ecom",
-      channel: "Kênh TMĐT",
-      region: "Toàn Quốc",
-      director: "Nguyễn Văn Nam",
-      directorBadge: "N",
-      rsm: "Lê Thị Thảo",
-      rsmBadge: "L",
-      asms: ["asm-ecom", "asm-mt-nam", "asm-gt-bac", "asm-gt-nam", "asm-gt-tay"],
-      deadline: `19/${monthCode}/2026`,
-      file: `Template_FC_KD01_T${monthCode}.xlsx`,
-    },
-  ];
+function toIdPart(value = "") {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .replace(/đ/g, "d")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
 }
 
-function buildTemplateFileName(row, monthCode) {
+function buildFrameworkAsmCandidates(frameworkRows) {
+  const tones = ["blue", "green", "purple", "slate"];
+  const byName = new Map();
+  frameworkRows.forEach((row) => {
+    row.asms.forEach((asm, index) => {
+      const key = asm.trim();
+      if (!key) return;
+      if (!byName.has(key)) {
+        byName.set(key, {
+          id: `asm-${toIdPart(key)}`,
+          name: key,
+          email: `${toIdPart(key)}@elmich.local`,
+          region: row.channel,
+          initials: getUserInitials(key),
+          tone: tones[(byName.size + index) % tones.length],
+        });
+        return;
+      }
+      const current = byName.get(key);
+      if (!current.region.includes(row.channel)) {
+        byName.set(key, { ...current, region: `${current.region}, ${row.channel}` });
+      }
+    });
+  });
+  return Array.from(byName.values());
+}
+
+function buildAssignmentRows(monthCode, year, frameworkRows, asmCandidates) {
+  const byName = new Map(asmCandidates.map((asm) => [asm.name, asm.id]));
+  const cutoff = Math.ceil(frameworkRows.length / 2);
+  return frameworkRows.map((row, index) => ({
+    id: `assignment-${toIdPart(row.channel)}-${index}`,
+    channel: row.channel,
+    region: row.region,
+    director: row.director,
+    directorBadge: row.directorBadge || getUserInitials(row.director).slice(0, 1),
+    rsm: row.rsm,
+    rsmBadge: row.rsmBadge || getUserInitials(row.rsm).slice(0, 1),
+    asms: row.asms.map((asm) => byName.get(asm)).filter(Boolean),
+    deadline: `${index < cutoff ? "18" : "19"}/${monthCode}/${year}`,
+    file: index % 2 === 0 ? "" : `Template_FC_KD01_T${monthCode}_${year}.xlsx`,
+    tone: row.tone,
+  }));
+}
+
+function buildTemplateFileName(row, monthCode, year) {
   const channelCode = row.channel
     .replace(/^Kênh\s+/i, "")
     .normalize("NFD")
@@ -4403,15 +4449,25 @@ function buildTemplateFileName(row, monthCode) {
     .replace(/đ/g, "d")
     .replace(/\s+/g, "_")
     .toUpperCase();
-  return `Template_FC_KD01_${channelCode}_T${monthCode}.xlsx`;
+  return `Template_FC_KD01_${channelCode}_T${monthCode}_${year}.xlsx`;
 }
 
 function CreateForecastStepTwo({ onBack, onFinish, draft }) {
-  const monthCode = draft?.month?.match(/(\d{2})\/(\d{4})/)?.[1] || "08";
-  const [assignmentRows, setAssignmentRows] = useState(() => buildAssignmentRows(monthCode));
+  const forecastPeriod = parseForecastMonth(draft?.month);
+  const monthCode = String(forecastPeriod.month).padStart(2, "0");
+  const forecastYear = forecastPeriod.year;
+  const frameworkAsmCandidates = buildFrameworkAsmCandidates(channelRows);
+  const [assignmentRows, setAssignmentRows] = useState(() => buildAssignmentRows(monthCode, forecastYear, channelRows, frameworkAsmCandidates));
   const [asmModalRowId, setAsmModalRowId] = useState(null);
   const [addChannelOpen, setAddChannelOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const activeAsmRow = assignmentRows.find((row) => row.id === asmModalRowId);
+  const materializeAssignmentRows = () => assignmentRows.map((row) => ({
+    ...row,
+    asmNames: row.asms
+      .map((asmId) => frameworkAsmCandidates.find((candidate) => candidate.id === asmId)?.name)
+      .filter(Boolean),
+  }));
 
   const updateRow = (rowId, patch) => {
     setAssignmentRows((rows) => rows.map((row) => (row.id === rowId ? { ...row, ...patch } : row)));
@@ -4430,7 +4486,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
         rsm: form.rsm.trim() || "Lê Thị Thảo",
         rsmBadge: getUserInitials(form.rsm || "Lê Thị Thảo").slice(0, 1),
         asms: [],
-        deadline: form.deadline || `20/${monthCode}/2026`,
+        deadline: form.deadline || `20/${monthCode}/${forecastYear}`,
         file: form.file.trim(),
       },
     ]);
@@ -4439,17 +4495,18 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
 
   return (
     <section className="page-flow create-page channel-setup-page">
-      <WideStepper />
       <div className="page-heading with-actions channel-heading">
         <div>
           <h2>Giao việc Forecast theo Kênh Bán Hàng</h2>
-          <p>Phân bổ deadline nộp file, người phụ trách và template Forecast cho từng kênh.</p>
+          <p>Phân bổ deadline nộp file, người phụ trách và template Forecast theo khung kênh đã cấu hình.</p>
         </div>
         <button className="secondary-blue-button" type="button" onClick={() => setAddChannelOpen(true)}>
           <Plus size={18} />
           Thêm Kênh mới
         </button>
       </div>
+
+      <StepTabs active={confirmOpen ? 3 : 2} />
 
       <section className="panel assignment-panel">
         <div className="assignment-table">
@@ -4460,7 +4517,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
             <span>RSM</span>
             <span>ASM</span>
             <span>Deadline</span>
-            <span>File mẫu</span>
+          <span>File mẫu</span>
           </div>
           {assignmentRows.map((row) => (
             <article className="assignment-row" key={row.id}>
@@ -4493,7 +4550,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
                     <span>{row.file}</span>
                   </button>
                 ) : (
-                  <button className="attach-template" type="button" onClick={() => updateRow(row.id, { file: buildTemplateFileName(row, monthCode) })}>
+                  <button className="attach-template" type="button" onClick={() => updateRow(row.id, { file: buildTemplateFileName(row, monthCode, forecastYear) })}>
                     <Upload size={15} />
                     Đính kèm mẫu
                   </button>
@@ -4506,7 +4563,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
           <Info size={22} />
           <div>
             <strong>Lưu ý hệ thống</strong>
-            <p>Hệ thống sẽ tự động gửi nhắc nhở qua Lark đến người phụ trách kênh 24 giờ trước deadline nộp file.</p>
+            <p>Task sẽ được sinh theo khung kênh hiện tại: ASM nộp file, RSM duyệt cấp kênh, sau đó GĐKD duyệt trước khi chuyển về Kế hoạch.</p>
           </div>
         </div>
       </section>
@@ -4518,7 +4575,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
         </button>
         <div>
           <button className="link-button">Lưu bản nháp</button>
-          <button className="primary-button" onClick={onFinish}>
+          <button className="primary-button" onClick={() => setConfirmOpen(true)}>
             Lưu và Hoàn tất
             <CheckCircle2 size={18} />
           </button>
@@ -4526,13 +4583,13 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
       </div>
 
       {addChannelOpen && (
-        <AddChannelModal monthCode={monthCode} onClose={() => setAddChannelOpen(false)} onSave={handleAddChannel} />
+        <AddChannelModal monthCode={monthCode} year={forecastYear} onClose={() => setAddChannelOpen(false)} onSave={handleAddChannel} />
       )}
 
       {activeAsmRow && (
         <AsmModal
           row={activeAsmRow}
-          candidates={assignmentAsmCandidates}
+          candidates={frameworkAsmCandidates}
           onClose={() => setAsmModalRowId(null)}
           onSave={(asms) => {
             updateRow(activeAsmRow.id, { asms });
@@ -4540,17 +4597,84 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
           }}
         />
       )}
+
+      {confirmOpen && (
+        <ConfirmForecastModal
+          draft={draft}
+          rows={assignmentRows}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={() => onFinish(materializeAssignmentRows())}
+        />
+      )}
     </section>
   );
 }
 
-function AddChannelModal({ monthCode, onClose, onSave }) {
+function ConfirmForecastModal({ draft, rows, onCancel, onConfirm }) {
+  const totalAsm = rows.reduce((sum, row) => sum + row.asms.length, 0);
+  const missingTemplates = rows.filter((row) => !row.file).length;
+
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal confirm-forecast-modal">
+        <header className="admin-modal-header">
+          <div>
+            <h3>Xác nhận & Kích hoạt Forecast</h3>
+            <p>Kiểm tra lại kỳ Forecast, khung kênh và luồng duyệt trước khi hệ thống sinh task.</p>
+          </div>
+          <button className="modal-close-button" type="button" onClick={onCancel} title="Đóng">
+            <X size={20} />
+          </button>
+        </header>
+        <div className="admin-modal-body">
+          <div className="confirm-summary-grid">
+            <article>
+              <span>Kỳ Forecast</span>
+              <strong>{draft?.month || "Tháng 08/2026"}</strong>
+            </article>
+            <article>
+              <span>Deadline tổng</span>
+              <strong>{draft?.deadline || "22/08/2026"} • {draft?.time || "17:00"}</strong>
+            </article>
+            <article>
+              <span>Task theo kênh</span>
+              <strong>{rows.length} kênh</strong>
+            </article>
+            <article>
+              <span>ASM được gán</span>
+              <strong>{totalAsm} người</strong>
+            </article>
+          </div>
+          <div className="confirm-flow-box">
+            <strong>Luồng duyệt sau khi kích hoạt</strong>
+            <p>Mỗi kênh sẽ tạo task cho ASM phụ trách. File sau khi nộp đi qua RSM của kênh, tiếp tục sang GĐKD, rồi mới chuyển về Phòng Kế hoạch để tổng hợp.</p>
+          </div>
+          {missingTemplates > 0 && (
+            <div className="warning-box compact">
+              <AlertTriangle size={18} />
+              Còn {missingTemplates} kênh chưa đính file mẫu. Bạn vẫn có thể kích hoạt và bổ sung file mẫu sau.
+            </div>
+          )}
+        </div>
+        <footer className="admin-modal-actions">
+          <button className="secondary-button" type="button" onClick={onCancel}>Quay lại chỉnh sửa</button>
+          <button className="primary-button" type="button" onClick={onConfirm}>
+            Xác nhận lưu
+            <CheckCircle2 size={18} />
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function AddChannelModal({ monthCode, year, onClose, onSave }) {
   const [form, setForm] = useState({
     channel: "",
     region: "Toàn Quốc",
     director: "Nguyễn Văn Nam",
     rsm: "Lê Thị Thảo",
-    deadline: `20/${monthCode}/2026`,
+    deadline: `20/${monthCode}/${year}`,
     file: "",
   });
   const updateForm = (patch) => setForm((current) => ({ ...current, ...patch }));
@@ -4599,7 +4723,7 @@ function AddChannelModal({ monthCode, onClose, onSave }) {
             </label>
             <label>
               File mẫu
-              <input value={form.file} onChange={(event) => updateForm({ file: event.target.value })} placeholder={`Template_FC_KD01_T${monthCode}.xlsx`} />
+              <input value={form.file} onChange={(event) => updateForm({ file: event.target.value })} placeholder={`Template_FC_KD01_T${monthCode}_${year}.xlsx`} />
             </label>
           </div>
         </div>

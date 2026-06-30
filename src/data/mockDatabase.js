@@ -85,24 +85,48 @@ export const mockRolePermissions = Object.entries(permissionSeed).flatMap(([modu
 
 export const mockSalesChannels = [
   { id: "ch-gt-north", code: "GT_NORTH", name: "Kênh GT - Miền Bắc", shortName: "Kênh GT", region: "Miền Bắc", status: "active", iconKey: "store", iconTone: "blue", marker: "blue" },
+  { id: "ch-gt-central", code: "GT_CENTRAL", name: "Kênh GT - Miền Trung", shortName: "Kênh GT", region: "Miền Trung", status: "active", iconKey: "store", iconTone: "blue", marker: "blue" },
+  { id: "ch-gt-south", code: "GT_SOUTH", name: "Kênh GT - Miền Nam", shortName: "Kênh GT", region: "Miền Nam", status: "active", iconKey: "store", iconTone: "blue", marker: "blue" },
   { id: "ch-mt", code: "MT", name: "Kênh MT - Toàn Quốc", shortName: "Kênh MT", region: "Toàn quốc", status: "active", iconKey: "shoppingCart", iconTone: "orange", marker: "green" },
+  { id: "ch-b2b", code: "B2B", name: "Kênh B2B", shortName: "Kênh B2B", region: "Toàn quốc", status: "active", iconKey: "building", iconTone: "slate", marker: "slate" },
+  { id: "ch-dealer", code: "DEALER", name: "Kênh Đại lý tỉnh", shortName: "Kênh Đại lý", region: "Toàn quốc", status: "active", iconKey: "store", iconTone: "green", marker: "green" },
   { id: "ch-showroom", code: "SHOWROOM", name: "Kênh Showroom", shortName: "Kênh Showroom", region: "Miền Nam", status: "active", iconKey: "building", iconTone: "green", marker: "slate" },
+  { id: "ch-showroom-north", code: "SHOWROOM_NORTH", name: "Kênh Showroom - Miền Bắc", shortName: "Kênh Showroom", region: "Miền Bắc", status: "active", iconKey: "building", iconTone: "green", marker: "slate" },
   { id: "ch-ecommerce", code: "ECOM", name: "Kênh TMĐT", shortName: "Kênh TMĐT", region: "Toàn quốc", status: "active", iconKey: "globe", iconTone: "purple", marker: "blue" },
+  { id: "ch-marketplace", code: "MARKETPLACE", name: "Kênh Marketplace", shortName: "Kênh Marketplace", region: "Toàn quốc", status: "active", iconKey: "globe", iconTone: "purple", marker: "blue" },
 ];
 
 export const mockChannelAssignments = [
   { id: "ca-gt-asm", channelId: "ch-gt-north", userId: "u-04", roleCode: "ASM", effectiveFrom: "2026-06-01" },
   { id: "ca-gt-rsm", channelId: "ch-gt-north", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
   { id: "ca-gt-gdkd", channelId: "ch-gt-north", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
+  { id: "ca-gt-central-asm", channelId: "ch-gt-central", userId: "u-04", roleCode: "ASM", effectiveFrom: "2026-06-01" },
+  { id: "ca-gt-central-rsm", channelId: "ch-gt-central", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
+  { id: "ca-gt-central-gdkd", channelId: "ch-gt-central", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
+  { id: "ca-gt-south-asm", channelId: "ch-gt-south", userId: "u-04", roleCode: "ASM", effectiveFrom: "2026-06-01" },
+  { id: "ca-gt-south-rsm", channelId: "ch-gt-south", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
+  { id: "ca-gt-south-gdkd", channelId: "ch-gt-south", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
   { id: "ca-mt-asm", channelId: "ch-mt", userId: "u-05", roleCode: "ASM", effectiveFrom: "2026-06-01" },
   { id: "ca-mt-rsm", channelId: "ch-mt", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
   { id: "ca-mt-gdkd", channelId: "ch-mt", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
+  { id: "ca-b2b-asm", channelId: "ch-b2b", userId: "u-03", roleCode: "ASM", effectiveFrom: "2026-06-01" },
+  { id: "ca-b2b-rsm", channelId: "ch-b2b", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
+  { id: "ca-b2b-gdkd", channelId: "ch-b2b", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
+  { id: "ca-dealer-asm", channelId: "ch-dealer", userId: "u-04", roleCode: "ASM", effectiveFrom: "2026-06-01" },
+  { id: "ca-dealer-rsm", channelId: "ch-dealer", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
+  { id: "ca-dealer-gdkd", channelId: "ch-dealer", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
   { id: "ca-showroom-asm", channelId: "ch-showroom", userId: "u-05", roleCode: "ASM", effectiveFrom: "2026-06-01" },
   { id: "ca-showroom-rsm", channelId: "ch-showroom", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
   { id: "ca-showroom-gdkd", channelId: "ch-showroom", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
+  { id: "ca-showroom-north-asm", channelId: "ch-showroom-north", userId: "u-05", roleCode: "ASM", effectiveFrom: "2026-06-01" },
+  { id: "ca-showroom-north-rsm", channelId: "ch-showroom-north", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
+  { id: "ca-showroom-north-gdkd", channelId: "ch-showroom-north", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
   { id: "ca-ecom-asm", channelId: "ch-ecommerce", userId: "u-03", roleCode: "ASM", effectiveFrom: "2026-06-01" },
   { id: "ca-ecom-rsm", channelId: "ch-ecommerce", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
   { id: "ca-ecom-gdkd", channelId: "ch-ecommerce", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
+  { id: "ca-marketplace-asm", channelId: "ch-marketplace", userId: "u-03", roleCode: "ASM", effectiveFrom: "2026-06-01" },
+  { id: "ca-marketplace-rsm", channelId: "ch-marketplace", userId: "u-06", roleCode: "RSM", effectiveFrom: "2026-06-01" },
+  { id: "ca-marketplace-gdkd", channelId: "ch-marketplace", userId: "u-07", roleCode: "GDKD", effectiveFrom: "2026-06-01" },
 ];
 
 export const mockForecastCycles = [

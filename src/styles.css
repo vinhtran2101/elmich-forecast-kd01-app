@@ -1416,6 +1416,54 @@ select {
   color: var(--blue);
 }
 
+.forecast-period-picker {
+  display: grid;
+  gap: 12px;
+}
+
+.period-select-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.5fr) minmax(140px, 0.35fr);
+  gap: 12px;
+}
+
+.period-select-grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.period-select-grid .custom-select-trigger {
+  min-height: 46px;
+  border-color: #c5cedf;
+  border-radius: 12px;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 780;
+  text-transform: none;
+}
+
+.period-quick-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.period-quick-row button {
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  color: #334155;
+  font-weight: 760;
+}
+
+.period-quick-row button:hover,
+.period-quick-row button.selected {
+  border-color: var(--blue);
+  background: #eff6ff;
+  color: var(--blue);
+}
+
 .input-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1463,6 +1511,13 @@ select {
   background: #fff6f4;
   color: #b30f18;
   padding: 0 10px;
+}
+
+.warning-box.compact {
+  min-height: 40px;
+  border-radius: 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
 }
 
 .form-group textarea {
@@ -2881,6 +2936,10 @@ select {
   width: min(760px, calc(100vw - 40px));
 }
 
+.confirm-forecast-modal {
+  width: min(720px, calc(100vw - 40px));
+}
+
 .confirm-modal-card {
   width: min(440px, calc(100vw - 40px));
 }
@@ -3075,6 +3134,53 @@ select {
 .admin-modal-actions .primary-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.confirm-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.confirm-summary-grid article {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #f8fbff;
+  padding: 14px;
+}
+
+.confirm-summary-grid span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.confirm-summary-grid strong {
+  color: #1f2937;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.confirm-flow-box {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  background: #eff6ff;
+  margin-top: 14px;
+  padding: 14px;
+}
+
+.confirm-flow-box strong {
+  color: var(--blue);
+}
+
+.confirm-flow-box p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.35;
 }
 
 .asm-modal {
@@ -4748,6 +4854,11 @@ select {
   color: #fff;
 }
 
+.config-chip.slate {
+  background: #e2e8f0;
+  color: #475569;
+}
+
 .framework-table-panel {
   overflow-x: auto;
   overflow-y: hidden;
@@ -6338,6 +6449,11 @@ select {
   .asm-candidate-row > span:last-child {
     grid-column: 3;
   }
+
+  .period-quick-row,
+  .confirm-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 860px) {
@@ -6396,6 +6512,7 @@ select {
   .right-rail,
   .month-grid,
   .input-grid,
+  .period-select-grid,
   .step-tabs {
     grid-template-columns: 1fr;
   }
@@ -6489,5 +6606,10 @@ select {
 
   .user-chip strong {
     display: none;
+  }
+
+  .period-quick-row,
+  .confirm-summary-grid {
+    grid-template-columns: 1fr;
   }
 }
