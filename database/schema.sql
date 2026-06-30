@@ -9,6 +9,8 @@ create table users (
   department text,
   title text,
   status text not null default 'active' check (status in ('active', 'inactive', 'locked')),
+  initials text,
+  tone text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -19,6 +21,8 @@ create table roles (
   name text not null,
   description text,
   scope_type text not null default 'custom',
+  scope_label text,
+  risk text,
   is_system boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -38,6 +42,7 @@ create table modules (
   code text not null unique,
   name text not null,
   description text,
+  data_label text,
   sort_order int not null default 0
 );
 
@@ -56,8 +61,12 @@ create table sales_channels (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
+  short_name text,
   region text,
   status text not null default 'active' check (status in ('active', 'inactive')),
+  icon_key text,
+  icon_tone text,
+  marker text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -69,7 +78,8 @@ create table channel_assignments (
   role_code text not null,
   effective_from date not null default current_date,
   effective_to date,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (channel_id, user_id, role_code, effective_from)
 );
 
 create table forecast_cycles (
@@ -80,6 +90,7 @@ create table forecast_cycles (
   title text not null,
   total_deadline_at timestamptz not null,
   status text not null default 'draft' check (status in ('draft', 'active', 'appraisal', 'approval', 'published', 'rejected')),
+  tone text,
   note text,
   template_file_name text,
   created_by uuid references users(id) on delete set null,
@@ -96,6 +107,8 @@ create table forecast_tasks (
   director_id uuid references users(id) on delete set null,
   deadline_at timestamptz not null,
   status text not null default 'assigned',
+  status_tone text,
+  due_text text,
   progress int not null default 0 check (progress between 0 and 100),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -111,7 +124,8 @@ create table forecast_files (
   version int not null default 1,
   uploaded_by uuid references users(id) on delete set null,
   uploaded_at timestamptz not null default now(),
-  note text
+  note text,
+  unique (forecast_task_id, version)
 );
 
 create table appraisal_reviews (
