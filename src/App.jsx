@@ -634,8 +634,13 @@ function App() {
       template: `Template_FC_KD01_T${monthNumber}_${year}.xlsx`,
     };
 
-    if (forecasts.some((item) => item.id === id)) {
-      showToast("Kỳ Forecast này đã tồn tại trong mock data.");
+    const existingForecast = forecasts.find((item) => item.id === id);
+    if (existingForecast) {
+      const existingTask = tasks.find((task) => task.forecastId === id);
+      setSelectedForecastId(id);
+      setSelectedTaskId(existingTask?.id || selectedTaskId);
+      showToast("Kỳ Forecast này đã tồn tại, đã mở lịch hiện có để bạn test tiếp.");
+      setScreen("detail");
       return;
     }
 
