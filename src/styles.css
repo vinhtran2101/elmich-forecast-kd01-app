@@ -127,6 +127,20 @@ select {
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
 }
 
+.floating-select-menu {
+  position: fixed;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 10000;
+  overscroll-behavior: contain;
+}
+
+.permission-level-menu {
+  min-width: 180px;
+}
+
 .custom-select-option {
   display: flex;
   min-height: 40px;
