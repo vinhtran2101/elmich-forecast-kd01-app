@@ -2817,7 +2817,7 @@ select {
 }
 
 .role-modal-card {
-  width: min(760px, calc(100vw - 40px));
+  width: min(640px, calc(100vw - 40px));
 }
 
 .user-modal-card {
@@ -4059,13 +4059,13 @@ select {
 }
 
 .admin-user-table {
-  min-width: 700px;
+  min-width: 560px;
 }
 
 .admin-user-head,
 .admin-user-row {
   display: grid;
-  grid-template-columns: minmax(190px, 1.2fr) minmax(95px, 0.5fr) minmax(150px, 0.78fr) minmax(95px, 0.45fr) minmax(72px, 0.34fr);
+  grid-template-columns: minmax(210px, 1.35fr) minmax(110px, 0.58fr) minmax(110px, 0.48fr) minmax(72px, 0.3fr);
   align-items: center;
   gap: 10px;
   padding: 0 14px;
@@ -4157,26 +4157,24 @@ select {
 }
 
 .role-list-item {
-  display: grid;
+  position: relative;
+  display: block;
   width: 100%;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
   border: 1px solid transparent;
   border-radius: 14px;
   background: #fff;
-  padding: 9px;
   text-align: left;
 }
 
 .role-pick-button {
   display: grid;
   width: 100%;
-  grid-template-columns: minmax(0, 1fr) 32px;
+  grid-template-columns: minmax(0, 1fr) 40px;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   background: transparent;
   color: inherit;
+  padding: 12px 14px;
   text-align: left;
 }
 
@@ -4206,6 +4204,13 @@ select {
   line-height: 1.35;
 }
 
+.role-count-slot {
+  display: grid;
+  width: 40px;
+  height: 32px;
+  place-items: center;
+}
+
 .role-list-item b,
 .role-delete-button {
   display: grid;
@@ -4218,6 +4223,10 @@ select {
 }
 
 .role-delete-button {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
   color: #ef4444;
   opacity: 0;
   pointer-events: none;

@@ -2716,28 +2716,20 @@ function RoleCreateModal({ role, setRole, onClose, onSubmit }) {
         <div className="admin-modal-header">
           <div>
             <h3>Tạo vai trò</h3>
-            <p>Khai báo thông tin vai trò. Mã hệ thống có thể để trống để tự tạo.</p>
+            <p>Nhập tên và mô tả vai trò, sau đó thiết lập quyền chi tiết ở bảng phân quyền.</p>
           </div>
           <button className="modal-close-button" onClick={onClose} title="Đóng">
             <X size={20} />
           </button>
         </div>
-        <div className="admin-modal-body modal-grid two-cols">
+        <div className="admin-modal-body modal-grid">
           <label>
             <span>Tên vai trò</span>
             <input value={role.name} onChange={(event) => setRole({ ...role, name: event.target.value })} placeholder="Ví dụ: Quản lý vùng mới" />
           </label>
           <label>
-            <span>Phạm vi</span>
-            <input value={role.scope} onChange={(event) => setRole({ ...role, scope: event.target.value })} placeholder="Theo vùng / theo kênh" />
-          </label>
-          <label>
-            <span>Mã hệ thống</span>
-            <input value={role.code} onChange={(event) => setRole({ ...role, code: event.target.value })} placeholder="Tự tạo sau khi lưu vai trò" />
-          </label>
-          <label className="full">
             <span>Mô tả</span>
-            <textarea value={role.description} onChange={(event) => setRole({ ...role, description: event.target.value })} placeholder="Mô tả trách nhiệm, dữ liệu và phạm vi vận hành..." />
+            <textarea value={role.description} onChange={(event) => setRole({ ...role, description: event.target.value })} placeholder="Mô tả trách nhiệm và phạm vi vận hành..." />
           </label>
         </div>
         <div className="admin-modal-actions">
@@ -2953,7 +2945,7 @@ function SystemUsers({
   const filteredUsers = users.filter((user) => {
     const matchRole = roleFilter === "Tất cả vai trò" || user.role === roleFilter;
     const matchStatus = statusFilter === "Tất cả trạng thái" || user.status === statusFilter;
-    const matchSearch = [user.name, user.email, user.role, user.scope]
+    const matchSearch = [user.name, user.email, user.role]
       .join(" ")
       .toLowerCase()
       .includes(searchTerm.trim().toLowerCase());
@@ -3011,7 +3003,7 @@ function SystemUsers({
           <div>
             <span>Quản trị hệ thống</span>
             <h2>Tài khoản</h2>
-            <p>Mock danh sách người dùng, vai trò và phạm vi dữ liệu phục vụ Forecast KD01.</p>
+            <p>Mock danh sách người dùng, vai trò và trạng thái truy cập phục vụ Forecast KD01.</p>
           </div>
         </div>
         <div className="action-row">
@@ -3042,7 +3034,7 @@ function SystemUsers({
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Tìm tên, email, vai trò, phạm vi..."
+                placeholder="Tìm tên, email, vai trò..."
               />
             </div>
           </label>
@@ -3060,7 +3052,6 @@ function SystemUsers({
           <div className="admin-user-head">
             <span>Tài khoản</span>
             <span>Vai trò</span>
-            <span>Phạm vi</span>
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
@@ -3074,7 +3065,6 @@ function SystemUsers({
                 </div>
               </div>
               <span><Badge tone="neutral">{user.role}</Badge></span>
-              <strong>{user.scope}</strong>
               <span><Badge tone={user.status === "Active" ? "success" : "neutral"}>{user.status}</Badge></span>
               <button className="secondary-button compact-action" title="Chỉnh sửa" onClick={() => openEditUser(user)}>
                 <MoreVertical size={17} />
@@ -3117,8 +3107,6 @@ function SystemPermissions({
   const [confirmDeleteRole, setConfirmDeleteRole] = useState(null);
   const [newRole, setNewRole] = useState({
     name: "",
-    scope: "Theo phân quyền",
-    code: "",
     description: "",
   });
   const selectedRole = roles.find((role) => role.id === selectedRoleId) || roles[0];
@@ -3145,14 +3133,14 @@ function SystemPermissions({
   const createRole = () => {
     const name = newRole.name.trim();
     if (!name || !setRoles) return;
-    const id = newRole.code.trim() || `custom-${Date.now()}`;
+    const id = `custom-${Date.now()}`;
     setRoles((current) => [
       ...current,
       {
         id,
         name,
         description: newRole.description.trim() || "Vai trò tùy chỉnh cho Forecast KD01",
-        scope: newRole.scope.trim() || "Theo phân quyền",
+        scope: "Theo phân quyền",
         users: 0,
         risk: "Trung bình",
       },
@@ -3162,7 +3150,7 @@ function SystemPermissions({
       [id]: permissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
     }));
     setSelectedRoleId(id);
-    setNewRole({ name: "", scope: "Theo phân quyền", code: "", description: "" });
+    setNewRole({ name: "", description: "" });
     setRoleModalOpen(false);
   };
   const deleteRole = (roleId) => {
@@ -3235,7 +3223,9 @@ function SystemPermissions({
                   <span>{role.description}</span>
                   <small>{role.scope}</small>
                 </div>
-                <b>{roleUserCounts[role.name] || role.users || 0}</b>
+                <span className="role-count-slot">
+                  <b>{roleUserCounts[role.name] || role.users || 0}</b>
+                </span>
               </button>
               {role.id !== "admin" && (
                 <button className="role-delete-button" onClick={() => setConfirmDeleteRole(role)} title="Xóa vai trò">
