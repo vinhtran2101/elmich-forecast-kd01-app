@@ -4330,15 +4330,112 @@ function CreateForecastStepOne({ onCancel, onNext, draft, setDraft }) {
   );
 }
 
-function CreateForecastStepTwo({ onBack, onFinish, draft }) {
-  const [asmModalOpen, setAsmModalOpen] = useState(false);
-  const monthCode = draft?.month?.match(/(\d{2})\/(\d{4})/)?.[1] || "08";
-  const assignmentRows = [
-    { channel: "Kênh GT", region: "Miền Bắc", asm: "3 ASM", deadline: `18/${monthCode}/2026`, file: "" },
-    { channel: "Kênh MT", region: "Toàn Quốc", asm: "2 ASM", deadline: `18/${monthCode}/2026`, file: `Template_FC_KD01_T${monthCode}.xlsx` },
-    { channel: "Kênh Showroom", region: "Miền Nam", asm: "4 ASM", deadline: `19/${monthCode}/2026`, file: "" },
-    { channel: "Kênh TMĐT", region: "Toàn Quốc", asm: "5 ASM", deadline: `19/${monthCode}/2026`, file: `Template_FC_KD01_T${monthCode}.xlsx` },
+const assignmentAsmCandidates = [
+  { id: "asm-gt-bac", name: "Nguyễn Diệp Chi", email: "asm.gt@elmich.vn", region: "Kênh GT - Miền Bắc", initials: "DC", tone: "purple" },
+  { id: "asm-gt-nam", name: "Phạm Hoàng Linh", email: "asm.gtn@elmich.vn", region: "Kênh GT - Miền Nam", initials: "HL", tone: "blue" },
+  { id: "asm-gt-tay", name: "Bùi Minh Hòa", email: "asm.gtt@elmich.vn", region: "Kênh GT - Miền Tây", initials: "BH", tone: "green" },
+  { id: "asm-mt-bac", name: "Đặng Văn D", email: "asm.mt@elmich.vn", region: "Kênh MT - Toàn quốc", initials: "DD", tone: "slate" },
+  { id: "asm-mt-nam", name: "Lê Quang Minh", email: "asm.ec@elmich.vn", region: "Kênh TMĐT", initials: "LM", tone: "blue" },
+  { id: "asm-showroom", name: "Kiều Mỹ Nhung", email: "showroom@elmich.vn", region: "Showroom miền Nam", initials: "MN", tone: "green" },
+  { id: "asm-showroom-2", name: "Trần Thanh Mai", email: "showroom2@elmich.vn", region: "Showroom miền Bắc", initials: "TM", tone: "purple" },
+  { id: "asm-ecom", name: "Nguyễn Hoàng Nam", email: "ecom@elmich.vn", region: "TMĐT / Marketplace", initials: "NN", tone: "blue" },
+];
+
+function buildAssignmentRows(monthCode) {
+  return [
+    {
+      id: "channel-gt",
+      channel: "Kênh GT",
+      region: "Miền Bắc",
+      director: "Nguyễn Văn Nam",
+      directorBadge: "N",
+      rsm: "Lê Thị Thảo",
+      rsmBadge: "L",
+      asms: ["asm-gt-bac", "asm-gt-nam", "asm-gt-tay"],
+      deadline: `18/${monthCode}/2026`,
+      file: "",
+    },
+    {
+      id: "channel-mt",
+      channel: "Kênh MT",
+      region: "Toàn Quốc",
+      director: "Nguyễn Văn Nam",
+      directorBadge: "N",
+      rsm: "Lê Thị Thảo",
+      rsmBadge: "L",
+      asms: ["asm-mt-bac", "asm-mt-nam"],
+      deadline: `18/${monthCode}/2026`,
+      file: `Template_FC_KD01_T${monthCode}.xlsx`,
+    },
+    {
+      id: "channel-showroom",
+      channel: "Kênh Showroom",
+      region: "Miền Nam",
+      director: "Nguyễn Văn Nam",
+      directorBadge: "N",
+      rsm: "Trần Thị B",
+      rsmBadge: "T",
+      asms: ["asm-showroom", "asm-showroom-2", "asm-gt-nam", "asm-gt-tay"],
+      deadline: `19/${monthCode}/2026`,
+      file: "",
+    },
+    {
+      id: "channel-ecom",
+      channel: "Kênh TMĐT",
+      region: "Toàn Quốc",
+      director: "Nguyễn Văn Nam",
+      directorBadge: "N",
+      rsm: "Lê Thị Thảo",
+      rsmBadge: "L",
+      asms: ["asm-ecom", "asm-mt-nam", "asm-gt-bac", "asm-gt-nam", "asm-gt-tay"],
+      deadline: `19/${monthCode}/2026`,
+      file: `Template_FC_KD01_T${monthCode}.xlsx`,
+    },
   ];
+}
+
+function buildTemplateFileName(row, monthCode) {
+  const channelCode = row.channel
+    .replace(/^Kênh\s+/i, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .replace(/đ/g, "d")
+    .replace(/\s+/g, "_")
+    .toUpperCase();
+  return `Template_FC_KD01_${channelCode}_T${monthCode}.xlsx`;
+}
+
+function CreateForecastStepTwo({ onBack, onFinish, draft }) {
+  const monthCode = draft?.month?.match(/(\d{2})\/(\d{4})/)?.[1] || "08";
+  const [assignmentRows, setAssignmentRows] = useState(() => buildAssignmentRows(monthCode));
+  const [asmModalRowId, setAsmModalRowId] = useState(null);
+  const [addChannelOpen, setAddChannelOpen] = useState(false);
+  const activeAsmRow = assignmentRows.find((row) => row.id === asmModalRowId);
+
+  const updateRow = (rowId, patch) => {
+    setAssignmentRows((rows) => rows.map((row) => (row.id === rowId ? { ...row, ...patch } : row)));
+  };
+
+  const handleAddChannel = (form) => {
+    const channelName = form.channel.trim() || "Kênh mới";
+    setAssignmentRows((rows) => [
+      ...rows,
+      {
+        id: `channel-${Date.now()}`,
+        channel: channelName,
+        region: form.region,
+        director: form.director.trim() || "Nguyễn Văn Nam",
+        directorBadge: getUserInitials(form.director || "Nguyễn Văn Nam").slice(0, 1),
+        rsm: form.rsm.trim() || "Lê Thị Thảo",
+        rsmBadge: getUserInitials(form.rsm || "Lê Thị Thảo").slice(0, 1),
+        asms: [],
+        deadline: form.deadline || `20/${monthCode}/2026`,
+        file: form.file.trim(),
+      },
+    ]);
+    setAddChannelOpen(false);
+  };
 
   return (
     <section className="page-flow create-page channel-setup-page">
@@ -4348,7 +4445,7 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
           <h2>Giao việc Forecast theo Kênh Bán Hàng</h2>
           <p>Phân bổ deadline nộp file, người phụ trách và template Forecast cho từng kênh.</p>
         </div>
-        <button className="secondary-blue-button">
+        <button className="secondary-blue-button" type="button" onClick={() => setAddChannelOpen(true)}>
           <Plus size={18} />
           Thêm Kênh mới
         </button>
@@ -4365,28 +4462,38 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
             <span>Deadline</span>
             <span>File mẫu</span>
           </div>
-          {assignmentRows.map((row, index) => (
-            <article className="assignment-row" key={`${row.region}-${index}`}>
-              <div>{row.channel && <span className="channel-pill">{row.channel}</span>}</div>
-              <span>{row.region}</span>
-              <Person name="Nguyễn Văn Nam" badge="N" tone="blue" />
-              <Person name={index === 2 ? "Trần Thị B" : "Lê Thị Thảo"} badge="L" tone="slate" />
-              <button className="asm-count-pill" onClick={() => setAsmModalOpen(true)}>
-                <Users size={16} />
-                {row.asm}
-              </button>
-              <div className="date-input-chip">
-                <Calendar size={20} />
-                {row.deadline}
+          {assignmentRows.map((row) => (
+            <article className="assignment-row" key={row.id}>
+              <div data-label="Kênh">{row.channel && <span className="channel-pill">{row.channel}</span>}</div>
+              <span data-label="Miền">{row.region}</span>
+              <div data-label="GĐKD">
+                <Person name={row.director} badge={row.directorBadge} tone="blue" />
               </div>
-              <div>
+              <div data-label="RSM">
+                <Person name={row.rsm} badge={row.rsmBadge} tone="slate" />
+              </div>
+              <button className="asm-count-pill" type="button" onClick={() => setAsmModalRowId(row.id)} data-label="ASM">
+                <Users size={16} />
+                {row.asms.length} ASM
+              </button>
+              <label className="date-input-chip" data-label="Deadline">
+                <Calendar size={20} />
+                <input
+                  className="assignment-date-input"
+                  type="date"
+                  value={toDateInputValue(row.deadline)}
+                  onChange={(event) => updateRow(row.id, { deadline: toDisplayDate(event.target.value) })}
+                  aria-label={`Deadline ${row.channel}`}
+                />
+              </label>
+              <div data-label="File mẫu">
                 {row.file ? (
-                  <span className="file-pill">
+                  <button className="file-pill" type="button" onClick={() => updateRow(row.id, { file: "" })} title="Bấm để bỏ file mẫu">
                     <FileText size={15} />
                     <span>{row.file}</span>
-                  </span>
+                  </button>
                 ) : (
-                  <button className="attach-template">
+                  <button className="attach-template" type="button" onClick={() => updateRow(row.id, { file: buildTemplateFileName(row, monthCode) })}>
                     <Upload size={15} />
                     Đính kèm mẫu
                   </button>
@@ -4418,19 +4525,113 @@ function CreateForecastStepTwo({ onBack, onFinish, draft }) {
         </div>
       </div>
 
-      {asmModalOpen && <AsmModal onClose={() => setAsmModalOpen(false)} />}
+      {addChannelOpen && (
+        <AddChannelModal monthCode={monthCode} onClose={() => setAddChannelOpen(false)} onSave={handleAddChannel} />
+      )}
+
+      {activeAsmRow && (
+        <AsmModal
+          row={activeAsmRow}
+          candidates={assignmentAsmCandidates}
+          onClose={() => setAsmModalRowId(null)}
+          onSave={(asms) => {
+            updateRow(activeAsmRow.id, { asms });
+            setAsmModalRowId(null);
+          }}
+        />
+      )}
     </section>
   );
 }
 
-function AsmModal({ onClose }) {
+function AddChannelModal({ monthCode, onClose, onSave }) {
+  const [form, setForm] = useState({
+    channel: "",
+    region: "Toàn Quốc",
+    director: "Nguyễn Văn Nam",
+    rsm: "Lê Thị Thảo",
+    deadline: `20/${monthCode}/2026`,
+    file: "",
+  });
+  const updateForm = (patch) => setForm((current) => ({ ...current, ...patch }));
+
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal channel-modal-card">
+        <header className="admin-modal-header">
+          <div>
+            <h3>Thêm kênh Forecast</h3>
+            <p>Cấu hình kênh, người duyệt và deadline để hệ thống sinh task đúng phạm vi.</p>
+          </div>
+          <button className="modal-close-button" type="button" onClick={onClose} title="Đóng">
+            <X size={20} />
+          </button>
+        </header>
+        <div className="admin-modal-body">
+          <div className="modal-grid two-cols">
+            <label>
+              Tên kênh
+              <input value={form.channel} onChange={(event) => updateForm({ channel: event.target.value })} placeholder="Ví dụ: Kênh B2B" />
+            </label>
+            <label>
+              Miền/vùng
+              <CustomSelect
+                value={form.region}
+                options={["Toàn Quốc", "Miền Bắc", "Miền Trung", "Miền Nam", "Miền Tây"]}
+                onChange={(region) => updateForm({ region })}
+              />
+            </label>
+            <label>
+              GĐKD
+              <input value={form.director} onChange={(event) => updateForm({ director: event.target.value })} placeholder="Người duyệt cấp GĐKD" />
+            </label>
+            <label>
+              RSM
+              <input value={form.rsm} onChange={(event) => updateForm({ rsm: event.target.value })} placeholder="Người duyệt cấp RSM" />
+            </label>
+            <label>
+              Deadline nộp file
+              <input
+                type="date"
+                value={toDateInputValue(form.deadline)}
+                onChange={(event) => updateForm({ deadline: toDisplayDate(event.target.value) })}
+              />
+            </label>
+            <label>
+              File mẫu
+              <input value={form.file} onChange={(event) => updateForm({ file: event.target.value })} placeholder={`Template_FC_KD01_T${monthCode}.xlsx`} />
+            </label>
+          </div>
+        </div>
+        <footer className="admin-modal-actions">
+          <button className="secondary-button" type="button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" type="button" onClick={() => onSave(form)}>Thêm kênh</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function AsmModal({ row, candidates, onClose, onSave }) {
+  const [query, setQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState(row.asms);
+  const selectedAsms = candidates.filter((candidate) => selectedIds.includes(candidate.id));
+  const filteredCandidates = candidates.filter((candidate) => {
+    const keyword = query.trim().toLowerCase();
+    if (!keyword) return true;
+    return [candidate.name, candidate.email, candidate.region].some((value) => value.toLowerCase().includes(keyword));
+  });
+  const toggleAsm = (asmId) => {
+    setSelectedIds((current) => (current.includes(asmId) ? current.filter((id) => id !== asmId) : [...current, asmId]));
+  };
+
   return (
     <div className="modal-backdrop">
       <section className="asm-modal">
         <div className="modal-title-row">
           <div>
             <h3>Quản lý Đội ngũ ASM</h3>
-            <span>Kênh: GT Toàn Quốc</span>
+            <span>Kênh: {row.channel} • {row.region}</span>
           </div>
           <button className="icon-button" onClick={onClose} title="Đóng">
             <X size={20} />
@@ -4439,41 +4640,57 @@ function AsmModal({ onClose }) {
 
         <div className="modal-section">
           <span className="modal-label">Danh sách ASM hiện tại</span>
-          {[
-            ["Nguyễn Hoàng Nam", "Khu vực: Đông Bắc"],
-            ["Trần Thu Dung", "Khu vực: Duyên Hải"],
-          ].map((asm) => (
-            <article className="asm-person-row" key={asm[0]}>
-              <span className="mini-avatar">{asm[0].slice(0, 1)}</span>
-              <div>
-                <strong>{asm[0]}</strong>
-                <small>{asm[1]}</small>
-              </div>
-              <button className="icon-button" title="Xóa">
-                <X size={15} />
-              </button>
-            </article>
-          ))}
+          <div className="asm-current-list">
+            {selectedAsms.length ? selectedAsms.map((asm) => (
+              <article className="asm-person-row" key={asm.id}>
+                <span className={`mini-avatar ${asm.tone}`}>{asm.initials}</span>
+                <div>
+                  <strong>{asm.name}</strong>
+                  <small>{asm.region}</small>
+                </div>
+                <button className="icon-button" type="button" onClick={() => toggleAsm(asm.id)} title="Xóa ASM khỏi kênh">
+                  <X size={15} />
+                </button>
+              </article>
+            )) : (
+              <div className="asm-empty-state">Chưa gán ASM cho kênh này.</div>
+            )}
+          </div>
         </div>
 
         <div className="modal-section add-asm-section">
           <span className="modal-label">Thêm ASM mới</span>
-          <div className="add-asm-row">
-            <label>
-              <Search size={16} />
-              <input placeholder="Tìm tên ASM hoặc mã nhân viên..." />
-            </label>
-            <button className="primary-button">
-              <UserPlus size={16} />
-              Thêm
-            </button>
+          <label className="asm-search-field">
+            <Search size={16} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm tên ASM, email hoặc khu vực..." />
+          </label>
+          <div className="asm-candidate-list">
+            {filteredCandidates.map((asm) => {
+              const checked = selectedIds.includes(asm.id);
+              return (
+                <button
+                  className={`asm-candidate-row ${checked ? "selected" : ""}`}
+                  key={asm.id}
+                  type="button"
+                  onClick={() => toggleAsm(asm.id)}
+                >
+                  <input type="checkbox" checked={checked} onChange={() => toggleAsm(asm.id)} onClick={(event) => event.stopPropagation()} />
+                  <span className={`mini-avatar ${asm.tone}`}>{asm.initials}</span>
+                  <div>
+                    <strong>{asm.name}</strong>
+                    <small>{asm.email}</small>
+                  </div>
+                  <span>{asm.region}</span>
+                </button>
+              );
+            })}
           </div>
-          <small>Chỉ hiển thị các ASM thuộc kênh GT chưa được chỉ định.</small>
         </div>
 
         <div className="modal-actions">
-          <button className="secondary-button" onClick={onClose}>Hủy</button>
-          <button className="primary-button" onClick={onClose}>Lưu thay đổi</button>
+          <span className="modal-selection-count">Đã chọn {selectedIds.length} ASM</span>
+          <button className="secondary-button" type="button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" type="button" onClick={() => onSave(selectedIds)}>Lưu thay đổi</button>
         </div>
       </section>
     </div>
