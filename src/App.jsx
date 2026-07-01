@@ -504,6 +504,23 @@ async function apiRequest(path, options = {}) {
   return payload;
 }
 
+async function fetchAuthState() {
+  const response = await fetch(`/api/auth/me?t=${Date.now()}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.ok === false) {
+    throw new Error(payload.message || `auth_${response.status}`);
+  }
+  return payload.auth || {
+    required: false,
+    configured: false,
+    authenticated: false,
+    mode: "mock",
+  };
+}
+
 function App() {
   const [screen, setScreen] = useState("overview");
   const [forecasts, setForecasts] = useState(initialForecasts);
@@ -527,6 +544,17 @@ function App() {
   const [systemPermissionMatrix, setSystemPermissionMatrix] = useState(permissionMatrix);
   const [systemPermissionActivityLog, setSystemPermissionActivityLog] = useState(permissionActivityLog);
   const [previewRoleId, setPreviewRoleId] = useState("");
+  const [authState, setAuthState] = useState({
+    loading: true,
+    required: false,
+    configured: false,
+    authenticated: false,
+    user: null,
+    role: null,
+    permissions: null,
+    loginUrl: "/api/auth/lark/start",
+    logoutUrl: "/api/auth/logout",
+  });
 
   const selectedForecast =
     forecasts.find((forecast) => forecast.id === selectedForecastId) || forecasts[0];
@@ -540,8 +568,10 @@ function App() {
     publishedFiles.find((file) => file.id === selectedFileId) || publishedFiles[0];
   const previewRole = roles.find((role) => role.id === previewRoleId);
   const previewPermissions = previewRole ? permissionDrafts[previewRole.id] : null;
-  const previewScreenAllowed = isPreviewScreenAllowed(screen, previewPermissions);
-  const canCreateForecast = !previewPermissions || canEditPermission(previewPermissions, "Lịch Forecast");
+  const sessionPermissions = authState.required && authState.authenticated ? authState.permissions : null;
+  const effectivePermissions = previewPermissions || sessionPermissions;
+  const previewScreenAllowed = isPreviewScreenAllowed(screen, effectivePermissions);
+  const canCreateForecast = !effectivePermissions || canEditPermission(effectivePermissions, "Lịch Forecast");
 
   const showToast = (message) => {
     setToast(message);
@@ -589,6 +619,29 @@ function App() {
     return nextData;
   };
 
+  const loadCurrentAuth = async ({ shouldApply = () => true } = {}) => {
+    try {
+      const auth = await fetchAuthState();
+      if (shouldApply()) setAuthState({ ...auth, loading: false });
+      return auth;
+    } catch (error) {
+      console.warn("Auth status check failed.", error);
+      const fallbackAuth = {
+        loading: false,
+        required: false,
+        configured: false,
+        authenticated: false,
+        user: null,
+        role: null,
+        permissions: null,
+        loginUrl: "/api/auth/lark/start",
+        logoutUrl: "/api/auth/logout",
+      };
+      if (shouldApply()) setAuthState(fallbackAuth);
+      return fallbackAuth;
+    }
+  };
+
   const reloadDatabaseData = async (message) => {
     await loadDatabaseData();
     if (message) showToast(message);
@@ -597,19 +650,28 @@ function App() {
   useEffect(() => {
     let active = true;
 
-    async function initializeDatabaseData() {
+    async function initializeAppData() {
       try {
-        await loadDatabaseData({ shouldApply: () => active });
+        const auth = await loadCurrentAuth({ shouldApply: () => active });
+        if (!auth.required || auth.authenticated) {
+          await loadDatabaseData({ shouldApply: () => active });
+        }
       } catch (error) {
         console.warn("Using mock fallback because database bootstrap failed.", error);
       }
     }
 
-    initializeDatabaseData();
+    initializeAppData();
     return () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (effectivePermissions && !isPreviewScreenAllowed(screen, effectivePermissions)) {
+      setScreen(getFirstPreviewScreen(effectivePermissions));
+    }
+  }, [screen, effectivePermissions]);
 
   const addEvent = ({ icon = CheckCircle2, tone = "blue", title, body }) => {
     setEvents((current) => [
@@ -951,12 +1013,23 @@ function App() {
     screen === "approval-detail" ||
     screen === "storage-file";
 
+  const handleLogout = () => {
+    window.location.href = authState.logoutUrl || "/api/auth/logout";
+  };
+
+  if (authState.loading || (authState.required && !authState.authenticated)) {
+    return <AuthGate auth={authState} />;
+  }
+
   return (
     <div className="app-shell">
-      <Sidebar screen={screen} setScreen={setScreen} previewPermissions={previewPermissions} />
+      <Sidebar screen={screen} setScreen={setScreen} previewPermissions={effectivePermissions} onLogout={handleLogout} />
       <main className="main-shell">
         <Topbar
           title={headerTitle}
+          currentUser={authState.user}
+          authRequired={authState.required}
+          onLogout={handleLogout}
           showBack={isBackScreen}
           hideSearch={screen === "detail" || screen === "storage-file"}
           onBack={() => {
@@ -1220,6 +1293,56 @@ function PreviewAccessDenied({ role, onExit }) {
   );
 }
 
+function AuthGate({ auth }) {
+  const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const error = params.get("auth_error");
+  const errorMessage =
+    error === "not_allowed"
+      ? "Tài khoản Lark này chưa được cấp quyền trong Forecast KD01."
+      : error === "account_inactive"
+        ? "Tài khoản đang inactive hoặc bị khóa trong hệ thống."
+        : error === "lark_failed"
+          ? "Lark chưa xác thực được phiên đăng nhập. Kiểm tra lại cấu hình app Lark."
+          : "";
+
+  return (
+    <main className="auth-gate-page">
+      <section className="auth-gate-card">
+        <span className="auth-gate-icon">
+          <Lock size={28} />
+        </span>
+        <div>
+          <span className="eyebrow">Forecast KD01</span>
+          <h1>{auth.loading ? "Đang kiểm tra phiên đăng nhập" : "Đăng nhập bằng Lark"}</h1>
+          <p>
+            Hệ thống dùng Lark để xác định người truy cập, sau đó áp quyền theo role đã cấu hình trong PostgreSQL.
+          </p>
+        </div>
+        {errorMessage && (
+          <div className="auth-gate-warning">
+            <AlertTriangle size={18} />
+            {errorMessage}
+          </div>
+        )}
+        {!auth.loading && !auth.configured && (
+          <div className="auth-gate-warning">
+            <AlertTriangle size={18} />
+            Chưa cấu hình LARK_APP_ID / LARK_APP_SECRET trên server.
+          </div>
+        )}
+        {auth.loading ? (
+          <div className="auth-gate-loading">Đang tải...</div>
+        ) : (
+          <a className="primary-button auth-gate-login" href={auth.loginUrl || "/api/auth/lark/start"}>
+            Đăng nhập Lark
+            <ArrowRight size={18} />
+          </a>
+        )}
+      </section>
+    </main>
+  );
+}
+
 function toSelectOption(option) {
   return typeof option === "string" ? { value: option, label: option } : option;
 }
@@ -1362,7 +1485,7 @@ function CustomSelect({ value, options, onChange, placeholder = "Chọn", classN
   );
 }
 
-function Sidebar({ screen, setScreen, previewPermissions }) {
+function Sidebar({ screen, setScreen, previewPermissions, onLogout }) {
   const visibleNavItems = previewPermissions
     ? navItems.filter((item) => hasPreviewAccess(previewPermissions, previewNavModules[item.screen] || []))
     : navItems;
@@ -1450,11 +1573,11 @@ function Sidebar({ screen, setScreen, previewPermissions }) {
       </div>
 
       <div className="sidebar-footer">
-        <button className="nav-item compact">
+        <button className="nav-item compact" type="button">
           <HelpCircle size={20} />
           <span>Hỗ trợ</span>
         </button>
-        <button className="nav-item compact">
+        <button className="nav-item compact" type="button" onClick={onLogout}>
           <LogOut size={20} />
           <span>Đăng xuất</span>
         </button>
@@ -1463,7 +1586,10 @@ function Sidebar({ screen, setScreen, previewPermissions }) {
   );
 }
 
-function Topbar({ title, search, showBack, hideSearch, onBack }) {
+function Topbar({ title, search, showBack, hideSearch, onBack, currentUser, authRequired, onLogout }) {
+  const displayName = currentUser?.name || "Nguyễn Tú Anh";
+  const initials = currentUser?.initials || displayName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase() || "NA";
+
   return (
     <header className="topbar">
       <div className="topbar-title">
@@ -1490,10 +1616,10 @@ function Topbar({ title, search, showBack, hideSearch, onBack }) {
         <button className="icon-button optional" title="Trợ giúp">
           <CircleHelp size={20} />
         </button>
-        <div className="user-chip">
-          <strong>Nguyễn Tú Anh</strong>
-          <span className="avatar">NA</span>
-        </div>
+        <button className="user-chip" type="button" onClick={authRequired ? onLogout : undefined} title={authRequired ? "Đăng xuất" : displayName}>
+          <strong>{displayName}</strong>
+          <span className="avatar">{initials}</span>
+        </button>
       </div>
     </header>
   );

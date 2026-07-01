@@ -1,4 +1,5 @@
 import { query } from "../lib/db.js";
+import { requireAuth } from "../lib/auth.js";
 import { sendJson, sendMethodNotAllowed } from "../lib/http.js";
 
 async function getRows(sql, params = []) {
@@ -9,6 +10,8 @@ async function getRows(sql, params = []) {
 export default async function handler(req, res) {
   if (req.method !== "GET") return sendMethodNotAllowed(res, ["GET"]);
   res.setHeader("Cache-Control", "no-store, max-age=0");
+  const guard = await requireAuth(req, res);
+  if (!guard.ok) return;
 
   try {
     const [

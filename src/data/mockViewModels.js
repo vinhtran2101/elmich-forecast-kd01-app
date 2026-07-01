@@ -44,6 +44,10 @@ function normalizeBootstrapDatabase(bootstrap = {}) {
     status: userStatusLabels[user.status] || "Active",
     initials: user.initials,
     tone: user.tone,
+    avatarUrl: user.avatar_url || "",
+    larkOpenId: user.lark_open_id || "",
+    larkUnionId: user.lark_union_id || "",
+    lastLoginAt: user.last_login_at || "",
   }));
 
   const roles = (bootstrap.roles || []).map((role) => ({

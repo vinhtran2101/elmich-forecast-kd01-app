@@ -1,8 +1,11 @@
 import { withTransaction } from "../lib/db.js";
+import { requireModulePermission } from "../lib/auth.js";
 import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return sendMethodNotAllowed(res, ["POST"]);
+  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  if (!guard.ok) return;
 
   try {
     const body = await readJsonBody(req);

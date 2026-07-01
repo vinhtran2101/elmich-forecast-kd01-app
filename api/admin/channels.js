@@ -1,4 +1,5 @@
 import { withTransaction } from "../lib/db.js";
+import { requireModulePermission } from "../lib/auth.js";
 import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
 
 function slugify(value = "") {
@@ -136,6 +137,8 @@ async function deactivateChannel(client, payload) {
 
 export default async function handler(req, res) {
   if (!["POST", "DELETE"].includes(req.method)) return sendMethodNotAllowed(res, ["POST", "DELETE"]);
+  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  if (!guard.ok) return;
 
   try {
     const body = await readJsonBody(req);

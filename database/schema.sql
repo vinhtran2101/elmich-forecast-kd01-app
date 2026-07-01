@@ -15,6 +15,15 @@ create table if not exists users (
   updated_at timestamptz not null default now()
 );
 
+alter table users add column if not exists auth_provider text not null default 'manual';
+alter table users add column if not exists lark_open_id text;
+alter table users add column if not exists lark_union_id text;
+alter table users add column if not exists lark_user_id text;
+alter table users add column if not exists avatar_url text;
+alter table users add column if not exists last_login_at timestamptz;
+create unique index if not exists uq_users_lark_open_id on users(lark_open_id) where lark_open_id is not null;
+create unique index if not exists uq_users_lark_union_id on users(lark_union_id) where lark_union_id is not null;
+
 create table if not exists roles (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,

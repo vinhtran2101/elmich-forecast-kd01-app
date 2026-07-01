@@ -1,4 +1,5 @@
 import { withTransaction } from "../lib/db.js";
+import { requireModulePermission } from "../lib/auth.js";
 import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
 
 const allowedLevels = new Set(["full", "scoped", "view", "locked"]);
@@ -11,6 +12,8 @@ function dataScopeForLevel(level) {
 
 export default async function handler(req, res) {
   if (!["POST", "PATCH"].includes(req.method)) return sendMethodNotAllowed(res, ["POST", "PATCH"]);
+  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  if (!guard.ok) return;
 
   try {
     const body = await readJsonBody(req);

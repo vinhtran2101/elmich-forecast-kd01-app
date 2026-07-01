@@ -7644,3 +7644,83 @@ select {
     width: 100%;
   }
 }
+
+/* Lark auth gate */
+.auth-gate-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(241, 245, 249, 0.96)),
+    #f8fafc;
+  padding: 24px;
+}
+
+.auth-gate-card {
+  display: grid;
+  width: min(520px, 100%);
+  gap: 18px;
+  border: 1px solid #cbd7e8;
+  border-radius: 22px;
+  background: #fff;
+  padding: 28px;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
+}
+
+.auth-gate-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 18px;
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.24);
+}
+
+.auth-gate-card h1 {
+  margin: 4px 0 8px;
+  color: #1f2937;
+  font-size: 28px;
+  line-height: 1.18;
+}
+
+.auth-gate-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.auth-gate-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  background: #fff1f2;
+  color: #b91c1c;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.auth-gate-loading {
+  display: grid;
+  min-height: 46px;
+  place-items: center;
+  border-radius: 14px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 750;
+}
+
+.auth-gate-login {
+  min-height: 46px;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.user-chip {
+  border: 0;
+}
