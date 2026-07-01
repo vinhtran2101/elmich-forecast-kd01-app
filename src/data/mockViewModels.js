@@ -278,7 +278,9 @@ function buildAppData(db, iconRegistry) {
       return row;
     });
 
-  const workflowChannels = db.salesChannels.map((channel) => {
+  const activeSalesChannels = db.salesChannels.filter((channel) => channel.status !== "inactive");
+
+  const workflowChannels = activeSalesChannels.map((channel) => {
     const asm = getAssignment(db.channelAssignments, channel.id, "ASM");
     const rsm = getAssignment(db.channelAssignments, channel.id, "RSM");
     const director = getAssignment(db.channelAssignments, channel.id, "GDKD");
@@ -295,21 +297,30 @@ function buildAppData(db, iconRegistry) {
     };
   });
 
-  const channelRows = db.salesChannels.map((channel) => {
+  const channelRows = activeSalesChannels.map((channel) => {
     const rsm = getAssignment(db.channelAssignments, channel.id, "RSM");
     const director = getAssignment(db.channelAssignments, channel.id, "GDKD");
-    const asms = db.channelAssignments
-      .filter((item) => item.channelId === channel.id && item.roleCode === "ASM")
-      .map((item) => getUserTitle(usersById, item.userId) || getUserName(usersById, item.userId));
+    const asmAssignments = db.channelAssignments
+      .filter((item) => item.channelId === channel.id && item.roleCode === "ASM");
+    const asms = asmAssignments.map((item) => getUserTitle(usersById, item.userId) || getUserName(usersById, item.userId));
     return {
+      id: channel.id,
+      code: channel.code,
       channel: channel.name,
+      shortName: channel.shortName,
       region: channel.region,
+      directorId: director?.userId || "",
       director: getUserName(usersById, director?.userId),
       directorBadge: usersById[director?.userId]?.initials || "NA",
+      rsmId: rsm?.userId || "",
       rsm: getUserName(usersById, rsm?.userId),
       rsmBadge: usersById[rsm?.userId]?.initials || "NA",
+      asmIds: asmAssignments.map((item) => item.userId),
       asms,
       tone: channel.marker,
+      iconKey: channel.iconKey,
+      iconTone: channel.iconTone,
+      status: channel.status,
     };
   });
 

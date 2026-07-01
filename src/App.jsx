@@ -488,6 +488,22 @@ function toDisplayDate(value) {
   return `${match[3]}/${match[2]}/${match[1]}`;
 }
 
+async function apiRequest(path, options = {}) {
+  const response = await fetch(path, {
+    ...options,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.ok === false) {
+    throw new Error(payload.message || `request_failed_${response.status}`);
+  }
+  return payload;
+}
+
 function App() {
   const [screen, setScreen] = useState("overview");
   const [forecasts, setForecasts] = useState(initialForecasts);
@@ -532,53 +548,63 @@ function App() {
     window.setTimeout(() => setToast(""), 2200);
   };
 
+  const loadDatabaseData = async ({ shouldApply = () => true } = {}) => {
+    const response = await fetch("/api/data/bootstrap", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`bootstrap_${response.status}`);
+
+    const payload = await response.json();
+    if (!payload.ok) throw new Error(payload.message || "bootstrap_failed");
+
+    const nextData = buildAppDataFromBootstrap(payload.data, iconRegistry);
+    if (!shouldApply()) return null;
+
+    setForecasts(nextData.initialForecasts);
+    setTasks(nextData.initialTasks);
+    setEvents(nextData.initialEvents);
+    setPublishedFiles(nextData.initialPublishedFiles);
+    setUsers(nextData.adminUsers);
+    setRoles(nextData.roleDefinitions);
+    setPermissionDrafts(buildPermissionDrafts(nextData.roleDefinitions, nextData.permissionMatrix));
+    setSystemChannelRows(nextData.channelRows);
+    setSystemPermissionMatrix(nextData.permissionMatrix);
+    setSystemPermissionActivityLog(nextData.permissionActivityLog);
+    setSelectedForecastId((current) =>
+      nextData.initialForecasts.some((forecast) => forecast.id === current)
+        ? current
+        : nextData.initialForecasts[0]?.id || current
+    );
+    setSelectedTaskId((current) =>
+      nextData.initialTasks.some((task) => task.id === current)
+        ? current
+        : nextData.initialTasks[0]?.id || current
+    );
+    setSelectedFileId((current) =>
+      nextData.initialPublishedFiles.some((file) => file.id === current)
+        ? current
+        : nextData.initialPublishedFiles[0]?.id || current
+    );
+    return nextData;
+  };
+
+  const reloadDatabaseData = async (message) => {
+    await loadDatabaseData();
+    if (message) showToast(message);
+  };
+
   useEffect(() => {
     let active = true;
 
-    async function loadDatabaseData() {
+    async function initializeDatabaseData() {
       try {
-        const response = await fetch("/api/data/bootstrap", {
-          headers: { Accept: "application/json" },
-        });
-        if (!response.ok) throw new Error(`bootstrap_${response.status}`);
-
-        const payload = await response.json();
-        if (!payload.ok) throw new Error(payload.message || "bootstrap_failed");
-
-        const nextData = buildAppDataFromBootstrap(payload.data, iconRegistry);
-        if (!active) return;
-
-        setForecasts(nextData.initialForecasts);
-        setTasks(nextData.initialTasks);
-        setEvents(nextData.initialEvents);
-        setPublishedFiles(nextData.initialPublishedFiles);
-        setUsers(nextData.adminUsers);
-        setRoles(nextData.roleDefinitions);
-        setPermissionDrafts(buildPermissionDrafts(nextData.roleDefinitions, nextData.permissionMatrix));
-        setSystemChannelRows(nextData.channelRows);
-        setSystemPermissionMatrix(nextData.permissionMatrix);
-        setSystemPermissionActivityLog(nextData.permissionActivityLog);
-        setSelectedForecastId((current) =>
-          nextData.initialForecasts.some((forecast) => forecast.id === current)
-            ? current
-            : nextData.initialForecasts[0]?.id || current
-        );
-        setSelectedTaskId((current) =>
-          nextData.initialTasks.some((task) => task.id === current)
-            ? current
-            : nextData.initialTasks[0]?.id || current
-        );
-        setSelectedFileId((current) =>
-          nextData.initialPublishedFiles.some((file) => file.id === current)
-            ? current
-            : nextData.initialPublishedFiles[0]?.id || current
-        );
+        await loadDatabaseData({ shouldApply: () => active });
       } catch (error) {
         console.warn("Using mock fallback because database bootstrap failed.", error);
       }
     }
 
-    loadDatabaseData();
+    initializeDatabaseData();
     return () => {
       active = false;
     };
@@ -1087,6 +1113,8 @@ function App() {
               roles={roles}
               users={users}
               setUsers={setUsers}
+              onDataSaved={reloadDatabaseData}
+              showToast={showToast}
             />
           )}
           {screen === "system-permissions" && (
@@ -1104,6 +1132,8 @@ function App() {
               setUsers={setUsers}
               permissionMatrix={systemPermissionMatrix}
               permissionActivityLog={systemPermissionActivityLog}
+              onDataSaved={reloadDatabaseData}
+              showToast={showToast}
             />
           )}
           {screen === "channel-config" && (
@@ -1113,6 +1143,9 @@ function App() {
               onApprovalConfig={() => setScreen("approval-config")}
               onSlaConfig={() => setScreen("sla-config")}
               channelRows={systemChannelRows}
+              users={users}
+              onDataSaved={reloadDatabaseData}
+              showToast={showToast}
             />
           )}
           {screen === "approval-config" && (
@@ -3045,6 +3078,8 @@ function SystemUsers({
   roles = roleDefinitions,
   users = adminUsers,
   setUsers,
+  onDataSaved,
+  showToast,
 }) {
   const [roleFilter, setRoleFilter] = useState("Tất cả vai trò");
   const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
@@ -3086,24 +3121,34 @@ function SystemUsers({
   const updateUserForm = (patch) => {
     setUserModal((current) => ({ ...current, user: { ...(current?.user || blankUser), ...patch } }));
   };
-  const saveUser = () => {
-    if (!setUsers) return;
+  const saveUser = async () => {
     const name = userForm.name.trim() || "Người dùng mới";
     const nextUser = {
       ...userForm,
       id: userForm.id || `u-${Date.now()}`,
       name,
-      email: userForm.email.trim() || "user@elmich.vn",
+      email: userForm.email.trim() || `user-${Date.now()}@elmich.local`,
       scope: userForm.scope.trim() || "Theo phân quyền",
       initials: getUserInitials(name),
       tone: userForm.tone || "blue",
     };
-    setUsers((current) =>
-      userModal?.mode === "edit"
-        ? current.map((user) => (user.id === nextUser.id ? nextUser : user))
-        : [nextUser, ...current]
-    );
-    setUserModal(null);
+    try {
+      await apiRequest("/api/admin/users", {
+        method: "POST",
+        body: JSON.stringify({ user: nextUser }),
+      });
+      setUserModal(null);
+      await onDataSaved?.("Đã lưu tài khoản vào database");
+      if (!onDataSaved && setUsers) {
+        setUsers((current) =>
+          userModal?.mode === "edit"
+            ? current.map((user) => (user.id === nextUser.id ? nextUser : user))
+            : [nextUser, ...current]
+        );
+      }
+    } catch (error) {
+      showToast?.(`Không lưu được tài khoản: ${error.message}`);
+    }
   };
 
   return (
@@ -3222,6 +3267,8 @@ function SystemPermissions({
   setUsers,
   permissionMatrix: activePermissionMatrix = permissionMatrix,
   permissionActivityLog: activePermissionActivityLog = permissionActivityLog,
+  onDataSaved,
+  showToast,
 }) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
   const [roleUserSearch, setRoleUserSearch] = useState("");
@@ -3243,7 +3290,7 @@ function SystemPermissions({
     const haystack = `${user.name} ${user.email} ${user.scope}`.toLowerCase();
     return haystack.includes(roleUserSearch.toLowerCase());
   });
-  const updateRolePermission = (module, level) => {
+  const updateRolePermission = async (module, level) => {
     if (selectedRole.id === "admin") return;
     setPermissionDrafts((current) => ({
       ...current,
@@ -3252,51 +3299,93 @@ function SystemPermissions({
         [module]: level,
       },
     }));
+    try {
+      await apiRequest("/api/admin/role-permissions", {
+        method: "PATCH",
+        body: JSON.stringify({ roleId: selectedRole.id, module, level }),
+      });
+      await onDataSaved?.();
+    } catch (error) {
+      showToast?.(`Không lưu được quyền: ${error.message}`);
+    }
   };
-  const createRole = () => {
+  const createRole = async () => {
     const name = newRole.name.trim();
     if (!name || !setRoles) return;
     const id = `custom-${Date.now()}`;
-    setRoles((current) => [
-      ...current,
-      {
-        id,
-        name,
-        description: newRole.description.trim() || "Vai trò tùy chỉnh cho Forecast KD01",
-        scope: "Theo phân quyền",
-        users: 0,
-        risk: "Trung bình",
-      },
-    ]);
-    setPermissionDrafts((current) => ({
-      ...current,
-      [id]: activePermissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
-    }));
-    setSelectedRoleId(id);
-    setNewRole({ name: "", description: "" });
-    setRoleModalOpen(false);
+    try {
+      const payload = await apiRequest("/api/admin/roles", {
+        method: "POST",
+        body: JSON.stringify({ role: newRole }),
+      });
+      setSelectedRoleId(payload.role?.code || id);
+      setNewRole({ name: "", description: "" });
+      setRoleModalOpen(false);
+      await onDataSaved?.("Đã tạo vai trò trong database");
+      if (!onDataSaved) {
+        setRoles((current) => [
+          ...current,
+          {
+            id,
+            name,
+            description: newRole.description.trim() || "Vai trò tùy chỉnh cho Forecast KD01",
+            scope: "Theo phân quyền",
+            users: 0,
+            risk: "Trung bình",
+          },
+        ]);
+        setPermissionDrafts((current) => ({
+          ...current,
+          [id]: activePermissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
+        }));
+      }
+    } catch (error) {
+      showToast?.(`Không tạo được vai trò: ${error.message}`);
+    }
   };
-  const deleteRole = (roleId) => {
+  const deleteRole = async (roleId) => {
     if (roleId === "admin" || !setRoles) return;
-    setRoles((current) => current.filter((role) => role.id !== roleId));
-    setPermissionDrafts((current) => {
-      const next = { ...current };
-      delete next[roleId];
-      return next;
-    });
-    if (selectedRoleId === roleId) setSelectedRoleId("admin");
+    try {
+      await apiRequest("/api/admin/roles", {
+        method: "DELETE",
+        body: JSON.stringify({ roleId }),
+      });
+      if (selectedRoleId === roleId) setSelectedRoleId("admin");
+      await onDataSaved?.("Đã xóa vai trò khỏi database");
+      if (!onDataSaved) {
+        setRoles((current) => current.filter((role) => role.id !== roleId));
+        setPermissionDrafts((current) => {
+          const next = { ...current };
+          delete next[roleId];
+          return next;
+        });
+      }
+    } catch (error) {
+      showToast?.(`Không xóa được vai trò: ${error.message}`);
+    }
   };
-  const addUsersToRole = (userIds) => {
+  const addUsersToRole = async (userIds) => {
     if (!setUsers || !userIds.length) return;
-    setUsers((current) =>
-      current.map((user) =>
-        userIds.includes(user.id)
-          ? { ...user, role: selectedRole.name, scope: selectedRole.scope || "Theo phân quyền" }
-          : user
-      )
-    );
-    setAddUsersModalOpen(false);
-    setRoleUserSearch("");
+    try {
+      await apiRequest("/api/admin/role-users", {
+        method: "POST",
+        body: JSON.stringify({ roleId: selectedRole.id, userIds }),
+      });
+      setAddUsersModalOpen(false);
+      setRoleUserSearch("");
+      await onDataSaved?.("Đã gán nhân sự vào vai trò");
+      if (!onDataSaved) {
+        setUsers((current) =>
+          current.map((user) =>
+            userIds.includes(user.id)
+              ? { ...user, role: selectedRole.name, scope: selectedRole.scope || "Theo phân quyền" }
+              : user
+          )
+        );
+      }
+    } catch (error) {
+      showToast?.(`Không gán được nhân sự: ${error.message}`);
+    }
   };
 
   return (
@@ -3541,10 +3630,121 @@ function AdminMetric({ label, value, hint, icon: Icon, tone }) {
   );
 }
 
-function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSlaConfig, channelRows: rows = channelRows }) {
+function ChannelConfigModal({ channel, users, onClose, onSave }) {
+  const [form, setForm] = useState({
+    code: channel?.code || "",
+    channel: channel?.channel || "",
+    shortName: channel?.shortName || channel?.channel || "",
+    region: channel?.region || "",
+    directorId: channel?.directorId || "",
+    rsmId: channel?.rsmId || "",
+    asmIds: channel?.asmIds || [],
+    tone: channel?.tone || "blue",
+    iconKey: channel?.iconKey || "store",
+    iconTone: channel?.iconTone || "blue",
+  });
+  const userOptions = users.map((user) => ({
+    value: user.id,
+    label: `${user.name}${user.title ? ` - ${user.title}` : ""}`,
+  }));
+  const toggleAsm = (userId) => {
+    setForm((current) => ({
+      ...current,
+      asmIds: current.asmIds.includes(userId)
+        ? current.asmIds.filter((id) => id !== userId)
+        : [...current.asmIds, userId],
+    }));
+  };
+
+  return (
+    <div className="modal-backdrop">
+      <section className="admin-modal user-modal-card" role="dialog" aria-modal="true" aria-label="Cấu hình khung kênh">
+        <div className="admin-modal-header">
+          <h3>{channel ? "Chỉnh sửa khung kênh" : "Thêm cấu hình kênh"}</h3>
+          <button className="modal-close-button" onClick={onClose} title="Đóng">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="admin-modal-body modal-grid two-cols">
+          <label>
+            <span>Tên kênh</span>
+            <input value={form.channel} onChange={(event) => setForm({ ...form, channel: event.target.value })} placeholder="Ví dụ: Kênh GT - Miền Bắc" />
+          </label>
+          <label>
+            <span>Miền</span>
+            <input value={form.region} onChange={(event) => setForm({ ...form, region: event.target.value })} placeholder="Miền Bắc / Toàn quốc" />
+          </label>
+          <label>
+            <span>GĐKD</span>
+            <CustomSelect value={form.directorId} options={[{ value: "", label: "Chưa chọn" }, ...userOptions]} onChange={(directorId) => setForm({ ...form, directorId })} />
+          </label>
+          <label>
+            <span>RSM phụ trách</span>
+            <CustomSelect value={form.rsmId} options={[{ value: "", label: "Chưa chọn" }, ...userOptions]} onChange={(rsmId) => setForm({ ...form, rsmId })} />
+          </label>
+        </div>
+        <div className="admin-modal-body add-role-users-body">
+          <span className="modal-section-label">ASM thuộc kênh</span>
+          <div className="add-role-users-table">
+            {users.map((user) => {
+              const checked = form.asmIds.includes(user.id);
+              return (
+                <button className={`add-role-user-row ${checked ? "selected" : ""}`} key={user.id} type="button" onClick={() => toggleAsm(user.id)}>
+                  <input type="checkbox" checked={checked} onChange={() => toggleAsm(user.id)} onClick={(event) => event.stopPropagation()} />
+                  <span className={`avatar ${user.tone}`}>{user.initials}</span>
+                  <div>
+                    <strong>{user.name}</strong>
+                    <small>{user.email}</small>
+                  </div>
+                  <b>{user.role}</b>
+                  <span>{user.title || user.department}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="admin-modal-actions">
+          <button className="secondary-button" onClick={onClose}>Hủy</button>
+          <button className="primary-button" disabled={!form.channel.trim()} onClick={() => onSave(form)}>
+            <Save size={17} />
+            Lưu
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSlaConfig, channelRows: rows = channelRows, users = adminUsers, onDataSaved, showToast }) {
+  const [channelModal, setChannelModal] = useState(null);
+  const [confirmDeleteChannel, setConfirmDeleteChannel] = useState(null);
   const activeChannelCount = rows.length;
   const rsmCount = new Set(rows.map((row) => row.rsm)).size;
   const asmCount = rows.reduce((sum, row) => sum + row.asms.length, 0);
+  const saveChannel = async (channel) => {
+    try {
+      await apiRequest("/api/admin/channels", {
+        method: "POST",
+        body: JSON.stringify({ channel }),
+      });
+      setChannelModal(null);
+      await onDataSaved?.("Đã lưu khung kênh vào database");
+    } catch (error) {
+      showToast?.(`Không lưu được khung kênh: ${error.message}`);
+    }
+  };
+  const deleteChannel = async (channel) => {
+    try {
+      await apiRequest("/api/admin/channels", {
+        method: "DELETE",
+        body: JSON.stringify({ code: channel.code, channel: channel.channel }),
+      });
+      setConfirmDeleteChannel(null);
+      await onDataSaved?.("Đã xóa khung kênh khỏi danh sách hoạt động");
+    } catch (error) {
+      showToast?.(`Không xóa được khung kênh: ${error.message}`);
+    }
+  };
 
   return (
     <section className="page-flow frame-config-page">
@@ -3559,7 +3759,7 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
             <span className="config-chip slate">{asmCount} ASM Được gán</span>
           </div>
         </div>
-        <button className="primary-button">
+        <button className="primary-button" onClick={() => setChannelModal({})}>
           <Plus size={20} />
           THÊM CẤU HÌNH KÊNH
         </button>
@@ -3576,7 +3776,7 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
             <span>Thao tác</span>
           </div>
           {rows.map((row) => (
-            <article className="framework-row" key={row.channel}>
+            <article className="framework-row" key={row.code || row.channel}>
               <div className="framework-channel">
                 <i className={row.tone} />
                 <strong>{row.channel}</strong>
@@ -3591,10 +3791,10 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
                 {row.more && <button>{row.more}</button>}
               </div>
               <div className="framework-actions">
-                <button title="Chỉnh sửa">
+                <button title="Chỉnh sửa" onClick={() => setChannelModal(row)}>
                   <SquarePen size={20} />
                 </button>
-                <button title="Xóa">
+                <button title="Xóa" onClick={() => setConfirmDeleteChannel(row)}>
                   <Trash2 size={20} />
                 </button>
               </div>
@@ -3634,6 +3834,23 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
           </button>
         </article>
       </div>
+      {channelModal && (
+        <ChannelConfigModal
+          channel={channelModal.code ? channelModal : null}
+          users={users}
+          onClose={() => setChannelModal(null)}
+          onSave={saveChannel}
+        />
+      )}
+      {confirmDeleteChannel && (
+        <ConfirmDialog
+          title="Xóa khung kênh?"
+          body={`Kênh "${confirmDeleteChannel.channel}" sẽ bị ẩn khỏi cấu hình Forecast mới. Lịch Forecast cũ vẫn giữ dữ liệu lịch sử.`}
+          confirmLabel="Xóa khung kênh"
+          onCancel={() => setConfirmDeleteChannel(null)}
+          onConfirm={() => deleteChannel(confirmDeleteChannel)}
+        />
+      )}
     </section>
   );
 }

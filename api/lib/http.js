@@ -4,6 +4,19 @@ export function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload, null, 2));
 }
 
+export async function readJsonBody(req) {
+  if (req.body && typeof req.body === "object") return req.body;
+  if (typeof req.body === "string") return req.body ? JSON.parse(req.body) : {};
+
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.from(chunk));
+  }
+
+  const rawBody = Buffer.concat(chunks).toString("utf8").trim();
+  return rawBody ? JSON.parse(rawBody) : {};
+}
+
 export function sendMethodNotAllowed(res, allowedMethods = ["GET"]) {
   res.setHeader("Allow", allowedMethods.join(", "));
   sendJson(res, 405, {
