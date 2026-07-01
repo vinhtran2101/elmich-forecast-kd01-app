@@ -621,7 +621,7 @@ function App() {
         body,
         time: "Vừa xong",
       },
-      ...current.slice(0, 7),
+      ...current.slice(0, 19),
     ]);
   };
 
@@ -1224,6 +1224,21 @@ function toSelectOption(option) {
   return typeof option === "string" ? { value: option, label: option } : option;
 }
 
+function normalizeSearchValue(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .replace(/đ/g, "d")
+    .toLowerCase();
+}
+
+function uniqueTextOptions(rows, selector) {
+  return Array.from(
+    new Set(rows.map(selector).filter((value) => value && String(value).trim()))
+  );
+}
+
 function CustomSelect({ value, options, onChange, placeholder = "Chọn", className = "", disabled = false }) {
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState(null);
@@ -1663,15 +1678,15 @@ function NoticePanel({ events = initialEvents }) {
       time: "Hôm qua",
     },
   ];
+  const visibleNotices = notices.slice(0, 20);
 
   return (
     <section className="panel notice-panel">
       <div className="panel-title-row">
         <h3>Thông báo kỳ Forecast</h3>
-        <button>Xem tất cả</button>
       </div>
       <div className="notice-list">
-        {notices.map((notice) => {
+        {visibleNotices.map((notice) => {
           const Icon = notice.icon;
           return (
             <article className="notice-item" key={notice.title}>
@@ -1836,34 +1851,66 @@ function ScheduleList({ onCreate, onOpen, forecasts = initialForecasts, tasks = 
 
 function TaskList({ onOpen, onRsmApprove, onGdkdApprove, tasks = initialTasks }) {
   const [page, setPage] = useState(1);
+  const [taskSearch, setTaskSearch] = useState("");
+  const [channelFilter, setChannelFilter] = useState("all");
+  const [ownerFilter, setOwnerFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const rowsPerPage = 6;
-  const totalTasks = tasks.length;
+  const channelOptions = [
+    { value: "all", label: "Tất cả kênh" },
+    ...uniqueTextOptions(tasks, (task) => task.channel).map((channel) => ({ value: channel, label: channel })),
+  ];
+  const ownerOptions = [
+    { value: "all", label: "Tất cả nhân sự" },
+    ...uniqueTextOptions(tasks, (task) => task.owner).map((owner) => ({ value: owner, label: owner })),
+  ];
+  const statusOptions = [
+    { value: "all", label: "Tất cả trạng thái" },
+    ...uniqueTextOptions(tasks, (task) => task.status).map((status) => ({ value: status, label: status })),
+  ];
+  const normalizedTaskSearch = normalizeSearchValue(taskSearch.trim());
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch = !normalizedTaskSearch || normalizeSearchValue([
+      task.title,
+      task.channel,
+      task.owner,
+      task.ownerRole,
+      task.status,
+      task.deadline,
+    ].join(" ")).includes(normalizedTaskSearch);
+    const matchesChannel = channelFilter === "all" || task.channel === channelFilter;
+    const matchesOwner = ownerFilter === "all" || task.owner === ownerFilter;
+    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    return matchesSearch && matchesChannel && matchesOwner && matchesStatus;
+  });
+  const totalTasks = filteredTasks.length;
   const totalPages = Math.ceil(totalTasks / rowsPerPage);
   const currentPage = Math.min(page, totalPages || 1);
-  const visibleTasks = tasks.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const visibleTasks = filteredTasks.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   const startRow = totalTasks ? (currentPage - 1) * rowsPerPage + 1 : 0;
   const endRow = Math.min(currentPage * rowsPerPage, totalTasks);
-  const doingTasks = tasks.filter((task) => !["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
-  const doneTasks = tasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
-  const lateTasks = tasks.filter((task) => task.status === "Quá hạn").length;
+  const doingTasks = filteredTasks.filter((task) => !["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
+  const doneTasks = filteredTasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
+  const lateTasks = filteredTasks.filter((task) => task.status === "Quá hạn").length;
+
+  useEffect(() => {
+    setPage(1);
+  }, [taskSearch, channelFilter, ownerFilter, statusFilter]);
 
   return (
     <section className="page-flow task-page">
       <div className="task-filter-row">
-        <button className="filter-select">
-          <span>Kênh:</span>
-          <strong>Tất cả Kênh</strong>
-          <ChevronRight size={16} />
-        </button>
-        <button className="filter-select wide">
-          <span>Người phụ trách:</span>
-          <strong>Tất cả nhân sự</strong>
-          <ChevronRight size={16} />
-        </button>
-        <button className="link-filter">
-          <Filter size={16} />
-          Bộ lọc nâng cao
-        </button>
+        <label className="task-search-filter">
+          <Search size={18} />
+          <input
+            value={taskSearch}
+            onChange={(event) => setTaskSearch(event.target.value)}
+            placeholder="Tìm task, kênh hoặc ASM..."
+          />
+        </label>
+        <CustomSelect value={channelFilter} options={channelOptions} onChange={setChannelFilter} className="filter-select" />
+        <CustomSelect value={ownerFilter} options={ownerOptions} onChange={setOwnerFilter} className="filter-select wide" />
+        <CustomSelect value={statusFilter} options={statusOptions} onChange={setStatusFilter} className="filter-select status" />
       </div>
 
       <div className="action-row">
@@ -1946,6 +1993,9 @@ function TaskList({ onOpen, onRsmApprove, onGdkdApprove, tasks = initialTasks })
               </span>
             </article>
           ))}
+          {!visibleTasks.length && (
+            <div className="task-empty-state">Không có task phù hợp với bộ lọc hiện tại.</div>
+          )}
         </div>
         <div className="table-footer">
           <span>Hiển thị {startRow} - {endRow} trên tổng số {totalTasks} Task</span>
@@ -4390,11 +4440,24 @@ function ForecastDetail({
 }) {
   const displayForecast = forecast || initialForecasts[0];
   const [assignTask, setAssignTask] = useState(null);
+  const [taskSearch, setTaskSearch] = useState("");
   const allBusinessApproved = tasks.length > 0 && tasks.every((task) => task.status === "GĐKD đã duyệt");
   const doneCount = tasks.filter((task) => ["GĐKD đã duyệt", "Phát hành"].includes(task.status)).length;
   const waitingCount = tasks.filter((task) => ["Chờ RSM duyệt", "Chờ GĐKD duyệt"].includes(task.status)).length;
   const openCount = Math.max(0, tasks.length - doneCount - waitingCount);
-  const assignableUsers = users.filter((user) => user.role === "ASM" && user.status === "Active");
+  const assignableUsers = users.filter((user) => String(user.role || "").toLowerCase() === "asm" && user.status === "Active");
+  const normalizedTaskSearch = normalizeSearchValue(taskSearch.trim());
+  const visibleTasks = tasks.filter((task) => {
+    if (!normalizedTaskSearch) return true;
+    return normalizeSearchValue([
+      task.channel,
+      task.owner,
+      task.ownerRole,
+      task.status,
+      task.deadline,
+      task.file,
+    ].join(" ")).includes(normalizedTaskSearch);
+  });
   const handleApproveAction = (task) => {
     if (task.status === "Chờ RSM duyệt") {
       onRsmApprove(task.id);
@@ -4477,7 +4540,11 @@ function ForecastDetail({
           <div className="detail-search-row">
             <label className="detail-search">
               <Search size={18} />
-              <input placeholder="Tìm kiếm kênh..." />
+              <input
+                value={taskSearch}
+                onChange={(event) => setTaskSearch(event.target.value)}
+                placeholder="Tìm kiếm kênh..."
+              />
             </label>
             <button className="icon-button table-action" title="Lọc">
               <Filter size={18} />
@@ -4493,7 +4560,7 @@ function ForecastDetail({
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
-          {tasks.map((row) => (
+          {visibleTasks.map((row) => (
             <article className="detail-task-row" key={row.channel}>
               <div className="task-channel">
                 <span className={`task-icon ${row.iconTone}`}>
@@ -4544,6 +4611,9 @@ function ForecastDetail({
               </span>
             </article>
           ))}
+          {!visibleTasks.length && (
+            <div className="detail-empty-state">Không có task phù hợp với từ khóa hiện tại.</div>
+          )}
         </div>
 
         <div className="detail-history-row">
@@ -4853,7 +4923,10 @@ function toIdPart(value = "") {
 
 function buildFrameworkAsmCandidates(frameworkRows, users = []) {
   const tones = ["blue", "green", "purple", "slate"];
-  const asmUsers = users.filter((user) => String(user.role || "").toLowerCase() === "asm");
+  const asmUsers = users.filter((user) =>
+    String(user.role || "").toLowerCase() === "asm" &&
+    String(user.status || "").toLowerCase() === "active"
+  );
   if (asmUsers.length) {
     return asmUsers.map((user, index) => ({
       id: user.id,
@@ -4899,21 +4972,29 @@ function buildAssignmentRows(monthCode, year, frameworkRows, asmCandidates) {
   });
   const candidateIds = new Set(asmCandidates.map((asm) => asm.id));
   const cutoff = Math.ceil(frameworkRows.length / 2);
-  return frameworkRows.map((row, index) => ({
-    id: `assignment-${toIdPart(row.channel)}-${index}`,
-    channel: row.channel,
-    region: row.region,
-    director: row.director,
-    directorBadge: row.directorBadge || getUserInitials(row.director).slice(0, 1),
-    rsm: row.rsm,
-    rsmBadge: row.rsmBadge || getUserInitials(row.rsm).slice(0, 1),
-    asms: (row.asmIds || []).filter((asmId) => candidateIds.has(asmId)).length
-      ? (row.asmIds || []).filter((asmId) => candidateIds.has(asmId))
-      : row.asms.map((asm) => byLookup.get(asm)).filter(Boolean),
-    deadline: `${index < cutoff ? "18" : "19"}/${monthCode}/${year}`,
-    file: index % 2 === 0 ? "" : `Template_FC_KD01_T${monthCode}_${year}.xlsx`,
-    tone: row.tone,
-  }));
+  return frameworkRows.map((row, index) => {
+    const directAsmIds = (row.asmIds || []).filter((asmId) => candidateIds.has(asmId));
+    const namedAsmIds = (row.asms || []).map((asm) => byLookup.get(asm)).filter(Boolean);
+    const scopeText = normalizeSearchValue([row.channel, row.shortName, row.region].join(" "));
+    const scopedAsmIds = asmCandidates
+      .filter((asm) => normalizeSearchValue([asm.region, asm.scope, asm.title].join(" ")).includes(scopeText) || scopeText.includes(normalizeSearchValue(asm.region || "")))
+      .map((asm) => asm.id);
+    const asms = directAsmIds.length ? directAsmIds : namedAsmIds.length ? namedAsmIds : scopedAsmIds;
+
+    return {
+      id: `assignment-${toIdPart(row.channel)}-${index}`,
+      channel: row.channel,
+      region: row.region,
+      director: row.director,
+      directorBadge: row.directorBadge || getUserInitials(row.director).slice(0, 1),
+      rsm: row.rsm,
+      rsmBadge: row.rsmBadge || getUserInitials(row.rsm).slice(0, 1),
+      asms,
+      deadline: `${index < cutoff ? "18" : "19"}/${monthCode}/${year}`,
+      file: index % 2 === 0 ? "" : `Template_FC_KD01_T${monthCode}_${year}.xlsx`,
+      tone: row.tone,
+    };
+  });
 }
 
 function buildTemplateFileName(row, monthCode, year) {

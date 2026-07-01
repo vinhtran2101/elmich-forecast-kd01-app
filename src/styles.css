@@ -7393,3 +7393,254 @@ select {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Final UI polish: dashboard notices, task filters, forecast detail search, channel assignment responsiveness */
+.notice-panel .panel-title-row {
+  grid-template-columns: 1fr;
+}
+
+.notice-panel .panel-title-row button {
+  display: none;
+}
+
+.notice-panel .notice-list {
+  max-height: 456px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.notice-panel .notice-list::-webkit-scrollbar,
+.detail-task-table::-webkit-scrollbar,
+.assignment-panel::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.notice-panel .notice-list::-webkit-scrollbar-thumb,
+.detail-task-table::-webkit-scrollbar-thumb,
+.assignment-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.task-filter-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.2fr) minmax(160px, 0.75fr) minmax(190px, 0.85fr) minmax(180px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.task-search-filter {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #c4cfdf;
+  border-radius: 13px;
+  background: #fff;
+  color: #5e6a7d;
+  padding: 0 14px;
+}
+
+.task-search-filter input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.task-filter-row .custom-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.task-filter-row .filter-select {
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  padding: 0;
+}
+
+.task-filter-row .custom-select-trigger {
+  min-height: 42px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.task-filter-row .custom-select-trigger span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.task-empty-state,
+.detail-empty-state {
+  display: grid;
+  min-height: 128px;
+  place-items: center;
+  border-top: 1px solid var(--line-soft);
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.detail-task-table {
+  overflow-x: auto;
+}
+
+.detail-task-top {
+  gap: 16px;
+}
+
+.detail-search {
+  width: min(320px, 38vw);
+  min-height: 36px;
+}
+
+.create-page.channel-setup-page {
+  width: 100%;
+  max-width: none;
+}
+
+.channel-setup-page .channel-heading {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+}
+
+.channel-setup-page .channel-heading h2 {
+  font-size: clamp(24px, 2.1vw, 34px);
+  line-height: 1.12;
+}
+
+.channel-setup-page .channel-heading p {
+  font-size: clamp(14px, 1.1vw, 18px);
+  line-height: 1.32;
+}
+
+.assignment-panel {
+  width: 100%;
+}
+
+.assignment-table {
+  min-width: 1020px;
+}
+
+.assignment-head,
+.assignment-row {
+  grid-template-columns:
+    minmax(150px, 1.12fr)
+    minmax(86px, 0.58fr)
+    minmax(145px, 0.9fr)
+    minmax(132px, 0.82fr)
+    minmax(92px, 0.58fr)
+    minmax(128px, 0.7fr)
+    minmax(148px, 0.86fr);
+  gap: 9px;
+  padding: 0 14px;
+}
+
+.assignment-row {
+  min-height: 66px;
+}
+
+.assignment-row .person-cell {
+  gap: 8px;
+}
+
+.assignment-row .person-cell strong {
+  font-size: 13px;
+  line-height: 1.18;
+}
+
+.assignment-row .person-cell small {
+  font-size: 11.5px;
+}
+
+.assignment-row .avatar,
+.assignment-row .person-avatar {
+  width: 30px;
+  height: 30px;
+}
+
+.channel-pill,
+.date-input-chip,
+.asm-count-pill,
+.attach-template,
+.assignment-row .file-pill {
+  min-height: 34px;
+  border-radius: 11px;
+  font-size: 13px;
+}
+
+.assignment-date-input {
+  font-size: 13px;
+}
+
+@media (min-width: 1500px) {
+  .assignment-table {
+    min-width: 0;
+  }
+
+  .assignment-head,
+  .assignment-row {
+    grid-template-columns:
+      minmax(170px, 1.16fr)
+      minmax(120px, 0.7fr)
+      minmax(180px, 1fr)
+      minmax(170px, 0.94fr)
+      minmax(120px, 0.66fr)
+      minmax(150px, 0.78fr)
+      minmax(190px, 1fr);
+    padding: 0 18px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .task-filter-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .assignment-table {
+    min-width: 960px;
+  }
+
+  .channel-setup-page .channel-heading h2 {
+    font-size: 24px;
+  }
+
+  .assignment-head,
+  .assignment-row {
+    grid-template-columns:
+      minmax(138px, 1.04fr)
+      minmax(82px, 0.56fr)
+      minmax(134px, 0.88fr)
+      minmax(124px, 0.78fr)
+      minmax(86px, 0.54fr)
+      minmax(116px, 0.66fr)
+      minmax(136px, 0.82fr);
+    gap: 8px;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 860px) {
+  .task-filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-task-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .detail-search {
+    width: 100%;
+  }
+}
