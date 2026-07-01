@@ -1179,6 +1179,7 @@ function App() {
               onBack={() => setScreen("create-1")}
               onFinish={handleCreateForecast}
               channelRows={systemChannelRows}
+              users={users}
             />
           )}
             </>
@@ -1248,6 +1249,10 @@ function CustomSelect({ value, options, onChange, placeholder = "Chọn", classN
       const gap = 6;
       const preferredMaxHeight = 240;
       const optionHeight = Math.min(preferredMaxHeight, normalizedOptions.length * 44 + 12);
+      const menuWidth = isPermissionSelect ? Math.max(rect.width, 180) : rect.width;
+      const menuLeft = isPermissionSelect
+        ? Math.min(Math.max(8, rect.right - menuWidth), window.innerWidth - menuWidth - 8)
+        : rect.left;
       const spaceBelow = window.innerHeight - rect.bottom - gap;
       const spaceAbove = rect.top - gap;
       const placeAbove = spaceBelow < optionHeight && spaceAbove > spaceBelow;
@@ -1257,11 +1262,11 @@ function CustomSelect({ value, options, onChange, placeholder = "Chọn", classN
       );
 
       setMenuStyle({
-        left: rect.left,
+        left: menuLeft,
         right: "auto",
         top: placeAbove ? "auto" : rect.bottom + gap,
         bottom: placeAbove ? window.innerHeight - rect.top + gap : "auto",
-        width: rect.width,
+        width: menuWidth,
         maxHeight: availableHeight,
       });
     };
@@ -1273,7 +1278,7 @@ function CustomSelect({ value, options, onChange, placeholder = "Chọn", classN
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
-  }, [open, normalizedOptions.length]);
+  }, [open, normalizedOptions.length, isPermissionSelect]);
 
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
@@ -1349,7 +1354,12 @@ function Sidebar({ screen, setScreen, previewPermissions }) {
   const visibleSystemSubItems = previewPermissions
     ? systemSubItems.filter((item) => hasPreviewAccess(previewPermissions, previewNavModules[item.screen] || []))
     : systemSubItems;
-  const isSystemOpen = ["system-users", "system-permissions", "channel-config", "approval-config", "sla-config"].includes(screen);
+  const systemScreens = ["system-users", "system-permissions", "channel-config", "approval-config", "sla-config"];
+  const [isSystemOpen, setIsSystemOpen] = useState(systemScreens.includes(screen));
+
+  useEffect(() => {
+    if (systemScreens.includes(screen)) setIsSystemOpen(true);
+  }, [screen]);
 
   return (
     <aside className="sidebar">
@@ -1389,7 +1399,13 @@ function Sidebar({ screen, setScreen, previewPermissions }) {
               <React.Fragment key={item.label}>
                 <button
                   className={`nav-item ${isActive ? "active" : ""} ${isSystemItem ? "system-nav-trigger" : ""}`}
-                  onClick={() => setScreen(item.screen)}
+                  onClick={() => {
+                    if (isSystemItem) {
+                      setIsSystemOpen((current) => !current);
+                      return;
+                    }
+                    setScreen(item.screen);
+                  }}
                 >
                   <Icon size={20} />
                   <span>{item.label}</span>
@@ -3090,6 +3106,7 @@ function SystemUsers({
   const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
   const [searchTerm, setSearchTerm] = useState("");
   const [userModal, setUserModal] = useState(null);
+  const [userPage, setUserPage] = useState(1);
   const blankUser = {
     id: "",
     name: "",
@@ -3113,8 +3130,16 @@ function SystemUsers({
       .includes(searchTerm.trim().toLowerCase());
     return matchRole && matchStatus && matchSearch;
   });
+  const userPageSize = 10;
+  const userTotalPages = Math.max(1, Math.ceil(filteredUsers.length / userPageSize));
+  const safeUserPage = Math.min(userPage, userTotalPages);
+  const pagedUsers = filteredUsers.slice((safeUserPage - 1) * userPageSize, safeUserPage * userPageSize);
   const activeCount = users.filter((user) => user.status === "Active").length;
   const inactiveCount = users.filter((user) => user.status === "Inactive").length;
+
+  useEffect(() => {
+    setUserPage(1);
+  }, [roleFilter, statusFilter, searchTerm, users.length]);
   const openCreateUser = () => setUserModal({ mode: "create", user: blankUser });
   const openEditUser = (user) =>
     setUserModal({
@@ -3230,7 +3255,7 @@ function SystemUsers({
             <span>Trạng thái</span>
             <span>Thao tác</span>
           </div>
-          {filteredUsers.map((user) => (
+          {pagedUsers.map((user) => (
             <article className="admin-user-row" key={user.id}>
               <div className="admin-user-cell">
                 <span className={`avatar ${user.tone}`}>{user.initials}</span>
@@ -3246,6 +3271,18 @@ function SystemUsers({
               </button>
             </article>
           ))}
+        </div>
+        <div className="permission-card-footer admin-user-pagination">
+          <span>
+            Hiển thị {filteredUsers.length ? `${(safeUserPage - 1) * userPageSize + 1}-${Math.min(safeUserPage * userPageSize, filteredUsers.length)}` : "0"} / {filteredUsers.length} tài khoản
+          </span>
+          {userTotalPages > 1 && (
+            <div className="pager-actions">
+              <button disabled={safeUserPage === 1} onClick={() => setUserPage((page) => Math.max(1, page - 1))}>Trước</button>
+              <strong>{safeUserPage}/{userTotalPages}</strong>
+              <button disabled={safeUserPage === userTotalPages} onClick={() => setUserPage((page) => Math.min(userTotalPages, page + 1))}>Sau</button>
+            </div>
+          )}
         </div>
       </section>
       {userModal && (
@@ -3437,7 +3474,7 @@ function SystemPermissions({
             <h3>Vai trò</h3>
           </div>
           {roles.map((role) => (
-            <article className={`role-list-item ${role.id === selectedRoleId ? "active" : ""}`} key={role.id}>
+            <article className={`role-list-item ${role.id === selectedRoleId ? "active" : ""} ${role.id !== "admin" ? "can-delete" : ""}`} key={role.id}>
               <button className="role-pick-button" onClick={() => setSelectedRoleId(role.id)}>
                 <div>
                   <strong>{role.name}</strong>
@@ -3656,6 +3693,7 @@ function ChannelConfigModal({ channel, users, onClose, onSave }) {
     value: user.id,
     label: `${user.name}${user.title ? ` - ${user.title}` : ""}`,
   }));
+  const asmUsers = users.filter((user) => String(user.role || "").toLowerCase() === "asm");
   const toggleAsm = (userId) => {
     setForm((current) => ({
       ...current,
@@ -3667,7 +3705,7 @@ function ChannelConfigModal({ channel, users, onClose, onSave }) {
 
   return (
     <div className="modal-backdrop">
-      <section className="admin-modal user-modal-card" role="dialog" aria-modal="true" aria-label="Cấu hình khung kênh">
+      <section className="admin-modal user-modal-card channel-config-modal-card" role="dialog" aria-modal="true" aria-label="Cấu hình khung kênh">
         <div className="admin-modal-header">
           <h3>{channel ? "Chỉnh sửa khung kênh" : "Thêm cấu hình kênh"}</h3>
           <button className="modal-close-button" onClick={onClose} title="Đóng">
@@ -3695,7 +3733,7 @@ function ChannelConfigModal({ channel, users, onClose, onSave }) {
         <div className="admin-modal-body add-role-users-body">
           <span className="modal-section-label">ASM thuộc kênh</span>
           <div className="add-role-users-table">
-            {users.map((user) => {
+            {asmUsers.map((user) => {
               const checked = form.asmIds.includes(user.id);
               return (
                 <button className={`add-role-user-row ${checked ? "selected" : ""}`} key={user.id} type="button" onClick={() => toggleAsm(user.id)}>
@@ -4813,8 +4851,22 @@ function toIdPart(value = "") {
     .toLowerCase();
 }
 
-function buildFrameworkAsmCandidates(frameworkRows) {
+function buildFrameworkAsmCandidates(frameworkRows, users = []) {
   const tones = ["blue", "green", "purple", "slate"];
+  const asmUsers = users.filter((user) => String(user.role || "").toLowerCase() === "asm");
+  if (asmUsers.length) {
+    return asmUsers.map((user, index) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      region: user.scope || user.title || user.department || "Theo phân quyền",
+      title: user.title || user.role,
+      initials: user.initials || getUserInitials(user.name),
+      tone: user.tone || tones[index % tones.length],
+      status: user.status,
+    }));
+  }
+
   const byName = new Map();
   frameworkRows.forEach((row) => {
     row.asms.forEach((asm, index) => {
@@ -4841,7 +4893,11 @@ function buildFrameworkAsmCandidates(frameworkRows) {
 }
 
 function buildAssignmentRows(monthCode, year, frameworkRows, asmCandidates) {
-  const byName = new Map(asmCandidates.map((asm) => [asm.name, asm.id]));
+  const byLookup = new Map();
+  asmCandidates.forEach((asm) => {
+    [asm.id, asm.name, asm.title, asm.email].filter(Boolean).forEach((value) => byLookup.set(value, asm.id));
+  });
+  const candidateIds = new Set(asmCandidates.map((asm) => asm.id));
   const cutoff = Math.ceil(frameworkRows.length / 2);
   return frameworkRows.map((row, index) => ({
     id: `assignment-${toIdPart(row.channel)}-${index}`,
@@ -4851,7 +4907,9 @@ function buildAssignmentRows(monthCode, year, frameworkRows, asmCandidates) {
     directorBadge: row.directorBadge || getUserInitials(row.director).slice(0, 1),
     rsm: row.rsm,
     rsmBadge: row.rsmBadge || getUserInitials(row.rsm).slice(0, 1),
-    asms: row.asms.map((asm) => byName.get(asm)).filter(Boolean),
+    asms: (row.asmIds || []).filter((asmId) => candidateIds.has(asmId)).length
+      ? (row.asmIds || []).filter((asmId) => candidateIds.has(asmId))
+      : row.asms.map((asm) => byLookup.get(asm)).filter(Boolean),
     deadline: `${index < cutoff ? "18" : "19"}/${monthCode}/${year}`,
     file: index % 2 === 0 ? "" : `Template_FC_KD01_T${monthCode}_${year}.xlsx`,
     tone: row.tone,
@@ -4870,11 +4928,11 @@ function buildTemplateFileName(row, monthCode, year) {
   return `Template_FC_KD01_${channelCode}_T${monthCode}_${year}.xlsx`;
 }
 
-function CreateForecastStepTwo({ onBack, onFinish, draft, channelRows: rows = channelRows }) {
+function CreateForecastStepTwo({ onBack, onFinish, draft, channelRows: rows = channelRows, users = adminUsers }) {
   const forecastPeriod = parseForecastMonth(draft?.month);
   const monthCode = String(forecastPeriod.month).padStart(2, "0");
   const forecastYear = forecastPeriod.year;
-  const frameworkAsmCandidates = buildFrameworkAsmCandidates(rows);
+  const frameworkAsmCandidates = buildFrameworkAsmCandidates(rows, users);
   const [assignmentRows, setAssignmentRows] = useState(() => buildAssignmentRows(monthCode, forecastYear, rows, frameworkAsmCandidates));
   const [asmModalRowId, setAsmModalRowId] = useState(null);
   const [addChannelOpen, setAddChannelOpen] = useState(false);
