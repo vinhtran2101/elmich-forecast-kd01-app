@@ -36,7 +36,6 @@ export default async function handler(req, res) {
           `
             insert into user_roles (user_id, role_id, scope_note)
             values ($1, $2, $3)
-            on conflict (user_id, role_id) do update set scope_note = excluded.scope_note
           `,
           [userId, role.id, role.scope_label || "Theo phân quyền"]
         );

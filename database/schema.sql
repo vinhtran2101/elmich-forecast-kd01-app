@@ -162,6 +162,16 @@ create table activity_logs (
 );
 
 create index idx_user_roles_user on user_roles(user_id);
+delete from user_roles
+where id in (
+  select id
+  from (
+    select id, row_number() over (partition by user_id order by created_at desc) as row_number
+    from user_roles
+  ) ranked_user_roles
+  where row_number > 1
+);
+create unique index if not exists uq_user_roles_primary_user on user_roles(user_id);
 create index idx_role_permissions_role on role_permissions(role_id);
 create index idx_channel_assignments_channel on channel_assignments(channel_id);
 create index idx_forecast_tasks_cycle on forecast_tasks(forecast_cycle_id);

@@ -549,7 +549,8 @@ function App() {
   };
 
   const loadDatabaseData = async ({ shouldApply = () => true } = {}) => {
-    const response = await fetch("/api/data/bootstrap", {
+    const response = await fetch(`/api/data/bootstrap?t=${Date.now()}`, {
+      cache: "no-store",
       headers: { Accept: "application/json" },
     });
     if (!response.ok) throw new Error(`bootstrap_${response.status}`);

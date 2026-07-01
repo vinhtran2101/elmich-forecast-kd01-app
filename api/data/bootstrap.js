@@ -8,11 +8,13 @@ async function getRows(sql, params = []) {
 
 export default async function handler(req, res) {
   if (req.method !== "GET") return sendMethodNotAllowed(res, ["GET"]);
+  res.setHeader("Cache-Control", "no-store, max-age=0");
 
   try {
     const [
       users,
       roles,
+      userRoles,
       modules,
       rolePermissions,
       salesChannels,
@@ -24,6 +26,7 @@ export default async function handler(req, res) {
     ] = await Promise.all([
       getRows("select * from users order by employee_code"),
       getRows("select * from roles order by code"),
+      getRows("select * from user_roles order by created_at desc"),
       getRows("select * from modules order by sort_order"),
       getRows("select * from role_permissions order by created_at"),
       getRows("select * from sales_channels order by code"),
@@ -39,6 +42,7 @@ export default async function handler(req, res) {
       data: {
         users,
         roles,
+        userRoles,
         modules,
         rolePermissions,
         salesChannels,

@@ -236,6 +236,10 @@ function buildAppData(db, iconRegistry) {
     acc[row.roleId] = (acc[row.roleId] || 0) + 1;
     return acc;
   }, {});
+  const primaryUserRoles = db.userRoles.reduce((acc, row) => {
+    if (!acc[row.userId]) acc[row.userId] = row;
+    return acc;
+  }, {});
 
   const roleDefinitions = db.roles.map((role) => ({
     id: role.id,
@@ -248,7 +252,7 @@ function buildAppData(db, iconRegistry) {
   }));
 
   const adminUsers = db.users.map((user) => {
-    const userRole = db.userRoles.find((item) => item.userId === user.id);
+    const userRole = primaryUserRoles[user.id];
     const role = rolesById[userRole?.roleId] || db.roles[0];
     return {
       id: user.id,

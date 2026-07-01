@@ -223,7 +223,9 @@ export default async function handler(req, res) {
           `
             insert into user_roles (user_id, role_id, scope_note)
             values ($1, $2, $3)
-            on conflict (user_id, role_id) do update set scope_note = excluded.scope_note
+            on conflict (user_id) do update set
+              role_id = excluded.role_id,
+              scope_note = excluded.scope_note
           `,
           [ids.users.get(userRole.userId), ids.roles.get(userRole.roleId), userRole.scopeNote]
         );
