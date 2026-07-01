@@ -7334,3 +7334,62 @@ select {
     padding-bottom: 16px;
   }
 }
+
+/* Permission page balance */
+.permission-layout {
+  align-items: start;
+}
+
+.role-list-panel,
+.permission-detail-panel {
+  align-self: start;
+}
+
+.role-list-panel {
+  max-height: min(640px, calc(100vh - 292px));
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.role-list-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.role-list-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.role-list-panel .panel-title-row {
+  position: sticky;
+  z-index: 3;
+  top: -14px;
+  margin: -14px -10px 8px -14px;
+  background: #fff;
+  padding: 14px 10px 8px 14px;
+}
+
+.role-pick-button {
+  min-height: 82px;
+  align-items: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.role-list-item strong {
+  margin-bottom: 3px;
+  line-height: 1.15;
+}
+
+.role-list-item span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.role-list-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
