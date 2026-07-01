@@ -258,6 +258,7 @@ function buildAppData(db, iconRegistry) {
       phone: user.phone,
       department: user.department,
       title: user.title,
+      roleId: role.id,
       role: role.name,
       scope: userRole?.scopeNote || role.scopeLabel,
       status: user.status,

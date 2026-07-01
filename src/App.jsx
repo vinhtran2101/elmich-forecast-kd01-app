@@ -2897,6 +2897,7 @@ function RoleCreateModal({ role, setRole, onClose, onSubmit }) {
 
 function UserAccountModal({ mode, user, roles, onChange, onClose, onSave }) {
   const title = mode === "edit" ? "Chỉnh sửa tài khoản" : "Tạo tài khoản mới";
+  const selectedRoleId = user.roleId || roles.find((role) => role.name === user.role)?.id || roles[0]?.id || "";
   return (
     <div className="modal-backdrop">
       <section className="admin-modal user-modal-card" role="dialog" aria-modal="true" aria-label={title}>
@@ -2938,9 +2939,12 @@ function UserAccountModal({ mode, user, roles, onChange, onClose, onSave }) {
           <label>
             <span>Vai trò phân quyền</span>
             <CustomSelect
-              value={user.role}
-              options={roles.map((role) => ({ value: role.name, label: role.name }))}
-              onChange={(role) => onChange({ role })}
+              value={selectedRoleId}
+              options={roles.map((role) => ({ value: role.id, label: role.name }))}
+              onChange={(roleId) => {
+                const nextRole = roles.find((role) => role.id === roleId);
+                onChange({ roleId, role: nextRole?.name || user.role });
+              }}
             />
           </label>
         </div>
@@ -3089,6 +3093,7 @@ function SystemUsers({
     id: "",
     name: "",
     email: "",
+    roleId: roles[0]?.id || "admin",
     role: roles[0]?.name || "Admin",
     scope: "Theo phân quyền",
     status: "Active",
@@ -3123,29 +3128,32 @@ function SystemUsers({
   };
   const saveUser = async () => {
     const name = userForm.name.trim() || "Người dùng mới";
+    const role = roles.find((item) => item.id === userForm.roleId || item.name === userForm.role) || roles[0];
     const nextUser = {
       ...userForm,
       id: userForm.id || `u-${Date.now()}`,
       name,
       email: userForm.email.trim() || `user-${Date.now()}@elmich.local`,
-      scope: userForm.scope.trim() || "Theo phân quyền",
+      roleId: role?.id || userForm.roleId,
+      role: role?.name || userForm.role,
+      scope: role?.scope || userForm.scope?.trim() || "Theo phân quyền",
       initials: getUserInitials(name),
       tone: userForm.tone || "blue",
     };
+    setUserModal(null);
+    if (setUsers) {
+      setUsers((current) =>
+        userModal?.mode === "edit"
+          ? current.map((user) => (user.id === nextUser.id ? nextUser : user))
+          : [nextUser, ...current]
+      );
+    }
     try {
       await apiRequest("/api/admin/users", {
         method: "POST",
         body: JSON.stringify({ user: nextUser }),
       });
-      setUserModal(null);
       await onDataSaved?.("Đã lưu tài khoản vào database");
-      if (!onDataSaved && setUsers) {
-        setUsers((current) =>
-          userModal?.mode === "edit"
-            ? current.map((user) => (user.id === nextUser.id ? nextUser : user))
-            : [nextUser, ...current]
-        );
-      }
     } catch (error) {
       showToast?.(`Không lưu được tài khoản: ${error.message}`);
     }

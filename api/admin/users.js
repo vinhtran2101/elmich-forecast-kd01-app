@@ -21,9 +21,19 @@ function defaultEmployeeCode() {
 }
 
 async function findRole(client, roleValue) {
+  const normalizedRole = String(roleValue || "").trim();
+  if (!normalizedRole) return null;
+
   const result = await client.query(
-    "select id, name, scope_label from roles where code = $1 or name = $1 limit 1",
-    [roleValue]
+    `
+      select id, code, name, scope_label
+      from roles
+      where id::text = $1
+        or lower(code) = lower($1)
+        or lower(name) = lower($1)
+      limit 1
+    `,
+    [normalizedRole]
   );
   return result.rows[0] || null;
 }
@@ -101,7 +111,13 @@ export default async function handler(req, res) {
       }
 
       const row = result.rows[0];
-      const role = await findRole(client, user.role || body.role || "viewer");
+      const requestedRole = user.roleId || user.roleCode || user.role || body.role || "viewer";
+      const role = await findRole(client, requestedRole);
+      if (!role) {
+        const error = new Error(`Không tìm thấy vai trò: ${requestedRole}`);
+        error.statusCode = 400;
+        throw error;
+      }
       if (role) {
         await client.query("delete from user_roles where user_id = $1", [row.id]);
         await client.query(
@@ -132,7 +148,7 @@ export default async function handler(req, res) {
 
     return sendJson(res, 200, { ok: true, user: savedUser });
   } catch (error) {
-    return sendJson(res, 500, {
+    return sendJson(res, error.statusCode || 500, {
       ok: false,
       error: "save_user_failed",
       message: error.message,
