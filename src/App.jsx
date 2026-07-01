@@ -3242,7 +3242,7 @@ function SystemUsers({
               <span><Badge tone="neutral">{user.role}</Badge></span>
               <span><Badge tone={user.status === "Active" ? "success" : "neutral"}>{user.status}</Badge></span>
               <button className="secondary-button compact-action" title="Chỉnh sửa" onClick={() => openEditUser(user)}>
-                <MoreVertical size={17} />
+                <SquarePen size={17} />
               </button>
             </article>
           ))}

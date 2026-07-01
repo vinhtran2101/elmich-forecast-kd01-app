@@ -6679,3 +6679,553 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+/* UI polish pass: keep the prototype compact, calm, and easier to demo on laptop screens. */
+:root {
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --shadow-soft: 0 8px 22px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 12px 30px rgba(15, 23, 42, 0.075);
+}
+
+.app-shell {
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.brand {
+  padding: 14px 14px 18px;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+}
+
+.brand strong {
+  font-size: 15px;
+}
+
+.brand span {
+  font-size: 12px;
+}
+
+.nav-list {
+  gap: 4px;
+  padding: 0 10px;
+}
+
+.nav-item {
+  min-height: 40px;
+  gap: 10px;
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  font-size: 13.5px;
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-item span,
+.sidebar-subitem span {
+  font-weight: 650;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+.nav-item:hover,
+.sidebar-subitem:hover {
+  border-color: #cfe2ff;
+  background: #f3f8ff;
+}
+
+.nav-item.active,
+.sidebar-subitem.active {
+  border-color: #b9d7ff;
+  background: #eef6ff;
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.09);
+}
+
+.sidebar-submenu {
+  gap: 3px;
+  margin: 5px 0 8px 28px;
+  padding-left: 10px;
+}
+
+.sidebar-subitem {
+  min-height: 35px;
+  border-radius: 12px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.sidebar-footer {
+  gap: 4px;
+  padding: 9px 10px 12px;
+}
+
+.sidebar-footer .nav-item {
+  min-height: 38px;
+}
+
+.topbar {
+  min-height: 58px;
+  padding: 0 22px;
+}
+
+.topbar h1 {
+  font-size: 23px;
+}
+
+.content-area {
+  padding: 22px;
+}
+
+.page-flow {
+  gap: 18px;
+}
+
+.page-heading h2 {
+  font-size: 27px;
+}
+
+.page-heading p,
+.admin-title-lockup p {
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.panel,
+.metric-card,
+.mini-metric,
+.admin-metric-card,
+.appraisal-stat-card,
+.recent-activity-card,
+.framework-stat-card,
+.framework-guide-card,
+.storage-folder-card,
+.storage-usage-card {
+  border-color: #d4deec;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.metric-grid,
+.admin-metric-grid,
+.appraisal-bottom-grid,
+.framework-bottom-grid {
+  gap: 14px;
+}
+
+.metric-card {
+  min-height: 132px;
+  padding: 14px;
+}
+
+.metric-value {
+  font-size: 28px;
+}
+
+.admin-metric-card {
+  min-height: 82px;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  padding: 13px 14px;
+}
+
+.admin-metric-card span,
+.admin-metric-card small {
+  line-height: 1.3;
+}
+
+.admin-metric-card strong {
+  font-size: 24px;
+}
+
+.admin-metric-card i {
+  width: 44px;
+  height: 44px;
+}
+
+.primary-button,
+.secondary-button,
+.muted-button,
+.secondary-blue-button,
+.dashed-button {
+  min-height: 40px;
+  border-radius: var(--radius-sm);
+  padding: 0 15px;
+  font-size: 14px;
+}
+
+.icon-button,
+.table-action,
+.compact-action,
+.icon-action-button,
+.primary-square-button {
+  border-radius: var(--radius-sm);
+}
+
+.compact-action {
+  width: 38px;
+  min-width: 38px;
+  justify-self: center;
+  border: 1px solid #d4deec;
+  background: #fff;
+  color: #526177;
+}
+
+.compact-action svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+.compact-action:hover {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: var(--blue);
+}
+
+.custom-select-trigger,
+.admin-input-shell,
+.month-select .custom-select-trigger,
+.admin-filter-grid .custom-select-trigger,
+.modal-grid input,
+.modal-grid select,
+.modal-grid textarea {
+  border-color: #cfd8e6;
+  border-radius: 13px;
+  box-shadow: none;
+}
+
+.custom-select-trigger {
+  min-height: 40px;
+  font-size: 14px;
+}
+
+.custom-select.open .custom-select-trigger,
+.custom-select-trigger:focus-visible,
+.modal-grid input:focus,
+.modal-grid select:focus,
+.modal-grid textarea:focus {
+  border-color: #8fc1ff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.custom-select-menu {
+  z-index: 10020;
+  border-radius: 14px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
+}
+
+.custom-select-option {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
+.admin-heading,
+.page-heading.with-actions {
+  align-items: center;
+}
+
+.admin-title-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.admin-title-lockup h2 {
+  font-size: 25px;
+}
+
+.admin-system-switcher {
+  margin-bottom: 2px;
+}
+
+.admin-directory-panel,
+.role-list-panel,
+.permission-detail-panel,
+.role-users-panel,
+.permission-activity-panel,
+.framework-table-panel,
+.assignment-panel,
+.appraisal-table-panel,
+.detail-task-panel,
+.task-list-panel {
+  border-color: #cbd7e8;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.admin-filter-grid {
+  grid-template-columns: minmax(240px, 1.1fr) minmax(160px, 0.62fr) minmax(160px, 0.62fr);
+}
+
+.admin-user-table {
+  min-width: 0;
+}
+
+.admin-user-head,
+.admin-user-row {
+  grid-template-columns: minmax(240px, 1.45fr) minmax(118px, 0.55fr) minmax(96px, 0.38fr) minmax(76px, 0.24fr);
+  gap: 12px;
+}
+
+.role-pick-button {
+  grid-template-columns: minmax(0, 1fr) 42px;
+  padding: 12px 14px;
+}
+
+.role-count-slot {
+  justify-self: end;
+}
+
+.role-list-item b,
+.role-delete-button {
+  width: 34px;
+  height: 34px;
+}
+
+.permission-layout {
+  grid-template-columns: minmax(250px, 0.74fr) minmax(0, 2.55fr);
+}
+
+.permission-row {
+  min-height: 46px;
+}
+
+.permission-level-select {
+  width: min(156px, 100%);
+}
+
+.permission-level-select .custom-select-trigger {
+  min-height: 34px;
+}
+
+.appraisal-page,
+.admin-page,
+.frame-config-page,
+.workflow-config-page,
+.sla-config-page {
+  max-width: 1280px;
+}
+
+.appraisal-table-panel {
+  --appraisal-table-min: 900px;
+}
+
+.appraisal-toolbar {
+  grid-template-columns: minmax(300px, 0.86fr) minmax(150px, 0.36fr) minmax(220px, 1fr);
+}
+
+.appraisal-head,
+.appraisal-row {
+  grid-template-columns:
+    minmax(132px, 0.92fr)
+    minmax(106px, 0.6fr)
+    minmax(104px, 0.62fr)
+    minmax(122px, 0.68fr)
+    minmax(122px, 0.72fr)
+    minmax(180px, 0.95fr)
+    minmax(82px, 0.38fr);
+  gap: 9px;
+  padding: 0 14px;
+}
+
+.appraisal-bottom-grid {
+  grid-template-columns: repeat(3, minmax(0, 0.82fr)) minmax(280px, 1.24fr);
+}
+
+.appraisal-stat-card {
+  min-height: 112px;
+}
+
+.detail-task-table {
+  min-width: 820px;
+}
+
+.detail-task-head,
+.detail-task-row {
+  grid-template-columns: minmax(190px, 1.26fr) minmax(96px, 0.58fr) minmax(170px, 1.04fr) minmax(118px, 0.7fr) minmax(172px, 0.9fr);
+  gap: 12px;
+  padding: 0 18px;
+}
+
+.detail-task-row {
+  min-height: 64px;
+}
+
+.detail-action-icons {
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.detail-action-icons .icon-button {
+  width: 30px;
+  height: 30px;
+}
+
+.task-table {
+  min-width: 820px;
+}
+
+.task-head,
+.task-row {
+  grid-template-columns: minmax(218px, 1.42fr) minmax(150px, 0.96fr) minmax(110px, 0.72fr) minmax(104px, 0.68fr) minmax(118px, 0.72fr) minmax(104px, 0.52fr);
+  gap: 12px;
+  padding: 0 18px;
+}
+
+.task-row {
+  min-height: 96px;
+}
+
+.task-title-cell strong {
+  font-size: 15px;
+}
+
+.assignment-panel {
+  overflow-x: auto;
+}
+
+.channel-setup-page {
+  max-width: 1080px;
+}
+
+.assignment-head,
+.assignment-row {
+  grid-template-columns:
+    minmax(138px, 1.02fr)
+    minmax(90px, 0.58fr)
+    minmax(136px, 0.88fr)
+    minmax(126px, 0.78fr)
+    minmax(92px, 0.56fr)
+    minmax(128px, 0.68fr)
+    minmax(152px, 0.88fr);
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.assignment-row {
+  min-height: 76px;
+}
+
+.channel-pill,
+.date-input-chip,
+.asm-count-pill,
+.attach-template {
+  min-height: 36px;
+  border-radius: 11px;
+}
+
+.channel-pill {
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+.framework-table {
+  min-width: 900px;
+}
+
+.framework-head,
+.framework-row {
+  grid-template-columns: minmax(140px, 1.12fr) minmax(94px, 0.64fr) minmax(150px, 1.04fr) minmax(140px, 0.96fr) minmax(210px, 1.36fr) minmax(76px, 0.38fr);
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.pagination-row {
+  min-width: 900px;
+}
+
+.admin-modal,
+.asm-modal {
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+}
+
+.admin-modal-header,
+.admin-modal-actions,
+.modal-actions {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+.admin-modal-body {
+  padding: 22px;
+}
+
+@media (min-width: 861px) and (max-width: 1500px) {
+  .app-shell {
+    grid-template-columns: 212px minmax(0, 1fr);
+  }
+
+  .content-area {
+    padding: 18px;
+  }
+
+  .page-heading h2,
+  .admin-title-lockup h2 {
+    font-size: 24px;
+  }
+
+  .metric-grid,
+  .admin-metric-grid {
+    gap: 12px;
+  }
+
+  .admin-metric-card {
+    min-height: 76px;
+    padding: 11px 12px;
+  }
+
+  .appraisal-bottom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .permission-layout {
+    grid-template-columns: minmax(230px, 0.78fr) minmax(0, 2.2fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  .admin-metric-grid,
+  .appraisal-bottom-grid,
+  .framework-bottom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-user-table,
+  .permission-table {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-metric-grid,
+  .appraisal-bottom-grid,
+  .framework-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-footer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
