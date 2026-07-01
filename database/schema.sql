@@ -1,6 +1,6 @@
 create extension if not exists pgcrypto;
 
-create table users (
+create table if not exists users (
   id uuid primary key default gen_random_uuid(),
   employee_code text unique,
   full_name text not null,
@@ -15,7 +15,7 @@ create table users (
   updated_at timestamptz not null default now()
 );
 
-create table roles (
+create table if not exists roles (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
@@ -28,7 +28,7 @@ create table roles (
   updated_at timestamptz not null default now()
 );
 
-create table user_roles (
+create table if not exists user_roles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users(id) on delete cascade,
   role_id uuid not null references roles(id) on delete restrict,
@@ -37,7 +37,7 @@ create table user_roles (
   unique (user_id, role_id)
 );
 
-create table modules (
+create table if not exists modules (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
@@ -46,7 +46,7 @@ create table modules (
   sort_order int not null default 0
 );
 
-create table role_permissions (
+create table if not exists role_permissions (
   id uuid primary key default gen_random_uuid(),
   role_id uuid not null references roles(id) on delete cascade,
   module_id uuid not null references modules(id) on delete cascade,
@@ -57,7 +57,7 @@ create table role_permissions (
   unique (role_id, module_id)
 );
 
-create table sales_channels (
+create table if not exists sales_channels (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
@@ -71,7 +71,7 @@ create table sales_channels (
   updated_at timestamptz not null default now()
 );
 
-create table channel_assignments (
+create table if not exists channel_assignments (
   id uuid primary key default gen_random_uuid(),
   channel_id uuid not null references sales_channels(id) on delete cascade,
   user_id uuid not null references users(id) on delete restrict,
@@ -82,7 +82,7 @@ create table channel_assignments (
   unique (channel_id, user_id, role_code, effective_from)
 );
 
-create table forecast_cycles (
+create table if not exists forecast_cycles (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   month int not null check (month between 1 and 12),
@@ -98,7 +98,7 @@ create table forecast_cycles (
   updated_at timestamptz not null default now()
 );
 
-create table forecast_tasks (
+create table if not exists forecast_tasks (
   id uuid primary key default gen_random_uuid(),
   forecast_cycle_id uuid not null references forecast_cycles(id) on delete cascade,
   channel_id uuid not null references sales_channels(id) on delete restrict,
@@ -115,7 +115,7 @@ create table forecast_tasks (
   unique (forecast_cycle_id, channel_id)
 );
 
-create table forecast_files (
+create table if not exists forecast_files (
   id uuid primary key default gen_random_uuid(),
   forecast_task_id uuid not null references forecast_tasks(id) on delete cascade,
   file_name text not null,
@@ -128,7 +128,7 @@ create table forecast_files (
   unique (forecast_task_id, version)
 );
 
-create table appraisal_reviews (
+create table if not exists appraisal_reviews (
   id uuid primary key default gen_random_uuid(),
   forecast_cycle_id uuid not null references forecast_cycles(id) on delete cascade,
   forecast_task_id uuid references forecast_tasks(id) on delete cascade,
@@ -140,7 +140,7 @@ create table appraisal_reviews (
   created_at timestamptz not null default now()
 );
 
-create table approvals (
+create table if not exists approvals (
   id uuid primary key default gen_random_uuid(),
   forecast_cycle_id uuid not null references forecast_cycles(id) on delete cascade,
   approver_id uuid references users(id) on delete set null,
@@ -150,7 +150,7 @@ create table approvals (
   created_at timestamptz not null default now()
 );
 
-create table activity_logs (
+create table if not exists activity_logs (
   id uuid primary key default gen_random_uuid(),
   actor_id uuid references users(id) on delete set null,
   entity_type text not null,
@@ -161,7 +161,7 @@ create table activity_logs (
   created_at timestamptz not null default now()
 );
 
-create index idx_user_roles_user on user_roles(user_id);
+create index if not exists idx_user_roles_user on user_roles(user_id);
 delete from user_roles
 where id in (
   select id
@@ -172,10 +172,10 @@ where id in (
   where row_number > 1
 );
 create unique index if not exists uq_user_roles_primary_user on user_roles(user_id);
-create index idx_role_permissions_role on role_permissions(role_id);
-create index idx_channel_assignments_channel on channel_assignments(channel_id);
-create index idx_forecast_tasks_cycle on forecast_tasks(forecast_cycle_id);
-create index idx_forecast_tasks_owner on forecast_tasks(owner_id);
-create index idx_forecast_files_task on forecast_files(forecast_task_id);
-create index idx_activity_logs_entity on activity_logs(entity_type, entity_id);
-create index idx_activity_logs_created_at on activity_logs(created_at desc);
+create index if not exists idx_role_permissions_role on role_permissions(role_id);
+create index if not exists idx_channel_assignments_channel on channel_assignments(channel_id);
+create index if not exists idx_forecast_tasks_cycle on forecast_tasks(forecast_cycle_id);
+create index if not exists idx_forecast_tasks_owner on forecast_tasks(owner_id);
+create index if not exists idx_forecast_files_task on forecast_files(forecast_task_id);
+create index if not exists idx_activity_logs_entity on activity_logs(entity_type, entity_id);
+create index if not exists idx_activity_logs_created_at on activity_logs(created_at desc);
