@@ -51,7 +51,7 @@ import {
   Cloud,
   Lock,
 } from "lucide-react";
-import { buildMockAppData } from "./data/mockViewModels";
+import { buildAppDataFromBootstrap, buildMockAppData } from "./data/mockViewModels";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, screen: "overview" },
@@ -372,14 +372,18 @@ function getUserInitials(name = "") {
   return parts.slice(-2).map((part) => part[0]).join("").toUpperCase();
 }
 
-function buildInitialPermissionDrafts() {
-  return roleDefinitions.reduce((roleAcc, role) => {
-    roleAcc[role.id] = permissionMatrix.reduce((matrixAcc, row) => {
+function buildPermissionDrafts(roles = roleDefinitions, matrix = permissionMatrix) {
+  return roles.reduce((roleAcc, role) => {
+    roleAcc[role.id] = matrix.reduce((matrixAcc, row) => {
       matrixAcc[row.module] = normalizePermissionLevel(row[role.id]);
       return matrixAcc;
     }, {});
     return roleAcc;
   }, {});
+}
+
+function buildInitialPermissionDrafts() {
+  return buildPermissionDrafts();
 }
 
 function getPermissionLevel(permissions, module) {
@@ -503,6 +507,9 @@ function App() {
   const [users, setUsers] = useState(adminUsers);
   const [roles, setRoles] = useState(roleDefinitions);
   const [permissionDrafts, setPermissionDrafts] = useState(buildInitialPermissionDrafts);
+  const [systemChannelRows, setSystemChannelRows] = useState(channelRows);
+  const [systemPermissionMatrix, setSystemPermissionMatrix] = useState(permissionMatrix);
+  const [systemPermissionActivityLog, setSystemPermissionActivityLog] = useState(permissionActivityLog);
   const [previewRoleId, setPreviewRoleId] = useState("");
 
   const selectedForecast =
@@ -524,6 +531,58 @@ function App() {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
   };
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadDatabaseData() {
+      try {
+        const response = await fetch("/api/data/bootstrap", {
+          headers: { Accept: "application/json" },
+        });
+        if (!response.ok) throw new Error(`bootstrap_${response.status}`);
+
+        const payload = await response.json();
+        if (!payload.ok) throw new Error(payload.message || "bootstrap_failed");
+
+        const nextData = buildAppDataFromBootstrap(payload.data, iconRegistry);
+        if (!active) return;
+
+        setForecasts(nextData.initialForecasts);
+        setTasks(nextData.initialTasks);
+        setEvents(nextData.initialEvents);
+        setPublishedFiles(nextData.initialPublishedFiles);
+        setUsers(nextData.adminUsers);
+        setRoles(nextData.roleDefinitions);
+        setPermissionDrafts(buildPermissionDrafts(nextData.roleDefinitions, nextData.permissionMatrix));
+        setSystemChannelRows(nextData.channelRows);
+        setSystemPermissionMatrix(nextData.permissionMatrix);
+        setSystemPermissionActivityLog(nextData.permissionActivityLog);
+        setSelectedForecastId((current) =>
+          nextData.initialForecasts.some((forecast) => forecast.id === current)
+            ? current
+            : nextData.initialForecasts[0]?.id || current
+        );
+        setSelectedTaskId((current) =>
+          nextData.initialTasks.some((task) => task.id === current)
+            ? current
+            : nextData.initialTasks[0]?.id || current
+        );
+        setSelectedFileId((current) =>
+          nextData.initialPublishedFiles.some((file) => file.id === current)
+            ? current
+            : nextData.initialPublishedFiles[0]?.id || current
+        );
+      } catch (error) {
+        console.warn("Using mock fallback because database bootstrap failed.", error);
+      }
+    }
+
+    loadDatabaseData();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const addEvent = ({ icon = CheckCircle2, tone = "blue", title, body }) => {
     setEvents((current) => [
@@ -1043,6 +1102,8 @@ function App() {
               setRoles={setRoles}
               users={users}
               setUsers={setUsers}
+              permissionMatrix={systemPermissionMatrix}
+              permissionActivityLog={systemPermissionActivityLog}
             />
           )}
           {screen === "channel-config" && (
@@ -1051,6 +1112,7 @@ function App() {
               onPermissions={() => setScreen("system-permissions")}
               onApprovalConfig={() => setScreen("approval-config")}
               onSlaConfig={() => setScreen("sla-config")}
+              channelRows={systemChannelRows}
             />
           )}
           {screen === "approval-config" && (
@@ -1082,6 +1144,7 @@ function App() {
               draft={draftForecast}
               onBack={() => setScreen("create-1")}
               onFinish={handleCreateForecast}
+              channelRows={systemChannelRows}
             />
           )}
             </>
@@ -3157,6 +3220,8 @@ function SystemPermissions({
   setRoles,
   users = adminUsers,
   setUsers,
+  permissionMatrix: activePermissionMatrix = permissionMatrix,
+  permissionActivityLog: activePermissionActivityLog = permissionActivityLog,
 }) {
   const [selectedRoleId, setSelectedRoleId] = useState("admin");
   const [roleUserSearch, setRoleUserSearch] = useState("");
@@ -3205,7 +3270,7 @@ function SystemPermissions({
     ]);
     setPermissionDrafts((current) => ({
       ...current,
-      [id]: permissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
+      [id]: activePermissionMatrix.reduce((acc, row) => ({ ...acc, [row.module]: "view" }), {}),
     }));
     setSelectedRoleId(id);
     setNewRole({ name: "", description: "" });
@@ -3316,7 +3381,7 @@ function SystemPermissions({
               <span>Quyền</span>
               <span>Dữ liệu</span>
             </div>
-            {permissionMatrix.map((row) => {
+            {activePermissionMatrix.map((row) => {
               const level = selectedPermissions[row.module] || normalizePermissionLevel(row[selectedRole.id]);
               return (
                 <article className="permission-row" key={row.module}>
@@ -3405,7 +3470,7 @@ function SystemPermissions({
           </div>
 
           <div className="permission-activity-list">
-            {permissionActivityLog.map((item) => (
+            {activePermissionActivityLog.map((item) => (
               <article className="permission-activity-item" key={item.id}>
                 <span className={`activity-dot ${item.tone}`}>
                   <CheckCircle2 size={16} />
@@ -3476,10 +3541,10 @@ function AdminMetric({ label, value, hint, icon: Icon, tone }) {
   );
 }
 
-function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSlaConfig }) {
-  const activeChannelCount = channelRows.length;
-  const rsmCount = new Set(channelRows.map((row) => row.rsm)).size;
-  const asmCount = channelRows.reduce((sum, row) => sum + row.asms.length, 0);
+function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSlaConfig, channelRows: rows = channelRows }) {
+  const activeChannelCount = rows.length;
+  const rsmCount = new Set(rows.map((row) => row.rsm)).size;
+  const asmCount = rows.reduce((sum, row) => sum + row.asms.length, 0);
 
   return (
     <section className="page-flow frame-config-page">
@@ -3510,7 +3575,7 @@ function ChannelFrameworkConfig({ onUsers, onPermissions, onApprovalConfig, onSl
             <span>Danh sách ASM thuộc kênh</span>
             <span>Thao tác</span>
           </div>
-          {channelRows.map((row) => (
+          {rows.map((row) => (
             <article className="framework-row" key={row.channel}>
               <div className="framework-channel">
                 <i className={row.tone} />
@@ -4579,12 +4644,12 @@ function buildTemplateFileName(row, monthCode, year) {
   return `Template_FC_KD01_${channelCode}_T${monthCode}_${year}.xlsx`;
 }
 
-function CreateForecastStepTwo({ onBack, onFinish, draft }) {
+function CreateForecastStepTwo({ onBack, onFinish, draft, channelRows: rows = channelRows }) {
   const forecastPeriod = parseForecastMonth(draft?.month);
   const monthCode = String(forecastPeriod.month).padStart(2, "0");
   const forecastYear = forecastPeriod.year;
-  const frameworkAsmCandidates = buildFrameworkAsmCandidates(channelRows);
-  const [assignmentRows, setAssignmentRows] = useState(() => buildAssignmentRows(monthCode, forecastYear, channelRows, frameworkAsmCandidates));
+  const frameworkAsmCandidates = buildFrameworkAsmCandidates(rows);
+  const [assignmentRows, setAssignmentRows] = useState(() => buildAssignmentRows(monthCode, forecastYear, rows, frameworkAsmCandidates));
   const [asmModalRowId, setAsmModalRowId] = useState(null);
   const [addChannelOpen, setAddChannelOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);

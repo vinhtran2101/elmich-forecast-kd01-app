@@ -14,6 +14,179 @@ export const permissionLevelOptions = [
   { value: "locked", label: "Khóa" },
 ];
 
+const userStatusLabels = {
+  active: "Active",
+  inactive: "Inactive",
+  locked: "Locked",
+};
+
+const forecastStatusLabels = {
+  draft: "Nháp",
+  active: "Đang thực hiện",
+  appraisal: "Chờ thẩm định",
+  approval: "Chờ CEO duyệt",
+  published: "Phát hành",
+  rejected: "CEO không duyệt",
+};
+
+function normalizeBootstrapDatabase(bootstrap = {}) {
+  const rolesByUuid = new Map((bootstrap.roles || []).map((role) => [role.id, role]));
+  const modulesByUuid = new Map((bootstrap.modules || []).map((module) => [module.id, module]));
+
+  const users = (bootstrap.users || []).map((user) => ({
+    id: user.id,
+    employeeCode: user.employee_code,
+    fullName: user.full_name,
+    email: user.email,
+    phone: user.phone || "",
+    department: user.department || "",
+    title: user.title || "",
+    status: userStatusLabels[user.status] || "Active",
+    initials: user.initials,
+    tone: user.tone,
+  }));
+
+  const roles = (bootstrap.roles || []).map((role) => ({
+    id: role.code,
+    code: role.code,
+    name: role.name,
+    description: role.description || "",
+    scopeType: role.scope_type,
+    scopeLabel: role.scope_label || "",
+    isSystem: role.is_system,
+    risk: role.risk || "Trung bình",
+  }));
+
+  const userRoles = (bootstrap.userRoles || []).map((userRole) => {
+    const role = rolesByUuid.get(userRole.role_id);
+    return {
+      id: userRole.id,
+      userId: userRole.user_id,
+      roleId: role?.code || userRole.role_id,
+      scopeNote: userRole.scope_note || role?.scope_label || "",
+    };
+  });
+
+  const modules = (bootstrap.modules || []).map((module) => ({
+    id: module.code,
+    code: module.code,
+    name: module.name,
+    dataLabel: module.data_label || "",
+    sortOrder: module.sort_order || 0,
+  }));
+
+  const rolePermissions = (bootstrap.rolePermissions || []).map((permission) => {
+    const role = rolesByUuid.get(permission.role_id);
+    const module = modulesByUuid.get(permission.module_id);
+    return {
+      id: permission.id,
+      roleId: role?.code || permission.role_id,
+      moduleId: module?.code || permission.module_id,
+      permissionLevel: permission.permission_level,
+      dataScope: permission.data_scope,
+    };
+  });
+
+  const salesChannels = (bootstrap.salesChannels || []).map((channel) => ({
+    id: channel.id,
+    code: channel.code,
+    name: channel.name,
+    shortName: channel.short_name || channel.name,
+    region: channel.region || "",
+    status: channel.status || "active",
+    iconKey: channel.icon_key || "store",
+    iconTone: channel.icon_tone || "blue",
+    marker: channel.marker || "blue",
+  }));
+
+  const channelAssignments = (bootstrap.channelAssignments || []).map((assignment) => ({
+    id: assignment.id,
+    channelId: assignment.channel_id,
+    userId: assignment.user_id,
+    roleCode: assignment.role_code,
+    effectiveFrom: assignment.effective_from,
+  }));
+
+  const forecastCycles = (bootstrap.forecastCycles || []).map((cycle) => ({
+    id: cycle.id,
+    code: cycle.code,
+    month: cycle.month,
+    year: cycle.year,
+    title: cycle.title,
+    createdAt: cycle.created_at,
+    totalDeadlineAt: cycle.total_deadline_at,
+    status: forecastStatusLabels[cycle.status] || cycle.status,
+    tone: cycle.tone || cycle.status,
+    note: cycle.note || "",
+    template: cycle.template_file_name || "",
+    createdBy: cycle.created_by,
+  }));
+
+  const forecastTasks = (bootstrap.forecastTasks || []).map((task) => ({
+    id: task.id,
+    forecastCycleId: task.forecast_cycle_id,
+    channelId: task.channel_id,
+    ownerId: task.owner_id,
+    rsmId: task.rsm_id,
+    directorId: task.director_id,
+    deadlineAt: task.deadline_at,
+    status: task.status,
+    statusTone: task.status_tone,
+    progress: task.progress,
+    dueText: task.due_text || "",
+  }));
+
+  const forecastFiles = (bootstrap.forecastFiles || []).map((file) => ({
+    id: file.id,
+    forecastTaskId: file.forecast_task_id,
+    fileName: file.file_name,
+    fileUrl: file.file_url,
+    fileSize: file.file_size,
+    version: file.version,
+    uploadedBy: file.uploaded_by,
+    uploadedAt: file.uploaded_at,
+    note: file.note || "",
+  }));
+
+  const activityLogs = (bootstrap.activityLogs || []).map((log) => ({
+    id: log.metadata?.sourceId || log.id,
+    actorId: log.actor_id,
+    entityType: log.entity_type,
+    entityId: log.metadata?.sourceEntityId || log.entity_id,
+    action: log.action,
+    message: log.message,
+    detail: log.metadata?.detail || "",
+    tone: log.metadata?.tone || "blue",
+    iconKey: log.metadata?.iconKey || "calendar",
+    createdAtLabel: log.metadata?.createdAtLabel || "",
+  }));
+
+  const permissionActivityLogs = activityLogs
+    .filter((log) => log.entityType === "permission")
+    .map((log) => ({
+      id: log.id,
+      title: log.message,
+      detail: log.detail,
+      time: log.createdAtLabel,
+      tone: log.tone,
+    }));
+
+  return {
+    users,
+    roles,
+    userRoles,
+    modules,
+    rolePermissions,
+    salesChannels,
+    channelAssignments,
+    forecastCycles,
+    forecastTasks,
+    forecastFiles,
+    activityLogs,
+    permissionActivityLogs,
+  };
+}
+
 function formatDate(value) {
   return new Intl.DateTimeFormat("vi-VN", {
     day: "2-digit",
@@ -54,8 +227,7 @@ function getIcon(iconRegistry, iconKey) {
   return iconRegistry[iconKey] || iconRegistry.store;
 }
 
-export function buildMockAppData(iconRegistry) {
-  const db = mockDatabase;
+function buildAppData(db, iconRegistry) {
   const usersById = byId(db.users);
   const rolesById = byId(db.roles);
   const channelsById = byId(db.salesChannels);
@@ -182,14 +354,16 @@ export function buildMockAppData(iconRegistry) {
     };
   });
 
-  const initialEvents = db.activityLogs.map((event) => ({
-    id: event.id,
-    tone: event.tone,
-    icon: getIcon(iconRegistry, event.iconKey),
-    title: event.message,
-    body: event.detail,
-    time: event.createdAtLabel,
-  }));
+  const initialEvents = db.activityLogs
+    .filter((event) => event.entityType !== "permission")
+    .map((event) => ({
+      id: event.id,
+      tone: event.tone,
+      icon: getIcon(iconRegistry, event.iconKey),
+      title: event.message,
+      body: event.detail,
+      time: event.createdAtLabel,
+    }));
 
   const initialPublishedFiles = db.forecastFiles
     .filter((file) => cyclesById[db.forecastTasks.find((task) => task.id === file.forecastTaskId)?.forecastCycleId]?.status === "Phát hành")
@@ -198,7 +372,7 @@ export function buildMockAppData(iconRegistry) {
       const cycle = cyclesById[task.forecastCycleId];
       const channel = channelsById[task.channelId];
       return {
-        id: "file-2026-06-mt",
+        id: file.id,
         forecastId: cycle.id,
         name: file.fileName,
         channel: channel.shortName,
@@ -221,7 +395,15 @@ export function buildMockAppData(iconRegistry) {
     adminUsers,
     roleDefinitions,
     permissionMatrix,
-    permissionActivityLog: db.permissionActivityLogs,
+    permissionActivityLog: db.permissionActivityLogs || [],
     permissionLevelOptions,
   };
+}
+
+export function buildMockAppData(iconRegistry) {
+  return buildAppData(mockDatabase, iconRegistry);
+}
+
+export function buildAppDataFromBootstrap(bootstrap, iconRegistry) {
+  return buildAppData(normalizeBootstrapDatabase(bootstrap), iconRegistry);
 }
