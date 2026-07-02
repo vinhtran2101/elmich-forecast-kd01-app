@@ -644,6 +644,7 @@ function App() {
 
   const reloadDatabaseData = async (message) => {
     await loadDatabaseData();
+    await loadCurrentAuth();
     if (message) showToast(message);
   };
 

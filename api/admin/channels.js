@@ -43,7 +43,7 @@ async function saveAssignment(client, channelId, roleCode, userId) {
 async function upsertChannel(client, payload) {
   const name = String(payload.channel || payload.name || "").trim();
   if (!name) {
-    const error = new Error("TÃªn kÃªnh lÃ  báº¯t buá»™c.");
+    const error = new Error("Tên kênh là bắt buộc.");
     error.statusCode = 400;
     throw error;
   }
@@ -98,8 +98,8 @@ async function upsertChannel(client, payload) {
     `,
     [
       channel.id,
-      `Cáº­p nháº­t khung kÃªnh: ${channel.name}`,
-      JSON.stringify({ detail: `GÃ¡n ${asmInputs.length} ASM`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vá»«a xong" }),
+      `Cập nhật khung kênh: ${channel.name}`,
+      JSON.stringify({ detail: `Gán ${asmInputs.length} ASM`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vừa xong" }),
     ]
   );
 
@@ -114,7 +114,7 @@ async function deactivateChannel(client, payload) {
   );
   const channel = result.rows[0];
   if (!channel) {
-    const error = new Error("KhÃ´ng tÃ¬m tháº¥y kÃªnh.");
+    const error = new Error("Không tìm thấy kênh.");
     error.statusCode = 404;
     throw error;
   }
@@ -127,8 +127,8 @@ async function deactivateChannel(client, payload) {
     `,
     [
       channel.id,
-      `NgÆ°ng hoáº¡t Ä‘á»™ng khung kÃªnh: ${channel.name}`,
-      JSON.stringify({ detail: "áº¨n khá»i cáº¥u hÃ¬nh khung Forecast má»›i", tone: "orange", iconKey: "alertTriangle", createdAtLabel: "Vá»«a xong" }),
+      `Ngưng hoạt động khung kênh: ${channel.name}`,
+      JSON.stringify({ detail: "Ẩn khỏi cấu hình khung Forecast mới", tone: "orange", iconKey: "alertTriangle", createdAtLabel: "Vừa xong" }),
     ]
   );
 
@@ -137,7 +137,7 @@ async function deactivateChannel(client, payload) {
 
 export default async function handler(req, res) {
   if (!["POST", "DELETE"].includes(req.method)) return sendMethodNotAllowed(res, ["POST", "DELETE"]);
-  const guard = await requireModulePermission(req, res, "Quáº£n trá»‹ há»‡ thá»‘ng", ["full", "scoped"]);
+  const guard = await requireModulePermission(req, res, "system_admin", ["full", "scoped"]);
   if (!guard.ok) return;
 
   try {

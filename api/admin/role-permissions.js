@@ -12,7 +12,7 @@ function dataScopeForLevel(level) {
 
 export default async function handler(req, res) {
   if (!["POST", "PATCH"].includes(req.method)) return sendMethodNotAllowed(res, ["POST", "PATCH"]);
-  const guard = await requireModulePermission(req, res, "Quáº£n trá»‹ há»‡ thá»‘ng", ["full", "scoped"]);
+  const guard = await requireModulePermission(req, res, "system_admin", ["full", "scoped"]);
   if (!guard.ok) return;
 
   try {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       return sendJson(res, 400, {
         ok: false,
         error: "invalid_permission_payload",
-        message: "Thiáº¿u vai trÃ², khu vá»±c hoáº·c quyá»n há»£p lá»‡.",
+        message: "Thiếu vai trò, khu vực hoặc quyền hợp lệ.",
       });
     }
 
@@ -36,12 +36,12 @@ export default async function handler(req, res) {
       );
       const role = roleResult.rows[0];
       if (!role) {
-        const error = new Error("KhÃ´ng tÃ¬m tháº¥y vai trÃ².");
+        const error = new Error("Không tìm thấy vai trò.");
         error.statusCode = 404;
         throw error;
       }
       if (role.code === "admin") {
-        const error = new Error("KhÃ´ng cáº­p nháº­t quyá»n cá»§a Admin máº·c Ä‘á»‹nh.");
+        const error = new Error("Không cập nhật quyền của Admin mặc định.");
         error.statusCode = 400;
         throw error;
       }
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       );
       const module = moduleResult.rows[0];
       if (!module) {
-        const error = new Error("KhÃ´ng tÃ¬m tháº¥y khu vá»±c quyá»n.");
+        const error = new Error("Không tìm thấy khu vực quyền.");
         error.statusCode = 404;
         throw error;
       }
@@ -77,8 +77,8 @@ export default async function handler(req, res) {
         `,
         [
           role.id,
-          `Cáº­p nháº­t quyá»n: ${role.name}`,
-          JSON.stringify({ detail: `${module.name} -> ${level}`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vá»«a xong" }),
+          `Cập nhật quyền: ${role.name}`,
+          JSON.stringify({ detail: `${module.name} -> ${level}`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vừa xong" }),
         ]
       );
 
