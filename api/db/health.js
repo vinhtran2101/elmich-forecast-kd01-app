@@ -1,5 +1,5 @@
-import { hasDatabaseUrl, query } from "../lib/db.js";
-import { sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { hasDatabaseUrl, query } from "../../server/lib/db.js";
+import { sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") return sendMethodNotAllowed(res, ["GET"]);
@@ -28,3 +28,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

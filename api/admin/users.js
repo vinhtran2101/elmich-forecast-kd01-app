@@ -1,6 +1,6 @@
-import { withTransaction } from "../lib/db.js";
-import { requireModulePermission } from "../lib/auth.js";
-import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { withTransaction } from "../../server/lib/db.js";
+import { requireModulePermission } from "../../server/lib/auth.js";
+import { readJsonBody, sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 function normalizeStatus(status) {
   const value = String(status || "Active").toLowerCase();
@@ -41,7 +41,7 @@ async function findRole(client, roleValue) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return sendMethodNotAllowed(res, ["POST"]);
-  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  const guard = await requireModulePermission(req, res, "Quáº£n trá»‹ há»‡ thá»‘ng", ["full", "scoped"]);
   if (!guard.ok) return;
 
   try {
@@ -51,10 +51,10 @@ export default async function handler(req, res) {
     const email = String(user.email || "").trim().toLowerCase();
 
     if (!fullName) {
-      return sendJson(res, 400, { ok: false, error: "missing_name", message: "Tên tài khoản là bắt buộc." });
+      return sendJson(res, 400, { ok: false, error: "missing_name", message: "TÃªn tÃ i khoáº£n lÃ  báº¯t buá»™c." });
     }
     if (!email) {
-      return sendJson(res, 400, { ok: false, error: "missing_email", message: "Email đăng nhập là bắt buộc." });
+      return sendJson(res, 400, { ok: false, error: "missing_email", message: "Email Ä‘Äƒng nháº­p lÃ  báº¯t buá»™c." });
     }
 
     const savedUser = await withTransaction(async (client) => {
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
       const requestedRole = user.roleId || user.roleCode || user.role || body.role || "viewer";
       const role = await findRole(client, requestedRole);
       if (!role) {
-        const error = new Error(`Không tìm thấy vai trò: ${requestedRole}`);
+        const error = new Error(`KhÃ´ng tÃ¬m tháº¥y vai trÃ²: ${requestedRole}`);
         error.statusCode = 400;
         throw error;
       }
@@ -128,7 +128,7 @@ export default async function handler(req, res) {
             insert into user_roles (user_id, role_id, scope_note)
             values ($1, $2, $3)
           `,
-          [row.id, role.id, role.scope_label || "Theo phân quyền"]
+          [row.id, role.id, role.scope_label || "Theo phÃ¢n quyá»n"]
         );
       }
 
@@ -140,8 +140,8 @@ export default async function handler(req, res) {
         [
           row.id,
           isUuid(user.id) ? "user_update" : "user_create",
-          `${isUuid(user.id) ? "Cập nhật" : "Tạo"} tài khoản: ${row.full_name}`,
-          JSON.stringify({ detail: role ? `Gán vai trò ${role.name}` : "Chưa gán vai trò", tone: "green", iconKey: "checkCircle", createdAtLabel: "Vừa xong" }),
+          `${isUuid(user.id) ? "Cáº­p nháº­t" : "Táº¡o"} tÃ i khoáº£n: ${row.full_name}`,
+          JSON.stringify({ detail: role ? `GÃ¡n vai trÃ² ${role.name}` : "ChÆ°a gÃ¡n vai trÃ²", tone: "green", iconKey: "checkCircle", createdAtLabel: "Vá»«a xong" }),
         ]
       );
 
@@ -157,3 +157,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

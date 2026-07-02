@@ -1,10 +1,10 @@
-import { withTransaction } from "../lib/db.js";
-import { requireModulePermission } from "../lib/auth.js";
-import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { withTransaction } from "../../server/lib/db.js";
+import { requireModulePermission } from "../../server/lib/auth.js";
+import { readJsonBody, sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return sendMethodNotAllowed(res, ["POST"]);
-  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  const guard = await requireModulePermission(req, res, "Quáº£n trá»‹ há»‡ thá»‘ng", ["full", "scoped"]);
   if (!guard.ok) return;
 
   try {
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       return sendJson(res, 400, {
         ok: false,
         error: "invalid_role_users_payload",
-        message: "Thiếu vai trò hoặc danh sách nhân sự.",
+        message: "Thiáº¿u vai trÃ² hoáº·c danh sÃ¡ch nhÃ¢n sá»±.",
       });
     }
 
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       );
       const role = roleResult.rows[0];
       if (!role) {
-        const error = new Error("Không tìm thấy vai trò.");
+        const error = new Error("KhÃ´ng tÃ¬m tháº¥y vai trÃ².");
         error.statusCode = 404;
         throw error;
       }
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
             insert into user_roles (user_id, role_id, scope_note)
             values ($1, $2, $3)
           `,
-          [userId, role.id, role.scope_label || "Theo phân quyền"]
+          [userId, role.id, role.scope_label || "Theo phÃ¢n quyá»n"]
         );
         changed += 1;
       }
@@ -52,8 +52,8 @@ export default async function handler(req, res) {
         `,
         [
           role.id,
-          `Gán nhân sự vào vai trò: ${role.name}`,
-          JSON.stringify({ detail: `Đã gán ${changed} nhân sự`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vừa xong" }),
+          `GÃ¡n nhÃ¢n sá»± vÃ o vai trÃ²: ${role.name}`,
+          JSON.stringify({ detail: `ÄÃ£ gÃ¡n ${changed} nhÃ¢n sá»±`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vá»«a xong" }),
         ]
       );
 
@@ -69,3 +69,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

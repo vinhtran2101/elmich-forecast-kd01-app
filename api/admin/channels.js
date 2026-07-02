@@ -1,6 +1,6 @@
-import { withTransaction } from "../lib/db.js";
-import { requireModulePermission } from "../lib/auth.js";
-import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { withTransaction } from "../../server/lib/db.js";
+import { requireModulePermission } from "../../server/lib/auth.js";
+import { readJsonBody, sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 function slugify(value = "") {
   return String(value)
@@ -43,7 +43,7 @@ async function saveAssignment(client, channelId, roleCode, userId) {
 async function upsertChannel(client, payload) {
   const name = String(payload.channel || payload.name || "").trim();
   if (!name) {
-    const error = new Error("Tên kênh là bắt buộc.");
+    const error = new Error("TÃªn kÃªnh lÃ  báº¯t buá»™c.");
     error.statusCode = 400;
     throw error;
   }
@@ -98,8 +98,8 @@ async function upsertChannel(client, payload) {
     `,
     [
       channel.id,
-      `Cập nhật khung kênh: ${channel.name}`,
-      JSON.stringify({ detail: `Gán ${asmInputs.length} ASM`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vừa xong" }),
+      `Cáº­p nháº­t khung kÃªnh: ${channel.name}`,
+      JSON.stringify({ detail: `GÃ¡n ${asmInputs.length} ASM`, tone: "green", iconKey: "checkCircle", createdAtLabel: "Vá»«a xong" }),
     ]
   );
 
@@ -114,7 +114,7 @@ async function deactivateChannel(client, payload) {
   );
   const channel = result.rows[0];
   if (!channel) {
-    const error = new Error("Không tìm thấy kênh.");
+    const error = new Error("KhÃ´ng tÃ¬m tháº¥y kÃªnh.");
     error.statusCode = 404;
     throw error;
   }
@@ -127,8 +127,8 @@ async function deactivateChannel(client, payload) {
     `,
     [
       channel.id,
-      `Ngưng hoạt động khung kênh: ${channel.name}`,
-      JSON.stringify({ detail: "Ẩn khỏi cấu hình khung Forecast mới", tone: "orange", iconKey: "alertTriangle", createdAtLabel: "Vừa xong" }),
+      `NgÆ°ng hoáº¡t Ä‘á»™ng khung kÃªnh: ${channel.name}`,
+      JSON.stringify({ detail: "áº¨n khá»i cáº¥u hÃ¬nh khung Forecast má»›i", tone: "orange", iconKey: "alertTriangle", createdAtLabel: "Vá»«a xong" }),
     ]
   );
 
@@ -137,7 +137,7 @@ async function deactivateChannel(client, payload) {
 
 export default async function handler(req, res) {
   if (!["POST", "DELETE"].includes(req.method)) return sendMethodNotAllowed(res, ["POST", "DELETE"]);
-  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  const guard = await requireModulePermission(req, res, "Quáº£n trá»‹ há»‡ thá»‘ng", ["full", "scoped"]);
   if (!guard.ok) return;
 
   try {
@@ -155,3 +155,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

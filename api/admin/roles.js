@@ -1,6 +1,6 @@
-import { withTransaction } from "../lib/db.js";
-import { requireModulePermission } from "../lib/auth.js";
-import { readJsonBody, sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { withTransaction } from "../../server/lib/db.js";
+import { requireModulePermission } from "../../server/lib/auth.js";
+import { readJsonBody, sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 function slugify(value = "") {
   return String(value)
@@ -23,7 +23,7 @@ async function findRole(client, roleId) {
 async function createRole(client, body) {
   const name = String(body.name || "").trim();
   if (!name) {
-    const error = new Error("Tên vai trò là bắt buộc.");
+    const error = new Error("TÃªn vai trÃ² lÃ  báº¯t buá»™c.");
     error.statusCode = 400;
     throw error;
   }
@@ -33,10 +33,10 @@ async function createRole(client, body) {
   const roleResult = await client.query(
     `
       insert into roles (code, name, description, scope_type, scope_label, risk, is_system)
-      values ($1, $2, $3, 'custom', 'Theo phân quyền', 'Trung bình', false)
+      values ($1, $2, $3, 'custom', 'Theo phÃ¢n quyá»n', 'Trung bÃ¬nh', false)
       returning *
     `,
-    [code, name, body.description || "Vai trò tùy chỉnh cho Forecast KD01"]
+    [code, name, body.description || "Vai trÃ² tÃ¹y chá»‰nh cho Forecast KD01"]
   );
   const role = roleResult.rows[0];
 
@@ -59,8 +59,8 @@ async function createRole(client, body) {
     `,
     [
       role.id,
-      `Tạo vai trò: ${role.name}`,
-      JSON.stringify({ detail: "Tạo role mới và khởi tạo quyền Chỉ xem", tone: "green", iconKey: "checkCircle", createdAtLabel: "Vừa xong" }),
+      `Táº¡o vai trÃ²: ${role.name}`,
+      JSON.stringify({ detail: "Táº¡o role má»›i vÃ  khá»Ÿi táº¡o quyá»n Chá»‰ xem", tone: "green", iconKey: "checkCircle", createdAtLabel: "Vá»«a xong" }),
     ]
   );
 
@@ -70,12 +70,12 @@ async function createRole(client, body) {
 async function deleteRole(client, roleId) {
   const role = await findRole(client, roleId);
   if (!role) {
-    const error = new Error("Không tìm thấy vai trò.");
+    const error = new Error("KhÃ´ng tÃ¬m tháº¥y vai trÃ².");
     error.statusCode = 404;
     throw error;
   }
   if (role.code === "admin") {
-    const error = new Error("Vai trò Admin mặc định không được xóa.");
+    const error = new Error("Vai trÃ² Admin máº·c Ä‘á»‹nh khÃ´ng Ä‘Æ°á»£c xÃ³a.");
     error.statusCode = 400;
     throw error;
   }
@@ -88,8 +88,8 @@ async function deleteRole(client, roleId) {
       values ('permission', null, 'role_delete', $1, $2::jsonb)
     `,
     [
-      `Xóa vai trò: ${role.name}`,
-      JSON.stringify({ detail: "Đã gỡ vai trò khỏi danh sách phân quyền", tone: "orange", iconKey: "alertTriangle", createdAtLabel: "Vừa xong" }),
+      `XÃ³a vai trÃ²: ${role.name}`,
+      JSON.stringify({ detail: "ÄÃ£ gá»¡ vai trÃ² khá»i danh sÃ¡ch phÃ¢n quyá»n", tone: "orange", iconKey: "alertTriangle", createdAtLabel: "Vá»«a xong" }),
     ]
   );
 
@@ -98,7 +98,7 @@ async function deleteRole(client, roleId) {
 
 export default async function handler(req, res) {
   if (!["POST", "DELETE"].includes(req.method)) return sendMethodNotAllowed(res, ["POST", "DELETE"]);
-  const guard = await requireModulePermission(req, res, "Quản trị hệ thống", ["full", "scoped"]);
+  const guard = await requireModulePermission(req, res, "Quáº£n trá»‹ há»‡ thá»‘ng", ["full", "scoped"]);
   if (!guard.ok) return;
 
   try {
@@ -117,3 +117,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

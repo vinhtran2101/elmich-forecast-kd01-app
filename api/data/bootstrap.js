@@ -1,6 +1,6 @@
-import { query } from "../lib/db.js";
-import { requireAuth } from "../lib/auth.js";
-import { sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { query } from "../../server/lib/db.js";
+import { requireAuth } from "../../server/lib/auth.js";
+import { sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 async function getRows(sql, params = []) {
   const result = await query(sql, params);
@@ -64,3 +64,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

@@ -1,6 +1,6 @@
-import { mockDatabase } from "../../src/data/mockDatabase.js";
-import { withTransaction } from "../lib/db.js";
-import { assertSetupToken, sendJson, sendMethodNotAllowed } from "../lib/http.js";
+﻿import { mockDatabase } from "../../src/data/mockDatabase.js";
+import { withTransaction } from "../../server/lib/db.js";
+import { assertSetupToken, sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 function normalizeUserStatus(status) {
   const value = String(status || "active").toLowerCase();
@@ -393,3 +393,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

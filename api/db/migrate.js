@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises";
+﻿import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { query } from "../lib/db.js";
-import { assertSetupToken, sendJson, sendMethodNotAllowed } from "../lib/http.js";
+import { query } from "../../server/lib/db.js";
+import { assertSetupToken, sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return sendMethodNotAllowed(res, ["POST"]);
@@ -24,3 +24,4 @@ export default async function handler(req, res) {
     });
   }
 }
+
