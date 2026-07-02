@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/auth/me",
+      "destination": "/api/auth?route=me"
+    },
+    {
+      "source": "/api/auth/logout",
+      "destination": "/api/auth?route=logout"
+    },
+    {
+      "source": "/api/auth/lark/start",
+      "destination": "/api/auth?route=lark-start"
+    },
+    {
+      "source": "/api/auth/lark/callback",
+      "destination": "/api/auth?route=lark-callback"
+    }
+  ]
+}

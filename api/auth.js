@@ -9,17 +9,18 @@ import {
   resolveLarkUser,
   setSessionCookie,
   validateState,
-} from "../../server/lib/auth.js";
-import { getAuthorizeUrl, getLarkProfileFromCode } from "../../server/lib/lark.js";
-import { sendJson, sendMethodNotAllowed } from "../../server/lib/http.js";
-
-function getPath(req) {
-  return new URL(req.url || "", "http://localhost").pathname.replace(/^\/api\/auth\/?/, "");
-}
+} from "../server/lib/auth.js";
+import { getAuthorizeUrl, getLarkProfileFromCode } from "../server/lib/lark.js";
+import { sendJson, sendMethodNotAllowed } from "../server/lib/http.js";
 
 function getQuery(req) {
   const url = new URL(req.url || "", "http://localhost");
   return Object.fromEntries(url.searchParams.entries());
+}
+
+function getRoute(req) {
+  const query = req.query || getQuery(req);
+  return query.route || query.path || "";
 }
 
 function redirect(res, location) {
@@ -153,12 +154,12 @@ async function handleLarkCallback(req, res) {
 }
 
 export default async function handler(req, res) {
-  const path = getPath(req);
+  const route = getRoute(req);
 
-  if (path === "me") return handleMe(req, res);
-  if (path === "logout") return handleLogout(req, res);
-  if (path === "lark/start") return handleLarkStart(req, res);
-  if (path === "lark/callback") return handleLarkCallback(req, res);
+  if (route === "me") return handleMe(req, res);
+  if (route === "logout") return handleLogout(req, res);
+  if (route === "lark-start") return handleLarkStart(req, res);
+  if (route === "lark-callback") return handleLarkCallback(req, res);
 
   return sendJson(res, 404, {
     ok: false,
